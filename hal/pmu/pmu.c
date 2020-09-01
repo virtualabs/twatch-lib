@@ -1,6 +1,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "driver/gpio.h"
+#include "driver/rtc_io.h"
+#include "esp_sleep.h"
 #include "esp_err.h"
 #include "hal/pmu.h"
 
@@ -42,6 +44,7 @@ esp_err_t twatch_pmu_init(void)
   gpio_config_t irq_conf;
 
   /* Initialize AXP202 IRQ pin as input pin. */
+  rtc_gpio_deinit(GPIO_NUM_35);
   irq_conf.intr_type = GPIO_INTR_NEGEDGE;
   irq_conf.pin_bit_mask = (1ULL << 35);
   irq_conf.mode = GPIO_MODE_INPUT;
@@ -174,4 +177,20 @@ bool twatch_pmu_is_userbtn_pressed(void)
   }
 
   return result;
+}
+
+/**
+ * twatch_pmu_deepsleep()
+ *
+ * Enable deep sleep. Configure GPIO 35 (AXP202 IRQ) to wake up
+ * the chip.
+ **/
+
+void twatch_pmu_deepsleep(void)
+{
+  /* Set GPIO 35 as wakeup signal. */
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
+
+  /* Go into deep sleep mode. */
+  esp_deep_sleep_start();
 }

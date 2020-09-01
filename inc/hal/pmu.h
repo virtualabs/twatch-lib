@@ -14,4 +14,7 @@ esp_err_t twatch_pmu_screen_power(bool enable);
 /* User button. */
 bool twatch_pmu_is_userbtn_pressed(void);
 
+/* Deep sleep */
+void twatch_pmu_deepsleep(void);
+
 #endif /* __INC_TWATCH_PMU_H */
