@@ -4,7 +4,7 @@ idf_component_register(
   SRCS
   "drivers/axp20x.c"
   "drivers/i2c.c"
-  "hal/pmu/pmu.c"
+  "hal/pmu.c"
 
   INCLUDE_DIRS "inc"
 
