@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.13)
 idf_component_register(
   SRCS
   "drivers/axp202/axp20x.c"
+  "drivers/i2c.c"
   "hal/pmu/pmu.c"
 
   INCLUDE_DIRS "inc"
