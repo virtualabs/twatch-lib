@@ -93,6 +93,7 @@ uint16_t _getRegistResult(uint8_t regh8, uint8_t regl4)
 
 void axpxx_i2c_init()
 {
+  /*
   i2c_config_t i2c_config = {
     .mode = I2C_MODE_MASTER,
     .sda_io_num = AXP202_SDA_PIN,
@@ -108,7 +109,8 @@ void axpxx_i2c_init()
   assert(res == ESP_OK);
   res = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
   assert(res == ESP_OK);
-
+  */
+  twatch_i2c_init();
 }
 
 void axpxx_readByte(uint8_t reg, uint8_t nbytes, uint8_t *data)
@@ -126,7 +128,8 @@ void axpxx_readByte(uint8_t reg, uint8_t nbytes, uint8_t *data)
   i2c_master_read_byte(cmd, data , I2C_MASTER_NACK);
   i2c_master_stop(cmd);
 
-  espErr = i2c_master_cmd_begin(AXP202_I2C_NUM, cmd, 10/portTICK_PERIOD_MS);
+  //espErr = i2c_master_cmd_begin(AXP202_I2C_NUM, cmd, 10/portTICK_PERIOD_MS);
+  espErr = twatch_i2c_master_cmd_begin(I2C_PRI, cmd, 10/portTICK_PERIOD_MS);
   assert(espErr==ESP_OK);
   i2c_cmd_link_delete(cmd);
 }
@@ -142,7 +145,8 @@ void axpxx_writeByte(uint8_t reg, uint8_t nbytes, uint8_t *data)
   //  i2c_master_start(cmd);
   i2c_master_write_byte(cmd, *data, true);
   i2c_master_stop(cmd);
-  espErr = i2c_master_cmd_begin(AXP202_I2C_NUM, cmd, 10/portTICK_PERIOD_MS);
+  //espErr = i2c_master_cmd_begin(AXP202_I2C_NUM, cmd, 10/portTICK_PERIOD_MS);
+  espErr = twatch_i2c_master_cmd_begin(I2C_PRI, cmd, 10/portTICK_PERIOD_MS);
   assert(espErr==ESP_OK);
   i2c_cmd_link_delete(cmd);
 }

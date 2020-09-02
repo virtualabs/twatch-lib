@@ -52,6 +52,8 @@ github:https://github.com/lewisxhe/AXP202X_Libraries
 #include <inttypes.h>
 #include <stdbool.h>
 
+#include "drivers/i2c.h"
+
 //! Chip Address
 #define AXP202_SLAVE_ADDRESS (0x35)
 #define AXP192_SLAVE_ADDRESS (0x34)
