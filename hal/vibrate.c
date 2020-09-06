@@ -60,6 +60,12 @@ void _twatch_vibration_task(void *parameter)
   vTaskDelete( NULL );
 }
 
+
+/**
+ * @brief Initialize vibrator
+ * @retval Always return ESP_OK
+ **/
+
 esp_err_t twatch_vibrate_init(void)
 {
   gpio_config_t motor;
@@ -72,6 +78,13 @@ esp_err_t twatch_vibrate_init(void)
   /* Initialized. */
   return ESP_OK;
 }
+
+
+/**
+ * @brief Enable vibrator for a specific duration.
+ * @param duration: duration in milliseconds
+ * @retval ESP_OK on success, ESP_FAIL otherwise
+ **/
 
 esp_err_t twatch_vibrate_vibrate(int duration)
 {
@@ -91,6 +104,14 @@ esp_err_t twatch_vibrate_vibrate(int duration)
     /* Cannot allocate memory. */
     return ESP_FAIL;
 }
+
+
+/**
+ * @brief Vibrate following a provided pattern
+ * @param pattern: array of vibrate_pattern_t structures
+ * @param length: number of vibrate_pattern_t structures in array
+ * @retval ESP_OK on success, ESP_FAIL otherwise
+ **/
 
 esp_err_t twatch_vibrate_pattern(vibrate_pattern_t *pattern, int length)
 {

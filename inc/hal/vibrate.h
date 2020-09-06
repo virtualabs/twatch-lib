@@ -12,6 +12,9 @@
 #include <inttypes.h>
 #include <stdbool.h>
 
+#define VIBRATE_ON  1
+#define VIBRATE_OFF 0
+
 typedef enum {
   VIBRATE_DURATION,
   VIBRATE_PATTERN
