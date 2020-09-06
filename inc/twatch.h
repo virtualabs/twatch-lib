@@ -3,11 +3,13 @@
  ******************************************************************************/
 
 /* Include power management HAL. */
- #include "hal/pmu.h"
+#include "hal/pmu.h"
 
- /* Include sound HAL. */
- #include "hal/audio.h"
+/* Include sound HAL. */
+#include "hal/audio.h"
 
- #include "drivers/ft6236.h"
+/* Include touch HAL. */
+#include "hal/touch.h"
 
- #include "hal/touch.h"
+/* Include vibrator HAL. */
+#include "hal/vibrate.h"

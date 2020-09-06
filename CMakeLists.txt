@@ -8,6 +8,7 @@ idf_component_register(
   "hal/audio.c"
   "hal/pmu.c"
   "hal/touch.c"
+  "hal/vibrate.c"
 
   INCLUDE_DIRS "inc"
 
