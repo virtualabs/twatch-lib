@@ -107,7 +107,7 @@ esp_err_t twatch_pmu_audio_power(bool enable)
 
 esp_err_t twatch_pmu_screen_power(bool enable)
 {
-  if (axpxx_setPowerOutPut(AXP202_LDO2, enable) == AXP_PASS)
+  if (axpxx_setPowerOutPut(AXP202_LDO2, (enable?1:0)) == AXP_PASS)
     return ESP_OK;
   else
     return ESP_FAIL;

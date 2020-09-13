@@ -12,13 +12,13 @@
 #define SOUND_DEFAULT_SAMPLE_RATE (44100)
 
 /* Initialize 16-bit sound system. */
-esp_err_t audio_init(int sample_rate);
+esp_err_t twatch_audio_init(int sample_rate);
 
 /* Send samples to sound system. */
-esp_err_t audio_send_samples(void *samples, size_t samples_size, size_t *p_bytes_written, TickType_t ticks_to_wait);
+esp_err_t twatch_audio_send_samples(void *samples, size_t samples_size, size_t *p_bytes_written, TickType_t ticks_to_wait);
 
 /* Deinitialize 16-bit sound system. */
-esp_err_t audio_deinit(void);
+esp_err_t twatch_audio_deinit(void);
 
 
 #endif /* __INC_AUDIO_H */

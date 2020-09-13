@@ -15,7 +15,7 @@ volatile int sample_rate = SOUND_DEFAULT_SAMPLE_RATE;
  * Initialize audio DAC interface (I2S).
  **/
 
-esp_err_t audio_init(int sample_rate)
+esp_err_t twatch_audio_init(int sample_rate)
 {
   esp_err_t result;
   i2s_config_t      ss_config;
@@ -77,7 +77,7 @@ esp_err_t audio_init(int sample_rate)
  * Send 2-channel 16-bit samples to audio DAC.
  **/
 
-esp_err_t audio_send_samples(void *samples, size_t samples_size, size_t *p_bytes_written, TickType_t ticks_to_wait)
+esp_err_t twatch_audio_send_samples(void *samples, size_t samples_size, size_t *p_bytes_written, TickType_t ticks_to_wait)
 {
   return i2s_write(
     SOUND_DEFAULT_I2S_PORT,
@@ -94,7 +94,7 @@ esp_err_t audio_send_samples(void *samples, size_t samples_size, size_t *p_bytes
  * Deinitialize audio DAC interface.
  **/
 
-esp_err_t audio_deinit(void)
+esp_err_t twatch_audio_deinit(void)
 {
   esp_err_t result;
 

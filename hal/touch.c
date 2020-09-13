@@ -188,7 +188,7 @@ esp_err_t twatch_touch_init(void)
  * @param ticks_to_wait: number of ticks to wait
  * @retval ESP_OK if an event has been retrieved, ESP_FAIL otherwise
  **/
- 
+
 esp_err_t twatch_get_touch_event(touch_event_t *event, TickType_t ticks_to_wait)
 {
   if (xQueueReceive(_touch_queue, event, ticks_to_wait))

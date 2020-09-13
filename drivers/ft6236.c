@@ -106,7 +106,7 @@ void ft6x36_init(uint16_t dev_addr) {
   /* Install our user button interrupt handler. */
   gpio_uninstall_isr_service();
   if (gpio_install_isr_service(0) != ESP_OK)
-    printf("[isr] Error while installing service\r\n");
+    printf("[isr2] Error while installing service\r\n");
   gpio_isr_handler_add(GPIO_NUM_38, _touch_interrupt_handler, NULL);
 
   if (!ft6236_initialized) {
