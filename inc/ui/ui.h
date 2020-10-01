@@ -1,0 +1,101 @@
+#ifndef __INC_TWATCH_UI_H
+#define __INC_TWATCH_UI_H
+
+#include <stdint.h>
+#include "drivers/st7789.h"
+#include "twatch.h"
+#include "img.h"
+
+/* TODO: move these constants into a 'screen' subpart ;) */
+#define SCREEN_WIDTH  240
+#define SCREEN_HEIGHT 240
+#define UI_ANIM_DELTA 40
+
+typedef enum {
+  UI_STATE_IDLE,
+  UI_STATE_MOVE_LEFT,
+  UI_STATE_MOVE_RIGHT
+} ui_state_machine;
+
+typedef struct tile_t;
+
+typedef int (*FDrawTile)(struct tile_t *p_tile);
+
+/**
+ * Tile base structure
+ **/
+
+typedef struct tTile {
+
+  /* Background color, 12bpp */
+  uint16_t background_color;
+
+  /* Offsets */
+  int offset_x;
+  int offset_y;
+
+  /* Links to other tiles */
+  struct tTile *p_right;
+  struct tTile *p_left;
+
+  /* User data */
+  void *p_user_data;
+
+  /* Reminder: by default the screen is 240x240 pixels */
+
+  /**
+   * Callbacks
+   **/
+
+  /**
+   * Draw screen callback. This callback is called when the UI needs to refresh
+   * this screen. Only the visible parts will be updated, depending on the offsets.
+   **/
+  FDrawTile pfn_draw_tile;
+
+} tile_t;
+
+/**
+ * User interface main structure
+ **/
+
+typedef struct {
+
+  /* State machine (animation). */
+  ui_state_machine state;
+  tile_t *p_from_tile;
+  tile_t *p_to_tile;
+
+  /* Pointer to current tile. */
+  tile_t *p_current_tile;
+
+} ui_t;
+
+
+
+/**
+ * Exports
+ **/
+
+/* Main UI */
+void ui_init(void);
+void ui_select_tile(tile_t *p_tile);
+void ui_process_events(void);
+
+/* Tiles */
+void tile_init(tile_t *p_tile, void *p_user_data);
+int tile_draw(tile_t *p_tile);
+void tile_set_drawfunc(tile_t *p_tile, FDrawTile pfn_drawfunc);
+void *tile_get_user_data(tile_t *p_tile);
+
+/* Drawing primitives for tiles. */
+void tile_set_pixel(tile_t *p_tile, int x, int y, uint16_t pixel);
+void tile_fill_region(tile_t *p_tile, int x, int y, int width, int height, uint16_t color);
+void tile_draw_line(tile_t *p_tile, int x0, int y0, int x1, int y1, uint16_t color);
+void tile_bitblt(tile_t *p_tile, image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y);
+
+/* Tile linkage */
+void tile_link_right(tile_t *p_tile, tile_t *p_right_tile);
+void tile_link_left(tile_t *p_tile, tile_t *p_left_tile);
+
+#endif /* __INC_TWATCH_UI_H */
