@@ -40,6 +40,8 @@
 #define ST7789_CMD_PTLAR      0x30
 #define ST7789_CMD_MADCTL     0x36
 #define ST7789_CMD_COLMOD     0x3A
+#define ST7789_CMD_WRDISBV    0x51
+#define ST7789_CMD_WRCTRLD    0x53
 #define ST7789_CMD_FRMCTR1    0xB1
 #define ST7789_CMD_FRMCTR2    0xB2
 #define ST7789_CMD_FRMCTR3    0xB3
@@ -69,6 +71,7 @@
 
 esp_err_t st7789_init(void);
 void st7789_backlight_on(void);
+void st7789_backlight_set(int backlight_level);
 void st7789_blank(void);
 void st7789_commit_fb(void);
 void st7789_set_pixel(int x, int y, uint16_t pixel);

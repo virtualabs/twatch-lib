@@ -17,6 +17,25 @@
 #define P2MASKP   0x00FF0F00
 
 spi_device_handle_t spi;
+ledc_timer_config_t backlight_timer = {
+  .duty_resolution = LEDC_TIMER_13_BIT, // resolution of PWM duty
+  .freq_hz = 5000,                      // frequency of PWM signal
+  .speed_mode = LEDC_HIGH_SPEED_MODE,           // timer mode
+  .timer_num = LEDC_TIMER_0,            // timer index
+  .clk_cfg = LEDC_AUTO_CLK,              // Auto select the source clock
+};
+
+ledc_channel_config_t backlight_config = {
+  .channel    = LEDC_CHANNEL_0,
+  .duty       = 0,
+  .gpio_num   = ST7789_BL_IO,
+  .speed_mode = LEDC_HIGH_SPEED_MODE,
+  .hpoint     = 0,
+  .timer_sel  = LEDC_TIMER_0
+};
+
+bool g_inv_x = true;
+bool g_inv_y = true;
 
 DRAM_ATTR static uint8_t databuf[16];
 
@@ -42,7 +61,13 @@ DRAM_ATTR static const init_cmd_t st_init_cmds[]={
   {ST7789_CMD_WAIT, {0}, 10},
   {ST7789_CMD_DISPON, {0x00}, 0},
   {ST7789_CMD_WAIT, {0}, 250},
+  {0,{0}, 0xff}
 };
+
+/**
+ * @brief Wait for given milliseconds
+ * @param milliseconds: nimber of milliseconds to wait
+ **/
 
 void st7789_wait(int milliseconds)
 {
@@ -87,6 +112,7 @@ esp_err_t st7789_send_data_byte(const uint8_t byte)
   return st7789_send_data(&byte, 1);
 }
 
+
 void st7789_init_display(void)
 {
   int cmd = 0;
@@ -106,10 +132,12 @@ void st7789_init_display(void)
   }
 }
 
+
 /**
  * @brief Initializes the ST7789 display
  * @retval ESP_OK on success, ESP_FAIL otherwise.
  **/
+
 esp_err_t st7789_init(void)
 {
   spi_bus_config_t bus_config = {
@@ -121,14 +149,15 @@ esp_err_t st7789_init(void)
         .max_transfer_sz=ST779_PARALLEL_LINES*240*2+8,
     };
 
-    spi_device_interface_config_t devcfg={
-          .clock_speed_hz=ST7789_SPI_SPEED,
-          .mode=0,
-          .spics_io_num=ST7789_SPI_CS_IO,
-          .queue_size=7,                          //We want to be able to queue 7 transactions at a time
-          .pre_cb=st7789_pre_transfer_callback,  //Specify pre-transfer callback to handle D/C line
-          .flags=SPI_DEVICE_HALFDUPLEX|SPI_DEVICE_NO_DUMMY
-      };
+  spi_device_interface_config_t devcfg={
+        .clock_speed_hz=ST7789_SPI_SPEED,
+        .mode=0,
+        .spics_io_num=ST7789_SPI_CS_IO,
+        .queue_size=7,                          //We want to be able to queue 7 transactions at a time
+        .pre_cb=st7789_pre_transfer_callback,  //Specify pre-transfer callback to handle D/C line
+        .flags=SPI_DEVICE_HALFDUPLEX|SPI_DEVICE_NO_DUMMY
+    };
+
 
   /* Initialize our SPI interface. */
   if (spi_bus_initialize(HSPI_HOST, &bus_config, ST7789_DMA_CHAN) == ESP_OK)
@@ -139,9 +168,18 @@ esp_err_t st7789_init(void)
         gpio_pad_select_gpio(ST7789_BL_IO);
         gpio_pad_select_gpio(ST7789_SPI_DC_IO);
         gpio_pad_select_gpio(ST7789_SPI_CS_IO);
-        gpio_set_direction(ST7789_SPI_DC_IO, GPIO_MODE_OUTPUT);
         gpio_set_direction(ST7789_BL_IO, GPIO_MODE_OUTPUT);
+        gpio_set_direction(ST7789_SPI_DC_IO, GPIO_MODE_OUTPUT);
         gpio_set_direction(ST7789_SPI_CS_IO, GPIO_MODE_OUTPUT);
+
+        /* Configure backlight for PWM (light control) */
+        ledc_timer_config(&backlight_timer);
+        ledc_channel_config(&backlight_config);
+
+        /* Set default duty cycle (0, backlight is off). */
+        ledc_set_duty(backlight_config.speed_mode, backlight_config.channel, 5000);
+        ledc_update_duty(backlight_config.speed_mode, backlight_config.channel);
+
         vTaskDelay(100 / portTICK_PERIOD_MS);
 
         /* Send init commands. */
@@ -156,10 +194,29 @@ esp_err_t st7789_init(void)
     return ESP_FAIL;
 }
 
+
+/**
+ * @brief Set screen backlight to max.
+ **/
+
 void st7789_backlight_on(void)
 {
-  gpio_set_level(ST7789_BL_IO, 1);
+  ledc_set_duty(backlight_config.speed_mode, backlight_config.channel, 5000);
+  ledc_update_duty(backlight_config.speed_mode, backlight_config.channel);
 }
+
+
+/**
+ * @brief Set screen backlight level.
+ * @param backlight_level, from 0 to 5000
+ **/
+
+void st7789_backlight_set(int backlight_level)
+{
+  ledc_set_duty(backlight_config.speed_mode, backlight_config.channel, backlight_level);
+  ledc_update_duty(backlight_config.speed_mode, backlight_config.channel);
+}
+
 
 void st7789_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
@@ -183,6 +240,11 @@ void st7789_set_fb(uint8_t *frame)
   memcpy(framebuffer, frame, FB_SIZE);
 }
 
+
+/**
+ * @brief Send framebuffer to screen.
+ **/
+
 void st7789_commit_fb(void)
 {
   int i;
@@ -193,10 +255,23 @@ void st7789_commit_fb(void)
   }
 }
 
+
+/**
+ * @brief Fill screen with default color (black)
+ **/
+
 void st7789_blank(void)
 {
   memset(framebuffer, 0, FB_SIZE);
 }
+
+
+/**
+ * @brief Set a pixel color in framebuffer
+ * @param x: pixel X coordinate
+ * @param y: pixel Y coordinate
+ * @param color: pixel color (12 bits)
+ **/
 
 void st7789_set_pixel(int x, int y, uint16_t color)
 {
@@ -206,6 +281,12 @@ void st7789_set_pixel(int x, int y, uint16_t color)
   /* Sanity checks. */
   if ((x<0) || (x>=WIDTH) || (y<=0) || (y>=HEIGHT))
     return;
+
+  /* Invert if required. */
+  if (g_inv_x)
+    x = WIDTH - x;
+  if (g_inv_y)
+    y = HEIGHT - y;
 
   /* Compute pixel position in our framebuffer. */
   fb_blk = (((y*WIDTH + x)/2)*2);
@@ -218,22 +299,6 @@ void st7789_set_pixel(int x, int y, uint16_t color)
     *ppixel = (*ppixel & 0xffff0f00) | ((color & 0x00ff) | (color&0xf00)<<4);
   else
     *ppixel = (*ppixel & 0xff00f0ff) | (((color&0xf0)>>4) | (color&0xf00) | (color&0x0f)<<12) ;
-
-
-  //fb_blk_pix = (x%2)?1:0;
-  #if 0
-  if (fb_blk_pix == 0)
-  {
-    framebuffer[fb_blk_off] = (r&0x0f)<<4 | (g&0x0f);
-    framebuffer[fb_blk_off+1] = (framebuffer[fb_blk_off+1]&0x0F) | ((b&0x0f)<<4);
-  }
-  else
-  {
-    framebuffer[fb_blk_off+1] = (framebuffer[fb_blk_off+1]&0xF0) | ((r&0x0f));
-    framebuffer[fb_blk_off+2] = (g&0x0f)<<4 | (b&0x0f);
-  }
-  #endif
-
 }
 
 
