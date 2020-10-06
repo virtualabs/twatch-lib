@@ -275,8 +275,9 @@ void st7789_blank(void)
 
 void st7789_set_pixel(int x, int y, uint16_t color)
 {
-  int fb_blk, fb_blk_off, fb_blk_pix;
+  int fb_blk, fb_blk_off;
   uint32_t *ppixel;
+  uint32_t *ppixel2;
 
   /* Sanity checks. */
   if ((x<0) || (x>=WIDTH) || (y<=0) || (y>=HEIGHT))
@@ -288,17 +289,67 @@ void st7789_set_pixel(int x, int y, uint16_t color)
   if (g_inv_y)
     y = HEIGHT - y;
 
-  /* Compute pixel position in our framebuffer. */
-  fb_blk = (((y*WIDTH + x)/2)*2);
-  fb_blk_off = (fb_blk*3)/2;
-  fb_blk_pix = (x%2)?1:0;
+  /* 4-pixel block index */
+  fb_blk = (y*WIDTH+x)/4;
+  /* Compute address of our 4-pixel block (stored on 6 bytes). */
+  fb_blk_off = fb_blk*6;
 
-  /* Direct access to framebuffer and optimizations with 32-bit values. */
-  ppixel = (uint32_t*)(&framebuffer[fb_blk_off + fb_blk_pix]);
-  if (x%2 == 0)
-    *ppixel = (*ppixel & 0xffff0f00) | ((color & 0x00ff) | (color&0xf00)<<4);
-  else
-    *ppixel = (*ppixel & 0xff00f0ff) | (((color&0xf0)>>4) | (color&0xf00) | (color&0x0f)<<12) ;
+  /* Modify pixel by 4-byte blocks, as ESP32 does not allow byte-level access. */
+  switch(x%4)
+  {
+    /**
+     * Case 0: pixel is stored in byte 0 and 1 of a 4-byte dword.
+     * pixel is 0B RG
+     * RG BX XX XX
+     **/
+    case 0:
+      {
+        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
+        *ppixel = (*ppixel & 0xffff0f00) | (color & 0x00ff) | ((color&0xf00)<<4);
+      }
+      break;
+
+    /**
+     * Case 1: pixel is stored in byte 1 and 2 of a 4-byte dword.
+     * pixel is 0B RG
+     * XX XR GB XX
+     **/
+
+    case 1:
+      {
+        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
+        *ppixel = (*ppixel & 0xfff00f0ff) | (color&0xf0)<<4 | (color&0xf)<<20 | (color&0xf00)<<8;
+      }
+      break;
+
+    /**
+     * Case 2: pixel is stored in byte 3 and 4 of a double 4-byte dword.
+     * pixel is 0B RG
+     * XX XX XX RG | BX XX XX XX
+     **/
+
+    case 2:
+      {
+        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
+        ppixel2 = (uint32_t *)(&framebuffer[fb_blk_off+4]);
+        *ppixel = (*ppixel & 0x00ffffff) | (color&0xff)<<24;
+        *ppixel2 = (*ppixel2 & 0xffffff0f) | (color&0xf00)>>4;
+      }
+      break;
+
+    /**
+     * Case 3: pixel is stored in byte 4 and 5 of a double 4-byte dword.
+     * pixel is 0B RG
+     * XX XX XX XX | XR GB XX XX
+     **/
+
+    case 3:
+      {
+        ppixel = (uint32_t *)(&framebuffer[fb_blk_off+4]);
+        *ppixel = (*ppixel & 0xffff00f0) | (color&0xf0)>>4 | (color&0xf)<<12 | (color&0xf00);
+      }
+      break;
+  }
 }
 
 
