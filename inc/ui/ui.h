@@ -14,8 +14,15 @@
 typedef enum {
   UI_STATE_IDLE,
   UI_STATE_MOVE_LEFT,
-  UI_STATE_MOVE_RIGHT
+  UI_STATE_MOVE_RIGHT,
+  UI_STATE_MOVE_UP,
+  UI_STATE_MOVE_DOWN
 } ui_state_machine;
+
+typedef enum {
+  TILE_MAIN,
+  TILE_SECONDARY
+} ui_tile_type_t;
 
 typedef struct tile_t;
 
@@ -34,14 +41,17 @@ typedef struct tTile {
   int offset_x;
   int offset_y;
 
+  /* Type */
+  ui_tile_type_t t_type;
+
   /* Links to other tiles */
   struct tTile *p_right;
   struct tTile *p_left;
+  struct tTile *p_top;
+  struct tTile *p_bottom;
 
   /* User data */
   void *p_user_data;
-
-  /* Reminder: by default the screen is 240x240 pixels */
 
   /**
    * Callbacks
@@ -87,6 +97,7 @@ void tile_init(tile_t *p_tile, void *p_user_data);
 int tile_draw(tile_t *p_tile);
 void tile_set_drawfunc(tile_t *p_tile, FDrawTile pfn_drawfunc);
 void *tile_get_user_data(tile_t *p_tile);
+void tile_draw_widgets(tile_t *p_tile);
 
 /* Drawing primitives for tiles. */
 void tile_set_pixel(tile_t *p_tile, int x, int y, uint16_t pixel);
@@ -97,5 +108,8 @@ void tile_bitblt(tile_t *p_tile, image_t *source, int source_x, int source_y, in
 /* Tile linkage */
 void tile_link_right(tile_t *p_tile, tile_t *p_right_tile);
 void tile_link_left(tile_t *p_tile, tile_t *p_left_tile);
+void tile_link_top(tile_t *p_tile, tile_t *p_top_tile);
+void tile_link_bottom(tile_t *p_tile, tile_t *p_bottom_tile);
+
 
 #endif /* __INC_TWATCH_UI_H */

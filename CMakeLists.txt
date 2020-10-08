@@ -14,6 +14,11 @@ idf_component_register(
   "hal/touch.c"
   "hal/vibrate.c"
 
+  "img/img.c"
+  "ui/ui.c"
+  "ui/widget.c"
+  "ui/image.c"
+
   INCLUDE_DIRS "inc"
 
 )

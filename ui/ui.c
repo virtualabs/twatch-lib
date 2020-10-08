@@ -1,4 +1,5 @@
 #include "ui/ui.h"
+#include "ui/widget.h"
 
 /**
  * Main interface structure.
@@ -40,38 +41,104 @@ void ui_select_tile(tile_t *p_tile)
 void ui_process_events(void)
 {
   touch_event_t touch;
+  tile_t *p_main_tile;
 
   /* Process touch events if we are not in an animation. */
   if (g_ui.state == UI_STATE_IDLE)
   {
     if (twatch_get_touch_event(&touch, 10) == ESP_OK)
     {
-      if (touch.type == TOUCH_EVENT_SWIPE_RIGHT)
+      switch(touch.type)
       {
-        /* Can we move to the left tile ? */
-        if (g_ui.p_current_tile->p_left != NULL)
-        {
-          /* Yes, setup animation. */
-          g_ui.state = UI_STATE_MOVE_LEFT;
-          g_ui.p_from_tile = g_ui.p_current_tile;
-          g_ui.p_to_tile = g_ui.p_current_tile->p_left;
-          g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
-          g_ui.p_to_tile->offset_y = 0;
-        }
-      }
+        case TOUCH_EVENT_SWIPE_RIGHT:
+          {
+            /* Can we move to the left tile ? */
+            if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
+            {
+              /* Get the main tile. */
+              p_main_tile = g_ui.p_current_tile;
+              while (p_main_tile->p_top != NULL)
+                p_main_tile = p_main_tile->p_top;
+            }
+            else
+            {
+              /* The current tile is a main tile, nothing to do. */
+              p_main_tile = g_ui.p_current_tile;
+            }
 
-      if (touch.type == TOUCH_EVENT_SWIPE_LEFT)
-      {
-        /* Can we move to the left tile ? */
-        if (g_ui.p_current_tile->p_right != NULL)
-        {
-          /* Yes, setup animation. */
-          g_ui.state = UI_STATE_MOVE_RIGHT;
-          g_ui.p_from_tile = g_ui.p_current_tile;
-          g_ui.p_to_tile = g_ui.p_current_tile->p_right;
-          g_ui.p_to_tile->offset_x = SCREEN_WIDTH;
-          g_ui.p_to_tile->offset_y = 0;
-        }
+            if (p_main_tile->p_left != NULL)
+            {
+              /* Yes, setup animation. */
+              g_ui.state = UI_STATE_MOVE_LEFT;
+              g_ui.p_from_tile = g_ui.p_current_tile;
+              g_ui.p_to_tile = p_main_tile->p_left;
+              g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
+              g_ui.p_to_tile->offset_y = 0;
+            }
+          }
+          break;
+
+        case TOUCH_EVENT_SWIPE_LEFT:
+          {
+            /* Can we move to the left tile ? */
+            if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
+            {
+              /* Get the main tile. */
+              p_main_tile = g_ui.p_current_tile;
+              while (p_main_tile->p_top != NULL)
+                p_main_tile = p_main_tile->p_top;
+            }
+            else
+            {
+              /* The current tile is a main tile, nothing to do. */
+              p_main_tile = g_ui.p_current_tile;
+            }
+
+            /* Can we move to the left tile ? */
+            if (p_main_tile->p_right != NULL)
+            {
+              /* Yes, setup animation. */
+              g_ui.state = UI_STATE_MOVE_RIGHT;
+              g_ui.p_from_tile = g_ui.p_current_tile;
+              g_ui.p_to_tile = p_main_tile->p_right;
+              g_ui.p_to_tile->offset_x = SCREEN_WIDTH;
+              g_ui.p_to_tile->offset_y = 0;
+            }
+          }
+          break;
+
+        case TOUCH_EVENT_SWIPE_UP:
+          {
+            /* Can we move to the bottom tile ? */
+            if (g_ui.p_current_tile->p_bottom != NULL)
+            {
+              /* Yes, setup animation. */
+              g_ui.state = UI_STATE_MOVE_DOWN;
+              g_ui.p_from_tile = g_ui.p_current_tile;
+              g_ui.p_to_tile = g_ui.p_current_tile->p_bottom;
+              g_ui.p_to_tile->offset_x = 0;
+              g_ui.p_to_tile->offset_y = SCREEN_HEIGHT;
+            }
+          }
+          break;
+
+        case TOUCH_EVENT_SWIPE_DOWN:
+          {
+            /* Can we move to the top tile ? */
+            if (g_ui.p_current_tile->p_top != NULL)
+            {
+              /* Yes, setup animation. */
+              g_ui.state = UI_STATE_MOVE_UP;
+              g_ui.p_from_tile = g_ui.p_current_tile;
+              g_ui.p_to_tile = g_ui.p_current_tile->p_top;
+              g_ui.p_to_tile->offset_x = 0;
+              g_ui.p_to_tile->offset_y = -SCREEN_HEIGHT;
+            }
+          }
+          break;
+
+        case TOUCH_EVENT_TAP:
+          break;
       }
     }
   }
@@ -126,11 +193,50 @@ void ui_process_events(void)
       }
       break;
 
+    /* Animate move to right tile. */
+    case UI_STATE_MOVE_DOWN:
+      {
+        g_ui.p_to_tile->offset_y -= UI_ANIM_DELTA;
+        g_ui.p_from_tile->offset_y -= UI_ANIM_DELTA;
+
+        /* Draw tiles. */
+        tile_draw(g_ui.p_from_tile);
+        tile_draw(g_ui.p_to_tile);
+
+        /* Stop condition. */
+        if (g_ui.p_to_tile->offset_y == 0)
+        {
+          g_ui.state = UI_STATE_IDLE;
+          g_ui.p_current_tile = g_ui.p_to_tile;
+        }
+      }
+      break;
+
+    /* Animate move to left tile. */
+    case UI_STATE_MOVE_UP:
+      {
+        g_ui.p_to_tile->offset_y += UI_ANIM_DELTA;
+        g_ui.p_from_tile->offset_y += UI_ANIM_DELTA;
+
+        /* Draw tiles. */
+        tile_draw(g_ui.p_from_tile);
+        tile_draw(g_ui.p_to_tile);
+
+        /* Stop condition. */
+        if (g_ui.p_to_tile->offset_y == 0)
+        {
+          g_ui.state = UI_STATE_IDLE;
+          g_ui.p_current_tile = g_ui.p_to_tile;
+        }
+      }
+      break;
+
     default:
       break;
   }
   st7789_commit_fb();
 }
+
 
 /**********************************************************************
  * Drawing primitives for tiles.
@@ -224,10 +330,10 @@ void tile_bitblt(tile_t *p_tile, image_t *source, int source_x, int source_y, in
   );
 }
 
+
 /**
  * Default tile drawing routine.
  **/
-
 
 int _tile_default_draw(tile_t *p_tile)
 {
@@ -267,15 +373,8 @@ int _tile_default_draw(tile_t *p_tile)
     p_tile->background_color
   );
 
-  /* TODO: Debug only, remove
-  st7789_fill_region(
-    p_tile->offset_x+60,
-    p_tile->offset_y+60,
-    120,
-    120,
-    p_tile->background_color
-  );
-  */
+  /* Draw widgets. */
+  tile_draw_widgets(p_tile);
 
   /* Success. */
   return 0;
@@ -292,10 +391,13 @@ int _tile_default_draw(tile_t *p_tile)
 void tile_init(tile_t *p_tile, void *p_user_data)
 {
   /* Initialize struct members. */
+  p_tile->t_type = TILE_MAIN;
   p_tile->offset_x = 0;
   p_tile->offset_y = 0;
   p_tile->p_left = NULL;
   p_tile->p_right = NULL;
+  p_tile->p_top = NULL;
+  p_tile->p_bottom = NULL;
   p_tile->p_user_data = p_user_data;
   p_tile->background_color = RGB(0,0,0);
 
@@ -342,7 +444,7 @@ int tile_draw(tile_t *p_tile)
 void tile_link_right(tile_t *p_tile, tile_t *p_right_tile)
 {
   /* Sanity check. */
-  if ((p_tile == NULL) || (p_right_tile == NULL))
+  if ((p_tile == NULL) || (p_right_tile == NULL) || (p_right_tile->t_type != TILE_MAIN))
     return;
 
   /* Link tiles. */
@@ -354,10 +456,62 @@ void tile_link_right(tile_t *p_tile, tile_t *p_right_tile)
 void tile_link_left(tile_t *p_tile, tile_t *p_left_tile)
 {
   /* Sanity check. */
-  if ((p_tile == NULL) || (p_left_tile == NULL))
+  if ((p_tile == NULL) || (p_left_tile == NULL)  || (p_left_tile->t_type != TILE_MAIN))
     return;
 
   /* Link tiles. */
   p_tile->p_left = p_left_tile;
   p_left_tile->p_right = p_tile;
 }
+
+void tile_link_top(tile_t *p_tile, tile_t *p_top_tile)
+{
+  /* Sanity check. */
+  if ((p_tile == NULL) || (p_top_tile == NULL))
+    return;
+
+  /* Link tiles. */
+  p_tile->p_top = p_top_tile;
+  p_top_tile->p_bottom = p_tile;
+
+  /* Set tile as secondary. */
+  p_top_tile->t_type = TILE_SECONDARY;
+}
+
+
+void tile_link_bottom(tile_t *p_tile, tile_t *p_bottom_tile)
+{
+  /* Sanity check. */
+  if ((p_tile == NULL) || (p_bottom_tile == NULL))
+    return;
+
+  /* Link tiles. */
+  p_tile->p_bottom = p_bottom_tile;
+  p_bottom_tile->p_top = p_tile;
+
+  /* Set tile as secondary. */
+  p_bottom_tile->t_type = TILE_SECONDARY;
+}
+
+/**************************************************
+ * Widget related functions
+ *************************************************/
+
+ void tile_draw_widgets(tile_t *p_tile)
+ {
+   widget_t *p_widget;
+
+   /*
+    * Iterate over all the widgets, and display only those belonging to
+    * the specified tile.
+    */
+  p_widget = widget_enum_first();
+  while (p_widget != NULL)
+  {
+    if (widget_get_tile(p_widget) == p_tile)
+      widget_draw(p_widget);
+
+    /* Go to next widget. */
+    p_widget = widget_enum_next(p_widget);
+  }
+ }
