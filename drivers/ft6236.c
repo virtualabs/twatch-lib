@@ -104,7 +104,7 @@ void ft6x36_init(uint16_t dev_addr) {
   gpio_config(&irq_conf);
 
   /* Install our user button interrupt handler. */
-  gpio_uninstall_isr_service();
+  //gpio_uninstall_isr_service();
   if (gpio_install_isr_service(0) != ESP_OK)
     printf("[isr2] Error while installing service\r\n");
   gpio_isr_handler_add(GPIO_NUM_38, _touch_interrupt_handler, NULL);
@@ -136,6 +136,8 @@ void ft6x36_init(uint16_t dev_addr) {
 
     ft6x06_i2c_read8(dev_addr, FT6X36_OPMODE_REG, &data_buf);
     ESP_LOGI(TAG, "\tOperating mode: 0x%02x", data_buf);
+
+    ft6x36_set_touch_threshold(0x0);
   }
 }
 
@@ -191,7 +193,7 @@ bool ft6x36_read(ft6236_touch_t *touch) {
 
 bool ft6x36_read_touch_data(ft6236_touch_t *touch_data)
 {
-  if(xSemaphoreTake(touch_sem, 1000/portTICK_RATE_MS)){
+  if(xSemaphoreTake(touch_sem, 10/portTICK_RATE_MS)){
     ft6x36_read(touch_data);
     return true;
   }
@@ -221,6 +223,11 @@ esp_err_t ft6x36_enable_monitor_mode(void)
 {
   uint8_t mode = FT6X36_CTRL_KEEP_AUTO_SWITCH_MONITOR_MODE;
   return ft6x06_i2c_write8(current_dev_addr, FT6X36_CTRL_REG, mode);
+}
+
+esp_err_t ft6x36_set_touch_threshold(uint8_t threshold)
+{
+  return ft6x06_i2c_write8(current_dev_addr, FT6X36_TH_GROUP_REG, threshold);
 }
 
 
