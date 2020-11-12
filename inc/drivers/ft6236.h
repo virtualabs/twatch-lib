@@ -185,6 +185,7 @@ esp_err_t ft6x36_set_min_distance_move_lr(uint8_t distance);
 esp_err_t ft6x36_get_min_distance_move_lr(uint8_t *distance);
 esp_err_t ft6x36_set_min_distance_move_ud(uint8_t distance);
 esp_err_t ft6x36_get_min_distance_move_lr(uint8_t *distance);
+esp_err_t ft6x36_set_touch_threshold(uint8_t threshold);
 
 
 #endif /* __INC_DRIVER_FT6236_H */

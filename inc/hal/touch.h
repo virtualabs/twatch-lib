@@ -1,8 +1,10 @@
 #ifndef __INC_TWATCH_TOUCH_H
 #define __INC_TWATCH_TOUCH_H
 
+//#define TOUCH_PRESS 2
 #define TOUCH_RELEASE 0
 #define TOUCH_PRESS 2
+
 #define TOUCH_TAP_MAX_TIME  500
 #define TOUCH_TAP_MAX_DIST  5
 #define TOUCH_SWIPE_MIN_DIST 10
@@ -17,6 +19,8 @@ typedef enum {
 } touch_state_t;
 
 typedef enum {
+  TOUCH_EVENT_PRESS,
+  TOUCH_EVENT_RELEASE,
   TOUCH_EVENT_TAP,
   TOUCH_EVENT_SWIPE_LEFT,
   TOUCH_EVENT_SWIPE_RIGHT,
@@ -54,5 +58,6 @@ esp_err_t twatch_touch_init(void);
 
 /* Retrieve Touch event (if any). */
 esp_err_t twatch_get_touch_event(touch_event_t *event, TickType_t ticks_to_wait);
+//esp_err_t twatch_get_touch_event(touch_event_t **event, TickType_t ticks_to_wait);
 
 #endif /* __INC_TWATCH_TOUCH_H */

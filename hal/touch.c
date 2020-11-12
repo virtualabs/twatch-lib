@@ -5,7 +5,7 @@
 #define TOUCH_TAG "[hal::touch]"
 
 ft6236_touchpoint_t first, last;
-touch_state_t touch_state;
+volatile touch_state_t touch_state;
 float velocity;
 int16_t dx,dy;
 double distance;
@@ -26,7 +26,6 @@ unsigned long IRAM_ATTR millis()
 
 void _touch_report_event(touch_event_t *event)
 {
-  /* Send message, don't block if queue is full. */
   xQueueSend(_touch_queue, event, 0);
 }
 
@@ -39,7 +38,7 @@ void _touch_report_event(touch_event_t *event)
 void _process_touch_data(ft6236_touch_t *touch)
 {
   touch_event_t event;
-
+  
   switch(touch_state)
   {
     case TOUCH_STATE_CLEAR:
@@ -52,6 +51,13 @@ void _process_touch_data(ft6236_touch_t *touch)
         first.y = touch->touches[0].y;
         touch_start_ms = millis();
         touch_state = TOUCH_STATE_PRESS;
+
+        /* Notify touch press. */
+        event.type = TOUCH_EVENT_PRESS;
+        event.coords.x = first.x;
+        event.coords.y = first.y;
+        event.velocity = 0.0;
+        _touch_report_event(&event);
       }
     }
     break;
@@ -61,6 +67,14 @@ void _process_touch_data(ft6236_touch_t *touch)
       /* Is it released ? */
       if (touch->touches[0].event == TOUCH_RELEASE)
       {
+        /* Notify release. */
+        event.type = TOUCH_EVENT_RELEASE;
+        event.coords.x = last.x;
+        event.coords.y = last.y;
+        event.velocity = 0.0;
+        _touch_report_event(&event);
+
+
         /* If touch lasts less than 500ms, then it is a tap ! */
         touch_stop_ms = millis();
 
@@ -171,6 +185,9 @@ esp_err_t twatch_touch_init(void)
 {
   /* Create event queue. */
   _touch_queue  = xQueueCreate(10, sizeof(touch_event_t));
+
+  /* Initialize touch state. */
+  touch_state = TOUCH_STATE_CLEAR;
 
   /* Initialize our FT6236. */
   ft6x36_init(FT6236_I2C_SLAVE_ADDR);
