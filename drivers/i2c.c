@@ -68,9 +68,13 @@ esp_err_t twatch_i2c_master_cmd_begin(i2c_bus_t bus, i2c_cmd_handle_t cmd, TickT
   /* Send command to the right I2C bus. */
   if ((bus == I2C_PRI) || (bus == I2C_SEC))
   {
-    xSemaphoreTakeRecursive(i2c_sems[bus], portMAX_DELAY);
-    result = i2c_master_cmd_begin((bus==I2C_PRI)?I2C_NUM_0:I2C_NUM_1, cmd, ticks_to_wait);
-    xSemaphoreGiveRecursive(i2c_sems[bus]);
+    if (xSemaphoreTakeRecursive(i2c_sems[bus], portMAX_DELAY) == pdTRUE)
+    {
+      result = i2c_master_cmd_begin((bus==I2C_PRI)?I2C_NUM_0:I2C_NUM_1, cmd, ticks_to_wait);
+      xSemaphoreGiveRecursive(i2c_sems[bus]);
+    }
+    else
+      result = ESP_FAIL;
 
     /* Return result. */
     return result;
@@ -104,9 +108,13 @@ esp_err_t twatch_i2c_writeBytes(
   /* Send command to the right I2C bus. */
   if ((bus == I2C_PRI) || (bus == I2C_SEC))
   {
-    xSemaphoreTakeRecursive(i2c_sems[bus], portMAX_DELAY);
-    result = i2c_master_cmd_begin((bus==I2C_PRI)?I2C_NUM_0:I2C_NUM_1, i2c_cmd, ticks_to_wait);
-    xSemaphoreGiveRecursive(i2c_sems[bus]);
+    if (xSemaphoreTakeRecursive(i2c_sems[bus], portMAX_DELAY) == pdTRUE)
+    {
+      result = i2c_master_cmd_begin((bus==I2C_PRI)?I2C_NUM_0:I2C_NUM_1, i2c_cmd, ticks_to_wait);
+      xSemaphoreGiveRecursive(i2c_sems[bus]);
+    }
+    else
+      result = ESP_FAIL;
 
     #if 0
     for (int j=0; j<len; j++)
@@ -160,17 +168,13 @@ esp_err_t twatch_i2c_readBytes(
   /* Send command to the right I2C bus. */
   if ((bus == I2C_PRI) || (bus == I2C_SEC))
   {
-    xSemaphoreTakeRecursive(i2c_sems[bus], portMAX_DELAY);
-    result = i2c_master_cmd_begin((bus==I2C_PRI)?I2C_NUM_0:I2C_NUM_1, i2c_cmd, ticks_to_wait);
-    xSemaphoreGiveRecursive(i2c_sems[bus]);
-
-    #if 0
-    for (int j=0; j<len; j++)
+    if (xSemaphoreTakeRecursive(i2c_sems[bus], portMAX_DELAY) == pdTRUE)
     {
-      printf("%02x ", data[j]);
+      result = i2c_master_cmd_begin((bus==I2C_PRI)?I2C_NUM_0:I2C_NUM_1, i2c_cmd, ticks_to_wait);
+      xSemaphoreGiveRecursive(i2c_sems[bus]);
     }
-    printf("\r\n");
-    #endif
+    else
+      result = ESP_FAIL;
 
     i2c_cmd_link_delete(i2c_cmd);
 

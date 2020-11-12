@@ -34,12 +34,13 @@ ledc_channel_config_t backlight_config = {
   .timer_sel  = LEDC_TIMER_0
 };
 
-bool g_inv_x = true;
-bool g_inv_y = true;
+const bool g_inv_x = true;
+const bool g_inv_y = true;
 
 DRAM_ATTR static uint8_t databuf[16];
 
 /* Framebuffer. We need one more byte to handle pixels with 32-bit values. */
+__attribute__ ((aligned(4)))
 DRAM_ATTR static uint8_t framebuffer[FB_SIZE];
 
 typedef struct {
@@ -280,7 +281,7 @@ void st7789_set_pixel(int x, int y, uint16_t color)
   uint32_t *ppixel2;
 
   /* Sanity checks. */
-  if ((x<0) || (x>=WIDTH) || (y<=0) || (y>=HEIGHT))
+  if ((x<0) || (x>=WIDTH) || (y<0) || (y>=HEIGHT))
     return;
 
   /* Invert if required. */
@@ -294,6 +295,10 @@ void st7789_set_pixel(int x, int y, uint16_t color)
   /* Compute address of our 4-pixel block (stored on 6 bytes). */
   fb_blk_off = fb_blk*6;
 
+  //printf("[enter setpixel] (%d,%d) color %03x\r\n", x,y,color);
+  //printf(" fb_blk=%d\r\n", fb_blk);
+  //printf(" fb_blk_off=%d\r\n", fb_blk_off);
+
   /* Modify pixel by 4-byte blocks, as ESP32 does not allow byte-level access. */
   switch(x%4)
   {
@@ -305,7 +310,10 @@ void st7789_set_pixel(int x, int y, uint16_t color)
     case 0:
       {
         ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
+        //printf("[screen] color: %03x\r\n", color);
+        //printf("[screen] (before) 32-bit data: %08x\r\n", *ppixel);
         *ppixel = (*ppixel & 0xffff0f00) | (color & 0x00ff) | ((color&0xf00)<<4);
+        //printf("[screen] (now)    32-bit data: %08x\r\n", *ppixel);
       }
       break;
 
@@ -318,7 +326,7 @@ void st7789_set_pixel(int x, int y, uint16_t color)
     case 1:
       {
         ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
-        *ppixel = (*ppixel & 0xfff00f0ff) | (color&0xf0)<<4 | (color&0xf)<<20 | (color&0xf00)<<8;
+        *ppixel = (*ppixel & 0xfff00f0ff) | ((color&0xf0)<<4) | ((color&0xf)<<20) | ((color&0xf00)<<8);
       }
       break;
 
@@ -414,18 +422,36 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
 
   dy = y1 - y0;
   dx = x1 - x0;
-  y = y0;
-  e = 0.0;
-  ex = dy/dx;
-  ey = -1.0;
-  for (x=x0; x<=x1; x++)
+
+  /* Vertical line */
+  if (dx == 0)
   {
-    st7789_set_pixel(x, y, color);
-    e += ex;
-    if (e >= 0.5)
+    /* Make sure y0 <= y1. */
+    if (y0>y1)
     {
-      y++;
-      e = e+ey;
+      dy = y0;
+      y0 = y1;
+      y1 = dy;
+    }
+
+    for (y=y0; y<y1; y++)
+      st7789_set_pixel(x0, y, color);
+  }
+  else
+  {
+    y = y0;
+    e = 0.0;
+    ex = dy/dx;
+    ey = -1.0;
+    for (x=x0; x<=x1; x++)
+    {
+      st7789_set_pixel(x, y, color);
+      e += ex;
+      if (e >= 0.5)
+      {
+        y++;
+        e = e+ey;
+      }
     }
   }
 }
