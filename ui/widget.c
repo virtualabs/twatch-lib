@@ -38,8 +38,6 @@ widget_t *widget_enum_next(widget_t *p_widget)
 }
 
 
-
-
 /**
  * @brief: Initialize a `widget_t` structure.
  * @param p_tile: pointer to the widget's parent tile
@@ -63,6 +61,7 @@ void widget_init(widget_t *p_widget, tile_t *p_tile, int x, int y, int width, in
 
   /* Set drawing func to NULL. */
   p_widget->pfn_drawfunc = NULL;
+  p_widget->pfn_eventhandler = NULL;
   p_widget->p_user_data = NULL;
 
   /* Add widget to our list. */
@@ -85,6 +84,33 @@ void widget_set_drawfunc(widget_t *p_widget, FDrawWidget pfn_drawfunc)
   p_widget->pfn_drawfunc = pfn_drawfunc;
 }
 
+
+/**
+ * @brief: Set event handler function for a given widget.
+ * @param p_widget: target widget
+ * @param pfn_eventhandler: pointer to a FEventHandler procedure
+ **/
+
+void widget_set_eventhandler(widget_t *p_widget, FEventHandler pfn_eventhandler)
+{
+  /* Sanity check. */
+  if (p_widget == NULL)
+    return;
+
+  /* Set callback function. */
+  p_widget->pfn_eventhandler = pfn_eventhandler;
+}
+
+
+void widget_send_event(widget_t *p_widget, widget_event_t event)
+{
+  if (p_widget == NULL)
+    return;
+
+  /* Forward to widget. */
+  if (p_widget->pfn_eventhandler != NULL)
+    p_widget->pfn_eventhandler(p_widget, event);
+}
 
 /**
  * @brief: Set user data for a given widget
@@ -218,4 +244,52 @@ void widget_bitblt(widget_t *p_widget, image_t *source, int source_x, int source
     dest_x + p_widget->offset_x + p_widget->p_tile->offset_x,
     dest_y + p_widget->offset_y + p_widget->p_tile->offset_y
   );
+}
+
+
+void widget_draw_char(widget_t *p_widget, int x, int y, char c, uint16_t color)
+{
+    /* Draw character with tile offset. */
+    font_draw_char(
+        p_widget->offset_x + p_widget->p_tile->offset_x + x, 
+        p_widget->offset_y + p_widget->p_tile->offset_y + y, 
+        c,
+        color
+    );
+}
+
+
+void widget_draw_text(widget_t *p_widget, int x, int y, char *psz_text, uint16_t color)
+{
+    /* Draw character with tile offset. */
+    font_draw_text(
+        p_widget->offset_x + p_widget->p_tile->offset_x + x,
+        p_widget->offset_y + p_widget->p_tile->offset_y + y,
+        psz_text,
+        color
+    );
+}
+
+
+void widget_draw_char_x2(widget_t *p_widget, int x, int y, char c, uint16_t color)
+{
+    /* Draw character with tile offset. */
+    font_draw_char_x2(
+        p_widget->offset_x + p_widget->p_tile->offset_x + x, 
+        p_widget->offset_y + p_widget->p_tile->offset_y + y, 
+        c,
+        color
+    );
+}
+
+
+void widget_draw_text_x2(widget_t *p_widget, int x, int y, char *psz_text, uint16_t color)
+{
+    /* Draw character with tile offset. */
+    font_draw_text_x2(
+        p_widget->offset_x + p_widget->p_tile->offset_x + x,
+        p_widget->offset_y + p_widget->p_tile->offset_y + y,
+        psz_text,
+        color
+    );
 }

@@ -18,6 +18,9 @@ idf_component_register(
   "ui/ui.c"
   "ui/widget.c"
   "ui/image.c"
+  "ui/button.c"
+  "ui/label.c"
+  "font/font16.c"
 
   INCLUDE_DIRS "inc"
 

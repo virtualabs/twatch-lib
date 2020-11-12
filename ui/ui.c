@@ -1,6 +1,8 @@
 #include "ui/ui.h"
 #include "ui/widget.h"
 
+void ui_forward_event_to_widget(touch_event_type_t state, int x, int y);
+
 /**
  * Main interface structure.
  **/
@@ -137,11 +139,32 @@ void ui_process_events(void)
           }
           break;
 
-        case TOUCH_EVENT_TAP:
+        case TOUCH_EVENT_PRESS:
+          {
+            ui_forward_event_to_widget(TOUCH_EVENT_PRESS, touch.coords.x, touch.coords.y);
+          }
           break;
+
+        case TOUCH_EVENT_RELEASE:
+          {
+            ui_forward_event_to_widget(TOUCH_EVENT_RELEASE, touch.coords.x, touch.coords.y);
+          }
+          break;
+
+        case TOUCH_EVENT_TAP:
+          {
+            printf("[ui event] tap");
+            ui_forward_event_to_widget(TOUCH_EVENT_TAP, touch.coords.x, touch.coords.y);
+          }
+          break;
+
+        default:
+          break;
+
       }
     }
   }
+
 
   /* Refresh screen. */
   st7789_blank();
@@ -237,6 +260,47 @@ void ui_process_events(void)
   st7789_commit_fb();
 }
 
+/**********************************************************************
+ * Handle press/release events
+ *********************************************************************/
+
+/**
+ * @brief: forward a press/release event to the corresponding widget.
+ * @param state: touch state (press/release)
+ * @param x: X coordinate of the event
+ * @param y: Y coordinate of the event
+ **/
+
+void ui_forward_event_to_widget(touch_event_type_t state, int x, int y)
+{
+  widget_t *p_widget = widget_enum_first();
+  while (p_widget != NULL)
+  {
+    if (state == TOUCH_EVENT_RELEASE)
+      widget_send_event(p_widget, (widget_event_t)state);
+    else
+    {
+      if (p_widget->p_tile == g_ui.p_current_tile)
+      {
+        if (
+          (x >= p_widget->offset_x) && (y >= p_widget->offset_y) && \
+          (x < (p_widget->offset_x + p_widget->width)) && \
+          (y < (p_widget->offset_y + p_widget->height))
+        )
+        {
+          /* Forward the touch event to the widget. */
+          widget_send_event(p_widget, (widget_event_t)state);
+        }
+      }
+    }
+
+    /* Go to next widget. */
+    p_widget = widget_enum_next(p_widget);
+  }
+
+}
+
+
 
 /**********************************************************************
  * Drawing primitives for tiles.
@@ -302,6 +366,20 @@ void tile_draw_line(tile_t *p_tile, int x0, int y0, int x1, int y1, uint16_t col
     y1 + p_tile->offset_y,
     color
   );
+}
+
+
+void tile_draw_char(tile_t *p_tile, int x, int y, char c, uint16_t color)
+{
+    /* Draw character with tile offset. */
+    font_draw_char(p_tile->offset_x + x, p_tile->offset_y + y, c, color);
+}
+
+
+void tile_draw_text(tile_t *p_tile, int x, int y, char *psz_text, uint16_t color)
+{
+    /* Draw character with tile offset. */
+    font_draw_text(p_tile->offset_x + x, p_tile->offset_y + y, psz_text, color);
 }
 
 
