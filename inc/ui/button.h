@@ -1,5 +1,5 @@
-#ifndef __INC_WIDGET_IMAGE_H
-#define __INC_WIDGET_IMAGE_H
+#ifndef __INC_WIDGET_BUTTON_H
+#define __INC_WIDGET_BUTTON_H
 
 #include "ui/ui.h"
 #include "ui/widget.h"
@@ -7,7 +7,7 @@
 
 #define BUTTON_STYLE_BORDER RGB(0xf, 0xf, 0xf)
 #define BUTTON_STYLE_BG RGB(0x0, 0x0, 0x0)
-#define BUTTON_STYLE_BG_PRESSED RGB(0x3, 0x3, 0x3)
+#define BUTTON_STYLE_BG_PRESSED RGB(0xf, 0x0, 0x0)
 #define BUTTON_STYLE_TEXT RGB(0xe, 0xe, 0xe)
 
 typedef enum {
@@ -41,4 +41,4 @@ void widget_button_init(
 
 void widget_button_set_handler(widget_button_t *p_widget_button, FTapHandler pfn_handler);
 
-#endif /* __INC_WIDGET_IMAGE_H */
+#endif /* __INC_WIDGET_BUTTON_H */
