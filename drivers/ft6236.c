@@ -137,7 +137,11 @@ void ft6x36_init(uint16_t dev_addr) {
     ft6x06_i2c_read8(dev_addr, FT6X36_OPMODE_REG, &data_buf);
     ESP_LOGI(TAG, "\tOperating mode: 0x%02x", data_buf);
 
-    ft6x36_set_touch_threshold(0x0);
+    /*
+    ft6x36_enable_active_mode();
+    ft6x36_set_active_period(0xff);
+    ft6x36_set_touch_threshold(15);
+    */
   }
 }
 
@@ -193,7 +197,7 @@ bool ft6x36_read(ft6236_touch_t *touch) {
 
 bool ft6x36_read_touch_data(ft6236_touch_t *touch_data)
 {
-  if(xSemaphoreTake(touch_sem, 10/portTICK_RATE_MS)){
+  if(xSemaphoreTake(touch_sem, 10)){
     ft6x36_read(touch_data);
     return true;
   }
@@ -230,6 +234,10 @@ esp_err_t ft6x36_set_touch_threshold(uint8_t threshold)
   return ft6x06_i2c_write8(current_dev_addr, FT6X36_TH_GROUP_REG, threshold);
 }
 
+esp_err_t ft6x36_set_active_period(uint8_t period)
+{
+  return ft6x06_i2c_write8(current_dev_addr, FT6X36_PERIOD_ACTIVE_REG, period);
+}
 
 esp_err_t ft6x36_set_max_offset_move_lr(uint8_t offset)
 {
