@@ -4,7 +4,7 @@ void widget_button_drawfunc(widget_t *p_widget)
 {
   int text_width, dx, dy;
   widget_button_t *p_button = (widget_button_t *)p_widget->p_user_data;
-  printf("button draw\r\n");
+
   if (p_button != NULL)
   {
     /* Draw the button. */
@@ -109,8 +109,8 @@ void widget_button_event_handler(widget_t *p_widget, widget_event_t event)
 
       case WE_TAP:
         {
-          if (p_button->pfn_tap_handler != NULL)
-            p_button->pfn_tap_handler(p_widget);
+            if (p_button->pfn_tap_handler != NULL)
+              p_button->pfn_tap_handler(p_widget);
         }
         break;
     }
