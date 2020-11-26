@@ -37,6 +37,7 @@ ledc_channel_config_t backlight_config = {
 const bool g_inv_x = true;
 const bool g_inv_y = true;
 
+__attribute__ ((aligned(4)))
 DRAM_ATTR static uint8_t databuf[16];
 
 /* Framebuffer. We need one more byte to handle pixels with 32-bit values. */
