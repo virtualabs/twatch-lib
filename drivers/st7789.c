@@ -287,9 +287,9 @@ void st7789_set_pixel(int x, int y, uint16_t color)
 
   /* Invert if required. */
   if (g_inv_x)
-    x = WIDTH - x;
+    x = WIDTH - x - 1;
   if (g_inv_y)
-    y = HEIGHT - y;
+    y = HEIGHT - y - 1;
 
   /* 4-pixel block index */
   fb_blk = (y*WIDTH+x)/4;
