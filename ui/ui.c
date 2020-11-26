@@ -35,8 +35,12 @@ void ui_init(void)
 
 void ui_select_tile(tile_t *p_tile)
 {
-  /* Set current tile as none. */
+  /* Set current tile. */
   g_ui.p_current_tile = p_tile;
+
+  /* Reset offsets in order to display this tile. */
+  g_ui.p_current_tile->offset_x = 0;
+  g_ui.p_current_tile->offset_y = 0;
 }
 
 
@@ -153,7 +157,6 @@ void ui_process_events(void)
 
         case TOUCH_EVENT_TAP:
           {
-            printf("[ui event] tap");
             ui_forward_event_to_widget(TOUCH_EVENT_TAP, touch.coords.x, touch.coords.y);
           }
           break;
