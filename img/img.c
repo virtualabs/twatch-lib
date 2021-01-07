@@ -45,30 +45,25 @@ void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width
 
 void screen_bitblt(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
 {
-  printf("[img] screen bitblt\r\n");
   switch(source->type)
   {
     /* Raw image. */
     case IMAGE_RAW:
       {
-        printf("[img] raw mode (%d)\r\n", source->depth);
         switch (source->depth)
         {
           /* Black & white images. */
           case DEPTH_1BPP:
-            printf("[img] 1bpp\r\n");
             _screen_bitblt_1bpp(source, source_x, source_y, width, height, dest_x, dest_y);
             break;
 
 
           /* Unsupported yet. */
           case DEPTH_12BPP:
-            printf("[img] 12bpp\r\n");
             _screen_bitblt_12bpp(source, source_x, source_y, width, height, dest_x, dest_y);
             break;
 
           default:
-            printf("[img] unknown depth: %d", source->depth);
             break;
         }
       }
