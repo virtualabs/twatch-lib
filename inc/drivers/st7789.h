@@ -18,8 +18,8 @@
 #define ST7789_SPI_CS_IO      GPIO_NUM_5
 #define ST7789_SPI_DC_IO      GPIO_NUM_27
 #define ST7789_BL_IO          GPIO_NUM_12
-#define ST7789_SPI_SPEED      80000000L
-#define ST779_PARALLEL_LINES  60
+#define ST7789_SPI_SPEED      /*80000000L*/SPI_MASTER_FREQ_80M
+#define ST779_PARALLEL_LINES  80
 
 #define ST7789_CMD_NOP        0x00
 #define ST7789_CMD_SWRESET    0x01
@@ -72,10 +72,12 @@
 esp_err_t st7789_init(void);
 void st7789_backlight_on(void);
 void st7789_backlight_set(int backlight_level);
+void st7789_set_drawing_window(int x0, int y0, int x1, int y1);
 void st7789_blank(void);
 void st7789_commit_fb(void);
 void st7789_set_pixel(int x, int y, uint16_t pixel);
 void st7789_fill_region(int x, int y, int width, int height, uint16_t color);
 void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color);
+void st7789_draw_fastline(int x0, int y, int x1, uint16_t color);
 
 #endif /* __INC_DRIVER_ST7789_H */
