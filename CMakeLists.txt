@@ -20,6 +20,8 @@ idf_component_register(
   "ui/image.c"
   "ui/button.c"
   "ui/label.c"
+  "ui/container.c"
+  "ui/progress.c"
   "font/font16.c"
 
   INCLUDE_DIRS "inc"
