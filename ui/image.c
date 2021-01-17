@@ -9,14 +9,16 @@ void widget_image_drawfunc(widget_t *p_widget)
 
   /* Render image. */
   widget_bitblt(
-    WIDGET(p_widget_img),
+    p_widget,
     p_widget_img->p_image,
     0,
     0,
-    p_widget_img->widget.width,
-    p_widget_img->widget.height,
-    p_widget->offset_x,
-    p_widget->offset_y
+    p_widget_img->widget.box.width,
+    p_widget_img->widget.box.height,
+    //p_widget_img->p_image->width,
+    //p_widget_img->p_image->height,
+    0,
+    0
   );
 }
 
