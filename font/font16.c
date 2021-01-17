@@ -409,13 +409,13 @@ PROGMEM const unsigned char chr_f16_5D[16] =         // 1 unsigned char per row
         0x20, 0x20, 0xE0, 0x00, 0x00                                         // row 12 - 16
 };
 
-PROGMEM const unsigned char chr_f16_5E[32] =         // 1 unsigned chars per row
+PROGMEM const unsigned char chr_f16_5E[16] =         // 1 unsigned chars per row
 {
         0x00, 0x10, 0x28, 0x44, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,    // row 1 - 11
         0x00, 0x00, 0x00, 0x00, 0x00                                         // row 12 - 16
 };
 
-PROGMEM const unsigned char chr_f16_5F[32] =         // 1 unsigned chars per row
+PROGMEM const unsigned char chr_f16_5F[16] =         // 1 unsigned chars per row
 {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,    // row 1 - 11
         0x00, 0x00, 0x00, 0xFF, 0x00                                         // row 12 - 16
