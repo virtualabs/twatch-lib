@@ -53,10 +53,18 @@ void widget_init(widget_t *p_widget, tile_t *p_tile, int x, int y, int width, in
   p_widget->p_tile = p_tile;
 
   /* Set properties. */
+  p_widget->box.x = x;
+  p_widget->box.y = y;
+  p_widget->box.width = width;
+  p_widget->box.height = height;
+
+  /*
   p_widget->offset_x = x;
   p_widget->offset_y = y;
   p_widget->width = width;
   p_widget->height = height;
+  */
+
   p_widget->p_next = NULL;
 
   /* Set drawing func to NULL. */
@@ -102,14 +110,14 @@ void widget_set_eventhandler(widget_t *p_widget, FEventHandler pfn_eventhandler)
 }
 
 
-void widget_send_event(widget_t *p_widget, widget_event_t event)
+void widget_send_event(widget_t *p_widget, widget_event_t event, int x, int y)
 {
   if (p_widget == NULL)
     return;
 
   /* Forward to widget. */
   if (p_widget->pfn_eventhandler != NULL)
-    p_widget->pfn_eventhandler(p_widget, event);
+    p_widget->pfn_eventhandler(p_widget, event, x, y);
 }
 
 /**
@@ -150,6 +158,43 @@ int widget_draw(widget_t *p_widget)
   return -2;
 }
 
+int widget_get_abs_x(widget_t *p_widget)
+{
+  if (p_widget->p_tile != NULL)
+    return p_widget->box.x + p_widget->p_tile->offset_x;
+  else
+    return p_widget->box.x;
+}
+
+
+int widget_get_abs_y(widget_t *p_widget)
+{
+  if (p_widget->p_tile != NULL)
+    return p_widget->box.y + p_widget->p_tile->offset_y;
+  else
+    return p_widget->box.y;
+}
+
+
+void widget_get_abs_box(widget_t *p_widget, widget_box_t *p_box)
+{
+  /* Does our widget have a parent tile ? */
+  if (p_widget->p_tile != NULL)
+  {
+    /* Yes ! We must add this widget (x,y) to its parent tile (x,y). */
+    p_box->x = p_widget->box.x + p_widget->p_tile->offset_x;
+    p_box->y = p_widget->box.y + p_widget->p_tile->offset_y;
+    p_box->width = p_widget->box.width;
+    p_box->height = p_widget->box.height;
+  }
+  else
+  {
+    /* This widget is not associated to any tile, return its box. */
+    memcpy(p_box, &p_widget->box, sizeof(widget_box_t));
+  }
+}
+
+
 /**********************************************************************
  * Drawing primitives for widgets.
  *
@@ -169,8 +214,8 @@ void widget_set_pixel(widget_t *p_widget, int x, int y, uint16_t pixel)
 {
   /* Apply X/Y offsets. */
   st7789_set_pixel(
-    x + p_widget->offset_x + p_widget->p_tile->offset_x,
-    y + p_widget->offset_y + p_widget->p_tile->offset_y,
+    x + widget_get_abs_x(p_widget),
+    y + widget_get_abs_y(p_widget),
     pixel
   );
 }
@@ -189,9 +234,10 @@ void widget_set_pixel(widget_t *p_widget, int x, int y, uint16_t pixel)
 void widget_fill_region(widget_t *p_widget, int x, int y, int width, int height, uint16_t color)
 {
   /* Apply X/Y offsets. */
+  //printf("[%08x] widget_fill_region(%d,%d, %d, %d)\r\n", (uint32_t)p_widget, x + widget_get_abs_x(p_widget), y + widget_get_abs_x(p_widget), width, height);
   st7789_fill_region(
-    x + p_widget->offset_x + p_widget->p_tile->offset_x,
-    y + p_widget->offset_y + p_widget->p_tile->offset_y,
+    x + widget_get_abs_x(p_widget),
+    y + widget_get_abs_y(p_widget),
     width,
     height,
     color
@@ -212,10 +258,10 @@ void widget_draw_line(widget_t *p_widget, int x0, int y0, int x1, int y1, uint16
 {
   /* Apply X/Y offsets. */
   st7789_draw_line(
-    x0 + p_widget->offset_x + p_widget->p_tile->offset_x,
-    y0 + p_widget->offset_y + p_widget->p_tile->offset_y,
-    x1 + p_widget->offset_x + p_widget->p_tile->offset_x,
-    y1 + p_widget->offset_y + p_widget->p_tile->offset_y,
+    x0 + widget_get_abs_x(p_widget),
+    y0 + widget_get_abs_y(p_widget),
+    x1 + widget_get_abs_x(p_widget),
+    y1 + widget_get_abs_y(p_widget),
     color
   );
 }
@@ -241,8 +287,8 @@ void widget_bitblt(widget_t *p_widget, image_t *source, int source_x, int source
     source_y,
     width,
     height,
-    dest_x + p_widget->offset_x + p_widget->p_tile->offset_x,
-    dest_y + p_widget->offset_y + p_widget->p_tile->offset_y
+    dest_x + widget_get_abs_x(p_widget),
+    dest_y + widget_get_abs_y(p_widget)
   );
 }
 
@@ -251,8 +297,8 @@ void widget_draw_char(widget_t *p_widget, int x, int y, char c, uint16_t color)
 {
     /* Draw character with tile offset. */
     font_draw_char(
-        p_widget->offset_x + p_widget->p_tile->offset_x + x, 
-        p_widget->offset_y + p_widget->p_tile->offset_y + y, 
+        widget_get_abs_x(p_widget) + x,
+        widget_get_abs_y(p_widget) + y,
         c,
         color
     );
@@ -263,8 +309,8 @@ void widget_draw_text(widget_t *p_widget, int x, int y, char *psz_text, uint16_t
 {
     /* Draw character with tile offset. */
     font_draw_text(
-        p_widget->offset_x + p_widget->p_tile->offset_x + x,
-        p_widget->offset_y + p_widget->p_tile->offset_y + y,
+        widget_get_abs_x(p_widget) + x, 
+        widget_get_abs_y(p_widget) + y,
         psz_text,
         color
     );
@@ -275,8 +321,8 @@ void widget_draw_char_x2(widget_t *p_widget, int x, int y, char c, uint16_t colo
 {
     /* Draw character with tile offset. */
     font_draw_char_x2(
-        p_widget->offset_x + p_widget->p_tile->offset_x + x, 
-        p_widget->offset_y + p_widget->p_tile->offset_y + y, 
+        widget_get_abs_x(p_widget) + x, 
+        widget_get_abs_y(p_widget) + y, 
         c,
         color
     );
@@ -287,8 +333,8 @@ void widget_draw_text_x2(widget_t *p_widget, int x, int y, char *psz_text, uint1
 {
     /* Draw character with tile offset. */
     font_draw_text_x2(
-        p_widget->offset_x + p_widget->p_tile->offset_x + x,
-        p_widget->offset_y + p_widget->p_tile->offset_y + y,
+        widget_get_abs_x(p_widget) + x,
+        widget_get_abs_y(p_widget) + y,
         psz_text,
         color
     );
