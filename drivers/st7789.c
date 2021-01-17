@@ -34,8 +34,14 @@ ledc_channel_config_t backlight_config = {
   .timer_sel  = LEDC_TIMER_0
 };
 
-const bool g_inv_x = true;
-const bool g_inv_y = true;
+DRAM_ATTR const bool g_inv_x = true;
+DRAM_ATTR const bool g_inv_y = true;
+
+/* Drawing window. */
+DRAM_ATTR static int g_dw_x0 = 0;
+DRAM_ATTR static int g_dw_y0 = 0;
+DRAM_ATTR static int g_dw_x1 = WIDTH - 1;
+DRAM_ATTR static int g_dw_y1 = HEIGHT - 1;
 
 __attribute__ ((aligned(4)))
 DRAM_ATTR static uint8_t databuf[16];
@@ -71,18 +77,18 @@ DRAM_ATTR static const init_cmd_t st_init_cmds[]={
  * @param milliseconds: nimber of milliseconds to wait
  **/
 
-void st7789_wait(int milliseconds)
+void IRAM_ATTR st7789_wait(int milliseconds)
 {
   vTaskDelay(milliseconds/portTICK_PERIOD_MS);
 }
 
-void st7789_pre_transfer_callback(spi_transaction_t *t)
+void IRAM_ATTR st7789_pre_transfer_callback(spi_transaction_t *t)
 {
     int dc=(int)t->user;
     gpio_set_level(ST7789_SPI_DC_IO, dc);
 }
 
-esp_err_t st7789_send_cmd(const uint8_t cmd)
+esp_err_t IRAM_ATTR st7789_send_cmd(const uint8_t cmd)
 {
     esp_err_t ret;
     spi_transaction_t t;
@@ -95,7 +101,7 @@ esp_err_t st7789_send_cmd(const uint8_t cmd)
     return ret;
 }
 
-esp_err_t st7789_send_data(const uint8_t *data, int len)
+esp_err_t IRAM_ATTR st7789_send_data(const uint8_t *data, int len)
 {
     esp_err_t ret;
     spi_transaction_t t;
@@ -109,7 +115,7 @@ esp_err_t st7789_send_data(const uint8_t *data, int len)
     return ret;
 }
 
-esp_err_t st7789_send_data_byte(const uint8_t byte)
+esp_err_t IRAM_ATTR st7789_send_data_byte(const uint8_t byte)
 {
   return st7789_send_data(&byte, 1);
 }
@@ -157,7 +163,7 @@ esp_err_t st7789_init(void)
         .spics_io_num=ST7789_SPI_CS_IO,
         .queue_size=7,                          //We want to be able to queue 7 transactions at a time
         .pre_cb=st7789_pre_transfer_callback,  //Specify pre-transfer callback to handle D/C line
-        .flags=SPI_DEVICE_HALFDUPLEX|SPI_DEVICE_NO_DUMMY
+        .flags=/*SPI_DEVICE_HALFDUPLEX|*/SPI_DEVICE_NO_DUMMY
     };
 
 
@@ -219,8 +225,33 @@ void st7789_backlight_set(int backlight_level)
   ledc_update_duty(backlight_config.speed_mode, backlight_config.channel);
 }
 
+void st7789_set_drawing_window(int x0, int y0, int x1, int y1)
+{
+  int x,y;
 
-void st7789_set_window(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
+
+  /* Ensure x0 < x1, y0 < y1. */
+  x = (x0<x1)?x0:x1;
+  y = (y0<y1)?y0:y1;
+
+  if (x<0)
+    x = 0;
+  if (y<0)
+    y = 0;
+
+  g_dw_x1 = (x0>x1)?x0:x1;
+  g_dw_y1 = (y0>y1)?y0:y1;
+
+  if (g_dw_x1 > (WIDTH -1))
+    g_dw_x1 = WIDTH - 1;
+  if (g_dw_y1 > (HEIGHT -1))
+    g_dw_y1 = HEIGHT - 1;
+
+  g_dw_x0 = x;
+  g_dw_y0 = y;
+}
+
+void IRAM_ATTR st7789_set_window(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
   databuf[0] = x0 >> 8;
   databuf[1] = x0 & 0xFF;
@@ -247,7 +278,7 @@ void st7789_set_fb(uint8_t *frame)
  * @brief Send framebuffer to screen.
  **/
 
-void st7789_commit_fb(void)
+void IRAM_ATTR st7789_commit_fb(void)
 {
   int i;
   st7789_set_window(0, 0, WIDTH, HEIGHT);
@@ -262,7 +293,7 @@ void st7789_commit_fb(void)
  * @brief Fill screen with default color (black)
  **/
 
-void st7789_blank(void)
+void IRAM_ATTR st7789_blank(void)
 {
   memset(framebuffer, 0, FB_SIZE);
 }
@@ -275,21 +306,120 @@ void st7789_blank(void)
  * @param color: pixel color (12 bits)
  **/
 
-void st7789_set_pixel(int x, int y, uint16_t color)
+void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
 {
   int fb_blk, fb_blk_off;
   uint32_t *ppixel;
   uint32_t *ppixel2;
 
   /* Sanity checks. */
+
+  if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
+    return;
+  
+  /*
   if ((x<0) || (x>=WIDTH) || (y<0) || (y>=HEIGHT))
     return;
+  */
 
   /* Invert if required. */
   if (g_inv_x)
     x = WIDTH - x - 1;
   if (g_inv_y)
     y = HEIGHT - y - 1;
+
+  /* 4-pixel block index */
+  fb_blk = (y*WIDTH+x)/4;
+  /* Compute address of our 4-pixel block (stored on 6 bytes). */
+  fb_blk_off = fb_blk*6;
+
+  //printf("[enter setpixel] (%d,%d) color %03x\r\n", x,y,color);
+  //printf(" fb_blk=%d\r\n", fb_blk);
+  //printf(" fb_blk_off=%d\r\n", fb_blk_off);
+
+  /* Modify pixel by 4-byte blocks, as ESP32 does not allow byte-level access. */
+  switch(x%4)
+  {
+    /**
+     * Case 0: pixel is stored in byte 0 and 1 of a 4-byte dword.
+     * pixel is 0B RG
+     * RG BX XX XX
+     **/
+    case 0:
+      {
+        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
+        //printf("[screen] color: %03x\r\n", color);
+        //printf("[screen] (before) 32-bit data: %08x\r\n", *ppixel);
+        *ppixel = (*ppixel & 0xffff0f00) | (color & 0x00ff) | ((color&0xf00)<<4);
+        //printf("[screen] (now)    32-bit data: %08x\r\n", *ppixel);
+      }
+      break;
+
+    /**
+     * Case 1: pixel is stored in byte 1 and 2 of a 4-byte dword.
+     * pixel is 0B RG
+     * XX XR GB XX
+     **/
+
+    case 1:
+      {
+        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
+        *ppixel = (*ppixel & 0xfff00f0ff) | ((color&0xf0)<<4) | ((color&0xf)<<20) | ((color&0xf00)<<8);
+      }
+      break;
+
+    /**
+     * Case 2: pixel is stored in byte 3 and 4 of a double 4-byte dword.
+     * pixel is 0B RG
+     * XX XX XX RG | BX XX XX XX
+     **/
+
+    case 2:
+      {
+        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
+        ppixel2 = (uint32_t *)(&framebuffer[fb_blk_off+4]);
+        *ppixel = (*ppixel & 0x00ffffff) | (color&0xff)<<24;
+        *ppixel2 = (*ppixel2 & 0xffffff0f) | (color&0xf00)>>4;
+      }
+      break;
+
+    /**
+     * Case 3: pixel is stored in byte 4 and 5 of a double 4-byte dword.
+     * pixel is 0B RG
+     * XX XX XX XX | XR GB XX XX
+     **/
+
+    case 3:
+      {
+        ppixel = (uint32_t *)(&framebuffer[fb_blk_off+4]);
+        *ppixel = (*ppixel & 0xffff00f0) | (color&0xf0)>>4 | (color&0xf)<<12 | (color&0xf00);
+      }
+      break;
+  }
+}
+
+/**
+ * @brief Set a pixel color in framebuffer
+ * @param x: pixel X coordinate
+ * @param y: pixel Y coordinate
+ * @param color: pixel color (12 bits)
+ **/
+
+void IRAM_ATTR _st7789_set_pixel(int x, int y, uint16_t color)
+{
+  int fb_blk, fb_blk_off;
+  uint32_t *ppixel;
+  uint32_t *ppixel2;
+
+  /* Sanity checks. */
+
+  if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
+    return;
+  
+  /*
+  if ((x<0) || (x>=WIDTH) || (y<0) || (y>=HEIGHT))
+    return;
+  */
 
   /* 4-pixel block index */
   fb_blk = (y*WIDTH+x)/4;
@@ -376,38 +506,109 @@ void st7789_fill_region(int x, int y, int width, int height, uint16_t color)
   int _x,_y;
 
   /* X and y cannot be less than zero. */
-  if (x<0)
+  if (x<g_dw_x0)
   {
     /* Fix width, exit if region is out of screen. */
-    width += x;
+    width -= (g_dw_x0 - x);
     if (width <= 0)
       return;
-    x=0;
+    x = g_dw_x0;
   }
 
-  if (y<0)
+  if (y<g_dw_y0)
   {
     /* Fix height, exit if region is out of screen. */
-    height += y;
+    height -= (g_dw_y0 - y);
     if (height <= 0)
       return;
-    y=0;
+    y = g_dw_y0;
   }
 
   /* Region must not exceed screen size. */
-  if ((x+width) > WIDTH)
-    width = WIDTH-x;
-  if ((y+height) > HEIGHT)
-    height = HEIGHT-y;
+  if ((x+width) > g_dw_x1)
+    width = g_dw_x1-x;
+  if ((y+height) > g_dw_y1)
+    height = g_dw_y1-y;
 
-  for (_x=x; _x<(x+width); _x++)
+  if (width>0)
   {
     for (_y=y; _y<(y+height); _y++)
     {
-      st7789_set_pixel(_x, _y, color);
+      st7789_draw_fastline(x, _y, x+width-1, color);
     }
   }
 }
+
+
+/**
+ * @brief Draw fast an horizontal line of color `color` between (x0,y) and (x1, y)
+ * @param x0: X coordinate of the start of the line
+ * @param y: Y cooordinate of the start of the line
+ * @param x1: X coordinate of the end of the line
+ * @param color: line color.
+ **/
+
+void IRAM_ATTR st7789_draw_fastline(int x0, int y, int x1, uint16_t color)
+{
+  int _x0,_x1,_y;
+  int d=0;
+  int n=0;
+  int s = 0;
+  uint8_t temp[4];
+
+  if (g_inv_x)
+  {
+    _x0 = WIDTH - x0 - 1;
+    _x1 = WIDTH - x1 - 1;
+
+  }
+  else
+  {
+    _x0 = x0;
+    _x1 = x1;
+  }
+
+  /* Reorder. */
+  if (_x0>_x1)
+  {
+    n=_x1;
+    _x1 = _x0;
+    _x0 = n;
+  }
+
+
+  if (g_inv_y)
+    _y = HEIGHT - y - 1;
+  else
+    _y = y;
+
+
+  temp[0] = (color & 0x00ff);
+  temp[1] = color>>4;
+  temp[2] = ((color&0xf00) >> 8) | ((color&0xf)<<4);
+
+  /* Draw first pixel if line start in the middle of a nibble. */
+  if (_x0%2 != 0)
+  {
+    _st7789_set_pixel(_x0, _y, color);
+    d++;
+  }
+
+  /* copy pixels by 2 pixels. */
+  n = ((_x1 - _x0 + 1) - d)/2;
+  s = ((_x0 + d)*3)/2 + ((_y*WIDTH*3)/2);
+  for (int x=0; x<n; x++)
+  {
+    framebuffer[s + x*3] = temp[0];
+    framebuffer[s + x*3 + 1] = temp[1];
+    framebuffer[s + x*3 + 2] = temp[2];
+  }
+
+  /* Do we need to set the last pixel ? */
+  if ((n*2) < ((_x1-_x0 + 1)-d))
+    _st7789_set_pixel(_x1, _y, color);
+}
+
 
 /**
  * @brief Draw a line of color `color` between (x0,y0) and (x1, y1)
@@ -424,7 +625,7 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
   dy = y1 - y0;
   dx = x1 - x0;
 
-  /* Vertical line */
+  /* Vertical line ? */
   if (dx == 0)
   {
     /* Make sure y0 <= y1. */
@@ -435,23 +636,44 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
       y1 = dy;
     }
 
-    for (y=y0; y<y1; y++)
+    for (y=y0; y<=y1; y++)
       st7789_set_pixel(x0, y, color);
   }
   else
   {
-    y = y0;
-    e = 0.0;
-    ex = dy/dx;
-    ey = -1.0;
-    for (x=x0; x<=x1; x++)
+    /* Horizontal line ? */
+    if (dy == 0)
     {
-      st7789_set_pixel(x, y, color);
-      e += ex;
-      if (e >= 0.5)
+      /* Make sure x0 <= x1. */
+      if (x0>x1)
       {
-        y++;
-        e = e+ey;
+        dx = x0;
+        x0 = x1;
+        x1 = dx;
+      }
+
+      /*
+       * Use st7789_fill_region() rather than st7789_draw_fastline()
+       * as it will check boundaries, adapt coordinates and relies
+       * on fast line drawing.
+       */
+      st7789_fill_region(x0, y0, x1 - x0 + 1, 1, color);
+    }
+    else
+    {
+      y = y0;
+      e = 0.0;
+      ex = dy/dx;
+      ey = -1.0;
+      for (x=x0; x<=x1; x++)
+      {
+        st7789_set_pixel(x, y, color);
+        e += ex;
+        if (e >= 0.5)
+        {
+          y++;
+          e = e+ey;
+        }
       }
     }
   }
