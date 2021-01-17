@@ -3,6 +3,9 @@
 
 #include "ui.h"
 
+#define WIDGET_OFFSET_X(w) ((w->p_tile==NULL)?(w->offset_x):(w->offset_x + w->p_tile->offset_x))
+#define WIDGET_OFFSET_Y(w) ((w->p_tile==NULL)?(w->offset_y):(w->offset_y + w->p_tile->offset_y))
+
 typedef struct widget_t;
 
 typedef enum {
@@ -13,14 +16,25 @@ typedef enum {
 
 /* Callback definition. */
 typedef int (*FDrawWidget)(struct widget_t *p_widget);
-typedef int (*FEventHandler)(struct widget_t *p_widget, widget_event_t p_event);
+typedef int (*FEventHandler)(struct widget_t *p_widget, widget_event_t p_event, int x, int y);
 typedef void (*FTapHandler)(struct widget_t *p_widget);
+
+typedef struct {
+  int x;
+  int y;
+  int width;
+  int height;
+} widget_box_t;
 
 typedef struct tWidget {
 
   /* Parent tile. */
   tile_t *p_tile;
 
+  /* Widget box. */
+  widget_box_t box;
+
+#if 0
   /* Position */
   int offset_x;
   int offset_y;
@@ -28,6 +42,7 @@ typedef struct tWidget {
   /* Size */
   int width;
   int height;
+#endif
 
   /* Callbacks */
   FDrawWidget pfn_drawfunc;
@@ -52,7 +67,12 @@ void widget_set_eventhandler(widget_t *p_widget, FEventHandler pfn_eventhandler)
 void widget_set_userdata(widget_t *p_widget, void *p_user_data);
 int widget_draw(widget_t *p_widget);
 tile_t *widget_get_tile(widget_t *p_widget);
-void widget_send_event(widget_t *p_widget, widget_event_t event);
+void widget_send_event(widget_t *p_widget, widget_event_t event, int x, int y);
+
+/* Widget position. */
+void widget_get_abs_box(widget_t *p_widget, widget_box_t *p_box);
+int widget_get_abs_x(widget_t *p_widget);
+int widget_get_abs_y(widget_t *p_widget);
 
 /* Enumerate widgets. */
 widget_t *widget_enum_first(void);

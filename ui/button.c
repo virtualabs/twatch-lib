@@ -12,16 +12,16 @@ void widget_button_drawfunc(widget_t *p_widget)
       p_widget,
       1,
       0,
-      p_widget->width - 2,
+      p_widget->box.width - 2,
       0,
       BUTTON_STYLE_BORDER
     );
     widget_draw_line(
       p_widget,
       1,
-      p_widget->height - 1,
-      p_widget->width - 2,
-      p_widget->height - 1,
+      p_widget->box.height - 1,
+      p_widget->box.width - 2,
+      p_widget->box.height - 1,
       BUTTON_STYLE_BORDER
     );
     widget_draw_line(
@@ -29,15 +29,15 @@ void widget_button_drawfunc(widget_t *p_widget)
       0,
       1,
       0,
-      p_widget->height - 2,
+      p_widget->box.height - 2,
       BUTTON_STYLE_BORDER
     );
     widget_draw_line(
       p_widget,
-      p_widget->width - 1,
+      p_widget->box.width - 1,
       1,
-      p_widget->width - 1,
-      p_widget->height - 2,
+      p_widget->box.width - 1,
+      p_widget->box.height - 2,
       BUTTON_STYLE_BORDER
     );
 
@@ -48,8 +48,8 @@ void widget_button_drawfunc(widget_t *p_widget)
         p_widget,
         1,
         1,
-        p_widget->width-2,
-        p_widget->height-2,
+        p_widget->box.width-2,
+        p_widget->box.height-2,
         BUTTON_STYLE_BG_PRESSED
       );
     }
@@ -59,8 +59,8 @@ void widget_button_drawfunc(widget_t *p_widget)
         p_widget,
         1,
         1,
-        p_widget->width-2,
-        p_widget->height-2,
+        p_widget->box.width-2,
+        p_widget->box.height-2,
         BUTTON_STYLE_BG
       );
     }
@@ -70,8 +70,8 @@ void widget_button_drawfunc(widget_t *p_widget)
     {
       /* Compute text width. */
       text_width = font_get_text_width_x2(p_button->psz_label);
-      dx = (p_widget->width - text_width)/2;
-      dy = (p_widget->height - 32)/2;
+      dx = (p_widget->box.width - text_width)/2;
+      dy = (p_widget->box.height - 32)/2;
 
       /* Draw text. */
       widget_draw_text_x2(
@@ -85,7 +85,7 @@ void widget_button_drawfunc(widget_t *p_widget)
   }
 }
 
-void widget_button_event_handler(widget_t *p_widget, widget_event_t event)
+void widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x, int  y)
 {
   widget_button_t *p_button = (widget_button_t *)p_widget->p_user_data;
 

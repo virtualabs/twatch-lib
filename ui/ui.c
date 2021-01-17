@@ -44,7 +44,7 @@ void ui_select_tile(tile_t *p_tile)
 }
 
 
-void ui_process_events(void)
+void IRAM_ATTR ui_process_events(void)
 {
   touch_event_t touch;
   tile_t *p_main_tile;
@@ -52,7 +52,7 @@ void ui_process_events(void)
   /* Process touch events if we are not in an animation. */
   if (g_ui.state == UI_STATE_IDLE)
   {
-    if (twatch_get_touch_event(&touch, 10) == ESP_OK)
+    if (twatch_get_touch_event(&touch, 1) == ESP_OK)
     {
       switch(touch.type)
       {
@@ -280,19 +280,24 @@ void ui_forward_event_to_widget(touch_event_type_t state, int x, int y)
   while (p_widget != NULL)
   {
     if (state == TOUCH_EVENT_RELEASE)
-      widget_send_event(p_widget, (widget_event_t)state);
+      widget_send_event(p_widget, (widget_event_t)state, x, y);
     else
     {
       if (p_widget->p_tile == g_ui.p_current_tile)
       {
         if (
-          (x >= p_widget->offset_x) && (y >= p_widget->offset_y) && \
-          (x < (p_widget->offset_x + p_widget->width)) && \
-          (y < (p_widget->offset_y + p_widget->height))
+          (x >= p_widget->box.x) && (y >= p_widget->box.y) && \
+          (x < (p_widget->box.x + p_widget->box.width)) && \
+          (y < (p_widget->box.y + p_widget->box.height))
         )
         {
           /* Forward the touch event to the widget. */
-          widget_send_event(p_widget, (widget_event_t)state);
+          widget_send_event(
+            p_widget,
+            (widget_event_t)state,
+            x - p_widget->box.x,
+            y - p_widget->box.y
+          );
         }
       }
     }
@@ -510,7 +515,7 @@ void *tile_get_user_data(tile_t *p_tile)
  * @param p_tile: tile to draw in memory
  **/
 
-int tile_draw(tile_t *p_tile)
+int IRAM_ATTR tile_draw(tile_t *p_tile)
 {
   if (p_tile != NULL)
   {
@@ -578,7 +583,7 @@ void tile_link_bottom(tile_t *p_tile, tile_t *p_bottom_tile)
  * Widget related functions
  *************************************************/
 
- void tile_draw_widgets(tile_t *p_tile)
+ void IRAM_ATTR tile_draw_widgets(tile_t *p_tile)
  {
    widget_t *p_widget;
 
