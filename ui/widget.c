@@ -148,10 +148,33 @@ tile_t *widget_get_tile(widget_t *p_widget)
 
 int widget_draw(widget_t *p_widget)
 {
+  int x0,y0,x1,y1,result;
+
   if (p_widget != NULL)
   {
     if (p_widget->pfn_drawfunc != NULL)
-      return p_widget->pfn_drawfunc(p_widget);
+    {
+      /* Save current drawing window. */
+      st7789_get_drawing_window(&x0, &y0, &x1, &y1);
+
+      /* Set drawing window to our widget region. */
+      st7789_set_drawing_window(
+        p_widget->box.x,
+        p_widget->box.y,
+        p_widget->box.x + p_widget->box.width,
+        p_widget->box.y + p_widget->box.height
+      );
+
+      result = p_widget->pfn_drawfunc(p_widget);
+      
+      /* Restore drawing window to its previous state. */
+      st7789_set_drawing_window(
+        x0,
+        y0,
+        x1,
+        y1
+      );
+    }
   }
 
   /* Failure. */
