@@ -251,6 +251,14 @@ void st7789_set_drawing_window(int x0, int y0, int x1, int y1)
   g_dw_y0 = y;
 }
 
+void st7789_get_drawing_window(int *x0, int *y0, int *x1, int *y1)
+{
+  *x0 = g_dw_x0;
+  *y0 = g_dw_y0;
+  *x1 = g_dw_x1;
+  *y1 = g_dw_y1;
+}
+
 void IRAM_ATTR st7789_set_window(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
   databuf[0] = x0 >> 8;
