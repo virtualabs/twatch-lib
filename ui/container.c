@@ -61,7 +61,7 @@ void widget_container_drawfunc(widget_t *p_widget)
 }
 
 
-void widget_progress_event_handler(widget_t *p_widget, widget_event_t event, int x, int y)
+void widget_container_event_handler(widget_t *p_widget, widget_event_t event, int x, int y)
 {
   widget_container_item_t *p_item;
   widget_container_t *p_container = (widget_container_t *)p_widget->p_user_data;
@@ -114,7 +114,7 @@ void widget_container_init(widget_container_t *p_widget_container, tile_t *p_til
   widget_set_drawfunc(&p_widget_container->widget, widget_container_drawfunc);
 
   /* Set default event handler. */
-  widget_set_eventhandler(&p_widget_container->widget, widget_progress_event_handler);
+  widget_set_eventhandler(&p_widget_container->widget, widget_container_event_handler);
 
 }
 
@@ -209,6 +209,7 @@ void widget_container_remove(widget_container_t *p_widget_container, widget_t *p
     }
   }
 }
+
 
 void widget_debug_list(widget_container_t *p_widget_container)
 {
