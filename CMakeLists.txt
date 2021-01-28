@@ -22,6 +22,7 @@ idf_component_register(
   "ui/label.c"
   "ui/container.c"
   "ui/progress.c"
+  "ui/scrollbar.c"
   "ui/listbox.c"
   "font/font16.c"
 
