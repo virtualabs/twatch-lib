@@ -11,6 +11,9 @@
 #define FB_SIZE   ((BPP*WIDTH*HEIGHT)/8)
 #define FB_CHUNK_SIZE (ST779_PARALLEL_LINES * (BPP*WIDTH)/8)
 
+#define FB_PIXCHUNK ((uint32_t *)(&framebuffer[fb_blk_off]))
+#define FB_PIXCHUNK2 ((uint32_t *)(&framebuffer[fb_blk_off+4]))
+
 #define P1MASK    0xFFFF0F00
 #define P1MASKP   0x0000F0FF
 #define P2MASK    0xFF00F0FF
@@ -319,6 +322,7 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
   int fb_blk, fb_blk_off;
   uint32_t *ppixel;
   uint32_t *ppixel2;
+  uint16_t pix;
 
   /* Sanity checks. */
 
@@ -355,11 +359,14 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
      **/
     case 0:
       {
+        *FB_PIXCHUNK = (*FB_PIXCHUNK & 0xffff0f00) | (color & 0x00ff) | ((color&0xf00)<<4);
+        /*
         ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
         //printf("[screen] color: %03x\r\n", color);
         //printf("[screen] (before) 32-bit data: %08x\r\n", *ppixel);
         *ppixel = (*ppixel & 0xffff0f00) | (color & 0x00ff) | ((color&0xf00)<<4);
         //printf("[screen] (now)    32-bit data: %08x\r\n", *ppixel);
+        */
       }
       break;
 
@@ -371,8 +378,11 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
 
     case 1:
       {
+        *FB_PIXCHUNK = (*FB_PIXCHUNK & 0xfff00f0ff) | ((color&0xf0)<<4) | ((color&0xf)<<20) | ((color&0xf00)<<8);
+        /*
         ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
         *ppixel = (*ppixel & 0xfff00f0ff) | ((color&0xf0)<<4) | ((color&0xf)<<20) | ((color&0xf00)<<8);
+        */
       }
       break;
 
@@ -384,10 +394,14 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
 
     case 2:
       {
+        *FB_PIXCHUNK = (*FB_PIXCHUNK & 0x00ffffff) | (color&0xff)<<24;
+        *FB_PIXCHUNK2 = (*FB_PIXCHUNK2 & 0xffffff0f) | (color&0xf00)>>4;
+        /*
         ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
         ppixel2 = (uint32_t *)(&framebuffer[fb_blk_off+4]);
         *ppixel = (*ppixel & 0x00ffffff) | (color&0xff)<<24;
         *ppixel2 = (*ppixel2 & 0xffffff0f) | (color&0xf00)>>4;
+        */
       }
       break;
 
@@ -399,8 +413,11 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
 
     case 3:
       {
+        *FB_PIXCHUNK2 = (*FB_PIXCHUNK2 & 0xffff00f0) | (color&0xf0)>>4 | (color&0xf)<<12 | (color&0xf00);
+        /*
         ppixel = (uint32_t *)(&framebuffer[fb_blk_off+4]);
         *ppixel = (*ppixel & 0xffff00f0) | (color&0xf0)>>4 | (color&0xf)<<12 | (color&0xf00);
+        */
       }
       break;
   }
