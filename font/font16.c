@@ -641,7 +641,7 @@ PROGMEM const unsigned char* const chrtbl_f16[96] =       // character pointer t
 
 int font_draw_char(int x, int y, char c, uint16_t color)
 {
-    int i,j;
+    int i,j,k,w;
     unsigned char *glyph;
 
     /* Check if character is printable. */
@@ -650,15 +650,20 @@ int font_draw_char(int x, int y, char c, uint16_t color)
 
     /* Get our glyph. */
     glyph = chrtbl_f16[c - 0x20];
+    w = widtbl_f16[c - 0x20];
+    w = (w+6)/8;
     
     /* Blit our character into the framebuffer. */
     for (j=0; j<16; j++)
     {
+      for (k=0; k<w; k++)
+      {
         for (i=0; i<8; i++)
         {
-            if (glyph[j] & (1<<i))
-                st7789_set_pixel(x+(7-i), y+j, color);
+            if (glyph[j*w + k] & (1<<i))
+                st7789_set_pixel(x + k*8 + (7-i), y+j, color);
         }
+      }
     }
 
     /* Success. */
@@ -667,7 +672,7 @@ int font_draw_char(int x, int y, char c, uint16_t color)
 
 int font_draw_char_x2(int x, int y, char c, uint16_t color)
 {
-  int i,j;
+  int i,j,k,w;
   unsigned char *glyph;
 
   /* Check if character is printable. */
@@ -676,20 +681,25 @@ int font_draw_char_x2(int x, int y, char c, uint16_t color)
 
   /* Get our glyph. */
   glyph = chrtbl_f16[c - 0x20];
+  w = widtbl_f16[c - 0x20];
+  w = (w+6)/8;
 
   /* Blit our character into the framebuffer. */
   for (j=0; j<16; j++)
   {
+    for (k=0; k<w; k++)
+    {
       for (i=0; i<8; i++)
       {
-          if (glyph[j] & (1<<i))
+          if ((glyph[j*w + k] & (1<<i)) > 0)
           {
-              st7789_set_pixel(x+(7-i)*2, y+j*2, color);
-              st7789_set_pixel(x+(7-i)*2, y+j*2+1, color);
-              st7789_set_pixel(x+(7-i)*2+1, y+j*2, color);
-              st7789_set_pixel(x+(7-i)*2+1, y+j*2+1, color);
+              st7789_set_pixel(x + 16*k + (7-i)*2, y+j*2, color);
+              st7789_set_pixel(x + 16*k + (7-i)*2, y+j*2+1, color);
+              st7789_set_pixel(x + 16*k + (7-i)*2+1, y+j*2, color);
+              st7789_set_pixel(x + 16*k + (7-i)*2+1, y+j*2+1, color);
           }
       }
+    }
   }
 
   /* Success. */
