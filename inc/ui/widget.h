@@ -2,21 +2,35 @@
 #define __INC_UI_WIDGET_H
 
 #include "ui.h"
+#include "style.h"
+#include "events.h"
 
 #define WIDGET_OFFSET_X(w) ((w->p_tile==NULL)?(w->offset_x):(w->offset_x + w->p_tile->offset_x))
 #define WIDGET_OFFSET_Y(w) ((w->p_tile==NULL)?(w->offset_y):(w->offset_y + w->p_tile->offset_y))
 
+#define WE_ERROR      (1)
+#define WE_PROCESSED  (0)
+
 typedef struct widget_t;
 
 typedef enum {
-  WE_PRESS,
+  /* Default events. */
+  WE_PRESS = SYS_EVENTS_BASE,
   WE_RELEASE,
-  WE_TAP
+  WE_TAP,
+  WE_SWIPE_LEFT,
+  WE_RIGHT,
+  WE_SWIPE_UP,
+  WE_SWIPE_DOWN,
+
+  /* Listbox events. */
+  LB_ITEM_SELECTED=LB_EVENTS_BASE,
+  LB_ITEM_DESELECTED
 } widget_event_t;
 
 /* Callback definition. */
 typedef int (*FDrawWidget)(struct widget_t *p_widget);
-typedef int (*FEventHandler)(struct widget_t *p_widget, widget_event_t p_event, int x, int y);
+typedef int (*FEventHandler)(struct widget_t *p_widget, widget_event_t p_event, int x, int y, int velocity);
 typedef void (*FTapHandler)(struct widget_t *p_widget);
 
 typedef struct {
@@ -34,15 +48,8 @@ typedef struct tWidget {
   /* Widget box. */
   widget_box_t box;
 
-#if 0
-  /* Position */
-  int offset_x;
-  int offset_y;
-
-  /* Size */
-  int width;
-  int height;
-#endif
+  /* Style. */
+  widget_style_t style;
 
   /* Callbacks */
   FDrawWidget pfn_drawfunc;
@@ -67,7 +74,14 @@ void widget_set_eventhandler(widget_t *p_widget, FEventHandler pfn_eventhandler)
 void widget_set_userdata(widget_t *p_widget, void *p_user_data);
 int widget_draw(widget_t *p_widget);
 tile_t *widget_get_tile(widget_t *p_widget);
-void widget_send_event(widget_t *p_widget, widget_event_t event, int x, int y);
+int widget_send_event(widget_t *p_widget, widget_event_t event, int x, int y, int velocity);
+
+/* Style management. */
+void widget_set_style(widget_t *p_widget, widget_style_t *p_style);
+void widget_set_bg_color(widget_t *p_widget, uint16_t color);
+void widget_set_border_color(widget_t *p_widget, uint16_t color);
+void widget_set_front_color(widget_t *p_widget, uint16_t color);
+
 
 /* Widget position. */
 void widget_get_abs_box(widget_t *p_widget, widget_box_t *p_box);

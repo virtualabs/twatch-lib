@@ -106,8 +106,8 @@ void _process_touch_data(ft6236_touch_t *touch)
               {
                 ESP_LOGD(TOUCH_TAG, "SWIPE RIGHT, velocity: %f", velocity);
                 event.type = TOUCH_EVENT_SWIPE_RIGHT;
-                event.coords.x = 0;
-                event.coords.y = 0;
+                event.coords.x = first.x;
+                event.coords.y = first.y;
                 event.velocity = velocity;
                 _touch_report_event(&event);
               }
@@ -115,8 +115,8 @@ void _process_touch_data(ft6236_touch_t *touch)
               {
                 ESP_LOGD(TOUCH_TAG, "SWIPE LEFT, velocity: %f", velocity);
                 event.type = TOUCH_EVENT_SWIPE_LEFT;
-                event.coords.x = 0;
-                event.coords.y = 0;
+                event.coords.x = first.x;
+                event.coords.y = first.y;
                 event.velocity = velocity;
                 _touch_report_event(&event);
               }
@@ -127,8 +127,8 @@ void _process_touch_data(ft6236_touch_t *touch)
               {
                 ESP_LOGD(TOUCH_TAG, "SWIPE DOWN, velocity: %f", velocity);
                 event.type = TOUCH_EVENT_SWIPE_DOWN;
-                event.coords.x = 0;
-                event.coords.y = 0;
+                event.coords.x = first.x;
+                event.coords.y = first.y;
                 event.velocity = velocity;
                 _touch_report_event(&event);
               }
@@ -136,8 +136,8 @@ void _process_touch_data(ft6236_touch_t *touch)
               {
                 ESP_LOGD(TOUCH_TAG, "SWIPE UP, velocity: %f", velocity);
                 event.type = TOUCH_EVENT_SWIPE_UP;
-                event.coords.x = 0;
-                event.coords.y = 0;
+                event.coords.x = first.x;
+                event.coords.y = first.y;
                 event.velocity = velocity;
                 _touch_report_event(&event);
               }
@@ -150,6 +150,13 @@ void _process_touch_data(ft6236_touch_t *touch)
       {
         last.x = touch->touches[0].x;
         last.y = touch->touches[0].y;
+
+        /* Notify touch press. */
+        event.type = TOUCH_EVENT_PRESS;
+        event.coords.x = last.x;
+        event.coords.y = last.y;
+        event.velocity = 0.0;
+        _touch_report_event(&event);
       }
     }
     break;

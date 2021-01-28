@@ -19,7 +19,7 @@ void widget_label_drawfunc(widget_t *p_widget)
         3,
         3,
         p_label->psz_label,
-        LABEL_STYLE_TEXT
+        p_widget->style.front
       );
     }
 }

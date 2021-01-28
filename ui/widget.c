@@ -58,6 +58,10 @@ void widget_init(widget_t *p_widget, tile_t *p_tile, int x, int y, int width, in
   p_widget->box.width = width;
   p_widget->box.height = height;
 
+  p_widget->style.background = STYLE_BG_DEFAULT;
+  p_widget->style.border = STYLE_BORDER_DEFAULT;
+  p_widget->style.front = STYLE_FRONT_DEFAULT;
+
   /*
   p_widget->offset_x = x;
   p_widget->offset_y = y;
@@ -110,14 +114,17 @@ void widget_set_eventhandler(widget_t *p_widget, FEventHandler pfn_eventhandler)
 }
 
 
-void widget_send_event(widget_t *p_widget, widget_event_t event, int x, int y)
+int widget_send_event(widget_t *p_widget, widget_event_t event, int x, int y, int velocity)
 {
   if (p_widget == NULL)
-    return;
+    return WE_ERROR;
 
   /* Forward to widget. */
   if (p_widget->pfn_eventhandler != NULL)
-    p_widget->pfn_eventhandler(p_widget, event, x, y);
+    return p_widget->pfn_eventhandler(p_widget, event, x, y, velocity);
+
+  /* If no handler, return WE_ERROR. */
+  return WE_ERROR;
 }
 
 /**
@@ -146,6 +153,31 @@ tile_t *widget_get_tile(widget_t *p_widget)
 }
 
 
+void widget_set_style(widget_t *p_widget, widget_style_t *p_style)
+{
+  p_widget->style.background = p_style->background;
+  p_widget->style.border = p_style->border;
+  p_widget->style.front = p_style->front;
+}
+
+void widget_set_bg_color(widget_t *p_widget, uint16_t color)
+{
+  p_widget->style.background = color;
+}
+
+
+void widget_set_border_color(widget_t *p_widget, uint16_t color)
+{
+  p_widget->style.border = color;
+}
+
+
+void widget_set_front_color(widget_t *p_widget, uint16_t color)
+{
+  p_widget->style.front = color;
+}
+
+
 int widget_draw(widget_t *p_widget)
 {
   int x0,y0,x1,y1,result;
@@ -159,12 +191,12 @@ int widget_draw(widget_t *p_widget)
 
       /* Set drawing window to our widget region. */
       st7789_set_drawing_window(
-        p_widget->box.x,
-        p_widget->box.y,
-        p_widget->box.x + p_widget->box.width,
-        p_widget->box.y + p_widget->box.height
+        (p_widget->box.x < x0)?x0:p_widget->box.x,
+        (p_widget->box.y < y0)?y0:p_widget->box.y,
+        ((p_widget->box.x + p_widget->box.width) > x1)?x1:(p_widget->box.x + p_widget->box.width),
+        ((p_widget->box.y + p_widget->box.height) > y1)?y1:(p_widget->box.y + p_widget->box.height)
       );
-
+      
       result = p_widget->pfn_drawfunc(p_widget);
       
       /* Restore drawing window to its previous state. */

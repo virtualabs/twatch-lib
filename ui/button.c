@@ -85,11 +85,17 @@ void widget_button_drawfunc(widget_t *p_widget)
   }
 }
 
-void widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x, int  y)
-{
-  widget_button_t *p_button = (widget_button_t *)p_widget->p_user_data;
 
-  printf("[button] got event %d\n", event);
+/**
+ * widget_button_event_handler()
+ * 
+ * @brief: Event handler for buttons
+ **/
+
+int widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x, int  y, int velocity)
+{
+  bool b_processed = false;
+  widget_button_t *p_button = (widget_button_t *)p_widget->p_user_data;
 
   if (p_button != NULL)
   {
@@ -98,12 +104,14 @@ void widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x
       case WE_PRESS:
         {
           p_button->state = BUTTON_PRESSED;
+          b_processed = true;
         }
         break;
 
       case WE_RELEASE:
         {
           p_button->state = BUTTON_RELEASED;
+          b_processed = true;
         }
         break;
 
@@ -111,10 +119,20 @@ void widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x
         {
             if (p_button->pfn_tap_handler != NULL)
               p_button->pfn_tap_handler(p_widget);
+            b_processed = true;
         }
         break;
+
+      default:
+        break;
     }
+
+    /* Notify UI if event has been processed or not. */
+    return b_processed;
   }
+
+  /* Event not processed. */
+  return WE_ERROR;
 }
 
 void widget_button_init(

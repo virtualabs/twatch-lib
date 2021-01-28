@@ -1,7 +1,7 @@
 #include "ui/ui.h"
 #include "ui/widget.h"
 
-void ui_forward_event_to_widget(touch_event_type_t state, int x, int y);
+int ui_forward_event_to_widget(touch_event_type_t state, int x, int y, int velocity);
 
 /**
  * Main interface structure.
@@ -58,106 +58,122 @@ void IRAM_ATTR ui_process_events(void)
       {
         case TOUCH_EVENT_SWIPE_RIGHT:
           {
-            /* Can we move to the left tile ? */
-            if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
+            /* Forward event to widgets, consider event only if no widget processed it. */
+            if (ui_forward_event_to_widget(TOUCH_EVENT_SWIPE_RIGHT, touch.coords.x, touch.coords.y, touch.velocity) == WE_ERROR)
             {
-              /* Get the main tile. */
-              p_main_tile = g_ui.p_current_tile;
-              while (p_main_tile->p_top != NULL)
-                p_main_tile = p_main_tile->p_top;
-            }
-            else
-            {
-              /* The current tile is a main tile, nothing to do. */
-              p_main_tile = g_ui.p_current_tile;
-            }
+              /* Can we move to the left tile ? */
+              if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
+              {
+                /* Get the main tile. */
+                p_main_tile = g_ui.p_current_tile;
+                while (p_main_tile->p_top != NULL)
+                  p_main_tile = p_main_tile->p_top;
+              }
+              else
+              {
+                /* The current tile is a main tile, nothing to do. */
+                p_main_tile = g_ui.p_current_tile;
+              }
 
-            if (p_main_tile->p_left != NULL)
-            {
-              /* Yes, setup animation. */
-              g_ui.state = UI_STATE_MOVE_LEFT;
-              g_ui.p_from_tile = g_ui.p_current_tile;
-              g_ui.p_to_tile = p_main_tile->p_left;
-              g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
-              g_ui.p_to_tile->offset_y = 0;
+              if (p_main_tile->p_left != NULL)
+              {
+                /* Yes, setup animation. */
+                g_ui.state = UI_STATE_MOVE_LEFT;
+                g_ui.p_from_tile = g_ui.p_current_tile;
+                g_ui.p_to_tile = p_main_tile->p_left;
+                g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
+                g_ui.p_to_tile->offset_y = 0;
+              }
             }
           }
           break;
 
         case TOUCH_EVENT_SWIPE_LEFT:
           {
-            /* Can we move to the left tile ? */
-            if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
+            /* Forward event to widgets, consider event only if no widget processed it. */
+            if (ui_forward_event_to_widget(TOUCH_EVENT_SWIPE_LEFT, touch.coords.x, touch.coords.y, touch.velocity) == WE_ERROR)
             {
-              /* Get the main tile. */
-              p_main_tile = g_ui.p_current_tile;
-              while (p_main_tile->p_top != NULL)
-                p_main_tile = p_main_tile->p_top;
-            }
-            else
-            {
-              /* The current tile is a main tile, nothing to do. */
-              p_main_tile = g_ui.p_current_tile;
-            }
+              /* Can we move to the left tile ? */
+              if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
+              {
+                /* Get the main tile. */
+                p_main_tile = g_ui.p_current_tile;
+                while (p_main_tile->p_top != NULL)
+                  p_main_tile = p_main_tile->p_top;
+              }
+              else
+              {
+                /* The current tile is a main tile, nothing to do. */
+                p_main_tile = g_ui.p_current_tile;
+              }
 
-            /* Can we move to the left tile ? */
-            if (p_main_tile->p_right != NULL)
-            {
-              /* Yes, setup animation. */
-              g_ui.state = UI_STATE_MOVE_RIGHT;
-              g_ui.p_from_tile = g_ui.p_current_tile;
-              g_ui.p_to_tile = p_main_tile->p_right;
-              g_ui.p_to_tile->offset_x = SCREEN_WIDTH;
-              g_ui.p_to_tile->offset_y = 0;
+              /* Can we move to the left tile ? */
+              if (p_main_tile->p_right != NULL)
+              {
+                /* Yes, setup animation. */
+                g_ui.state = UI_STATE_MOVE_RIGHT;
+                g_ui.p_from_tile = g_ui.p_current_tile;
+                g_ui.p_to_tile = p_main_tile->p_right;
+                g_ui.p_to_tile->offset_x = SCREEN_WIDTH;
+                g_ui.p_to_tile->offset_y = 0;
+              }
             }
           }
           break;
 
         case TOUCH_EVENT_SWIPE_UP:
           {
-            /* Can we move to the bottom tile ? */
-            if (g_ui.p_current_tile->p_bottom != NULL)
+            /* Forward event to widgets, consider event only if no widget processed it. */
+            if (ui_forward_event_to_widget(TOUCH_EVENT_SWIPE_UP, touch.coords.x, touch.coords.y, touch.velocity) == WE_ERROR)
             {
-              /* Yes, setup animation. */
-              g_ui.state = UI_STATE_MOVE_DOWN;
-              g_ui.p_from_tile = g_ui.p_current_tile;
-              g_ui.p_to_tile = g_ui.p_current_tile->p_bottom;
-              g_ui.p_to_tile->offset_x = 0;
-              g_ui.p_to_tile->offset_y = SCREEN_HEIGHT;
+              /* Can we move to the bottom tile ? */
+              if (g_ui.p_current_tile->p_bottom != NULL)
+              {
+                /* Yes, setup animation. */
+                g_ui.state = UI_STATE_MOVE_DOWN;
+                g_ui.p_from_tile = g_ui.p_current_tile;
+                g_ui.p_to_tile = g_ui.p_current_tile->p_bottom;
+                g_ui.p_to_tile->offset_x = 0;
+                g_ui.p_to_tile->offset_y = SCREEN_HEIGHT;
+              }
             }
           }
           break;
 
         case TOUCH_EVENT_SWIPE_DOWN:
           {
-            /* Can we move to the top tile ? */
-            if (g_ui.p_current_tile->p_top != NULL)
+            /* Forward event to widgets, consider event only if no widget processed it. */
+            if (ui_forward_event_to_widget(TOUCH_EVENT_SWIPE_DOWN, touch.coords.x, touch.coords.y, touch.velocity) == WE_ERROR)
             {
-              /* Yes, setup animation. */
-              g_ui.state = UI_STATE_MOVE_UP;
-              g_ui.p_from_tile = g_ui.p_current_tile;
-              g_ui.p_to_tile = g_ui.p_current_tile->p_top;
-              g_ui.p_to_tile->offset_x = 0;
-              g_ui.p_to_tile->offset_y = -SCREEN_HEIGHT;
+              /* Can we move to the top tile ? */
+              if (g_ui.p_current_tile->p_top != NULL)
+              {
+                /* Yes, setup animation. */
+                g_ui.state = UI_STATE_MOVE_UP;
+                g_ui.p_from_tile = g_ui.p_current_tile;
+                g_ui.p_to_tile = g_ui.p_current_tile->p_top;
+                g_ui.p_to_tile->offset_x = 0;
+                g_ui.p_to_tile->offset_y = -SCREEN_HEIGHT;
+              }
             }
           }
           break;
 
         case TOUCH_EVENT_PRESS:
           {
-            ui_forward_event_to_widget(TOUCH_EVENT_PRESS, touch.coords.x, touch.coords.y);
+            ui_forward_event_to_widget(TOUCH_EVENT_PRESS, touch.coords.x, touch.coords.y, 0);
           }
           break;
 
         case TOUCH_EVENT_RELEASE:
           {
-            ui_forward_event_to_widget(TOUCH_EVENT_RELEASE, touch.coords.x, touch.coords.y);
+            ui_forward_event_to_widget(TOUCH_EVENT_RELEASE, touch.coords.x, touch.coords.y, 0);
           }
           break;
 
         case TOUCH_EVENT_TAP:
           {
-            ui_forward_event_to_widget(TOUCH_EVENT_TAP, touch.coords.x, touch.coords.y);
+            ui_forward_event_to_widget(TOUCH_EVENT_TAP, touch.coords.x, touch.coords.y, 0);
           }
           break;
 
@@ -272,15 +288,16 @@ void IRAM_ATTR ui_process_events(void)
  * @param state: touch state (press/release)
  * @param x: X coordinate of the event
  * @param y: Y coordinate of the event
+ * @return: 0 if no widget claimed the event, 1 otherwise.
  **/
 
-void ui_forward_event_to_widget(touch_event_type_t state, int x, int y)
+int ui_forward_event_to_widget(touch_event_type_t state, int x, int y, int velocity)
 {
   widget_t *p_widget = widget_enum_first();
   while (p_widget != NULL)
   {
     if (state == TOUCH_EVENT_RELEASE)
-      widget_send_event(p_widget, (widget_event_t)state, x, y);
+      widget_send_event(p_widget, (widget_event_t)state, x, y, velocity);
     else
     {
       if (p_widget->p_tile == g_ui.p_current_tile)
@@ -292,12 +309,11 @@ void ui_forward_event_to_widget(touch_event_type_t state, int x, int y)
         )
         {
           /* Forward the touch event to the widget. */
-          widget_send_event(
-            p_widget,
-            (widget_event_t)state,
-            x - p_widget->box.x,
-            y - p_widget->box.y
-          );
+          if (widget_send_event(p_widget, (widget_event_t)state, x - p_widget->box.x, y - p_widget->box.y, velocity) == WE_PROCESSED)
+          {
+            /* Widget processed the event, we are done. */
+            return 0;
+          }
         }
       }
     }
@@ -305,6 +321,9 @@ void ui_forward_event_to_widget(touch_event_type_t state, int x, int y)
     /* Go to next widget. */
     p_widget = widget_enum_next(p_widget);
   }
+
+  /* No widget processed this event. */
+  return 1;
 
 }
 
