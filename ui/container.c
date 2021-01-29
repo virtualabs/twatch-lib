@@ -8,6 +8,7 @@
 
 void widget_container_drawfunc(widget_t *p_widget)
 {
+  int x0,y0,x1,y1;
   int y=5;
   widget_container_item_t *p_widget_item;
 
@@ -40,8 +41,8 @@ void widget_container_drawfunc(widget_t *p_widget)
     while(p_widget_item != NULL)
     {
       /* Position widget. */
-      p_widget_item->p_widget->box.x = p_widget_item->rel_box.x + widget_get_abs_x(&p_container->widget);
-      p_widget_item->p_widget->box.y = p_widget_item->rel_box.y + widget_get_abs_y(&p_container->widget);
+      p_widget_item->p_widget->box.x = p_widget_item->rel_box.x + widget_get_abs_x(&p_container->widget) + p_container->offset_x;
+      p_widget_item->p_widget->box.y = p_widget_item->rel_box.y + widget_get_abs_y(&p_container->widget) + p_container->offset_y;
 
       /* Draw widget. */
       widget_draw(p_widget_item->p_widget);
@@ -61,7 +62,7 @@ void widget_container_drawfunc(widget_t *p_widget)
 }
 
 
-void widget_container_event_handler(widget_t *p_widget, widget_event_t event, int x, int y)
+int widget_container_event_handler(widget_t *p_widget, widget_event_t event, int x, int y, int velocity)
 {
   widget_container_item_t *p_item;
   widget_container_t *p_container = (widget_container_t *)p_widget->p_user_data;
@@ -76,7 +77,7 @@ void widget_container_event_handler(widget_t *p_widget, widget_event_t event, in
       {
         /* If WE_RELEASE event, forward to all widgets. */
         if (event == WE_RELEASE)
-          widget_send_event(p_item->p_widget, event, x, y);
+          widget_send_event(p_item->p_widget, event, x, y, velocity);
         else
         {
           /* Does this event concern this widget ? */
@@ -88,7 +89,8 @@ void widget_container_event_handler(widget_t *p_widget, widget_event_t event, in
           )
           {
             /* Forward the touch event to the widget. */
-            widget_send_event(p_item->p_widget, (widget_event_t)event, x, y);
+            if (widget_send_event(p_item->p_widget, (widget_event_t)event, x, y, velocity) == WE_PROCESSED)
+              return WE_PROCESSED;
           }
         }
         
@@ -96,6 +98,9 @@ void widget_container_event_handler(widget_t *p_widget, widget_event_t event, in
       }
     }
   }
+
+  /* Event not processed. */
+  return WE_ERROR;
 }
 
 
@@ -106,6 +111,8 @@ void widget_container_init(widget_container_t *p_widget_container, tile_t *p_til
 
   /* Set properties (no children) */
   p_widget_container->p_children = NULL;
+  p_widget_container->offset_x = 0;
+  p_widget_container->offset_y = 0;
   
   /* Set user data. */
   widget_set_userdata(&p_widget_container->widget, (void *)p_widget_container);

@@ -4,10 +4,10 @@
 #include "ui/ui.h"
 #include "ui/widget.h"
 
-typedef struct _widget_container_item {
+typedef struct t_widget_container_item {
   widget_t *p_widget;
   widget_box_t rel_box;
-  widget_t *p_next;
+  struct t_widget_container_item *p_next;
 } widget_container_item_t;
 
 typedef struct {
@@ -15,6 +15,10 @@ typedef struct {
 
   /* Children widgets. */
   widget_container_item_t *p_children;
+
+  /* scroll y */
+  int offset_y;
+  int offset_x;
   
 } widget_container_t;
 
