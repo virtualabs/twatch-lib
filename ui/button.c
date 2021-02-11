@@ -128,7 +128,7 @@ int widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x,
     }
 
     /* Notify UI if event has been processed or not. */
-    return b_processed;
+    return b_processed?WE_PROCESSED:WE_ERROR;
   }
 
   /* Event not processed. */
