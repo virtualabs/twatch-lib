@@ -39,6 +39,7 @@ typedef struct {
 
 } widget_listbox_t;
 
+/* Exposed functions. */
 void widget_listbox_init(widget_listbox_t *p_widget_listbox, tile_t *p_tile, int x, int y, int width, int height);
 void widget_listbox_add(widget_listbox_t *p_widget_listbox, widget_t *p_widget);
 void widget_listbox_remove(widget_listbox_t *p_widget_listbox, widget_t *p_widget);

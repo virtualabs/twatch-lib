@@ -3,6 +3,13 @@
 
 #define TAG "listbox"
 
+/**
+ * widget_listbox_animate()
+ * 
+ * @brief: Animate the listbox based on its scrolling speed
+ * @param p_listbox: pointer to a `widget_listbox_t`
+ **/
+
 void widget_listbox_animate(widget_listbox_t *p_listbox)
 {
   /* Determine a dy based on current scrolling speed. */
@@ -20,7 +27,7 @@ void widget_listbox_animate(widget_listbox_t *p_listbox)
     }
 
     /* Adapt speed. */
-    p_listbox->speed = (9.9*p_listbox->speed)/10.0;
+    p_listbox->speed = (9*p_listbox->speed)/10.0;
   }
   else if (p_listbox->speed > 0)
   {
@@ -51,6 +58,7 @@ void widget_listbox_animate(widget_listbox_t *p_listbox)
  * widget_listbox_drawfunc()
  * 
  * @brief: Specific rendering function for our listbox widget.
+ * @param p_widget: pointer to a `widget_t` structure
  **/
 
 void widget_listbox_drawfunc(widget_t *p_widget)
@@ -88,7 +96,6 @@ void widget_listbox_drawfunc(widget_t *p_widget)
     widget_draw(&p_listbox->scrollbar);
 
     /* Draw listbox borders. */
-   /* Draw the button. */
     widget_draw_line(
       p_widget,
       1,
@@ -124,6 +131,18 @@ void widget_listbox_drawfunc(widget_t *p_widget)
   }
 }
 
+
+/**
+ * widget_listbox_event_handler()
+ * 
+ * @brief: UI event handler for lisbox
+ * @param p_widget: pointer to a `widget_t` structure
+ * @param event: UI event
+ * @param x: x coordinate (if event is a touch/scroll event)
+ * @param y: y coordinate (if event is a touch/scroll event)
+ * @param velocity: scroll velocity, 0 if not required
+ * @return: WE_ERROR if event has not been processed, WE_PROCESSED otherwise.
+ **/
 
 int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x, int  y, int velocity)
 {
@@ -218,13 +237,13 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
       default:
       {
         p_listbox->state = LB_STATE_IDLE;
-        b_processed = true;
+        b_processed = false;
       }
       break;
     }
 
     /* Notify UI if event has been processed or not. */
-    return b_processed;
+    return b_processed?WE_PROCESSED:WE_ERROR;
   }
 
   /* Event not processed. */
@@ -232,7 +251,13 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
 }
 
 
-/* Update scrollbar. */
+/**
+ * update_scrollbar()
+ * 
+ * @brief: Update listbox' scrollbar
+ * @param p_widget_listbox: pointer to a `widget_listbox_t` structure
+ **/
+
 void update_scrollbar(widget_listbox_t *p_widget_listbox)
 {
   widget_container_item_t *p_item = NULL;
@@ -400,6 +425,14 @@ void widget_listbox_remove(widget_listbox_t *p_widget_listbox, widget_t *p_widge
   update_scrollbar(p_widget_listbox);
 }
 
+
+/**
+ * widget_listbox_count()
+ * 
+ * @brief: Return the number of items in a listbox
+ * @param p_widget_listbox: pointer to a `widget_listbox_t` structure.
+ * @return: number of items present in the listbox
+ **/
 
 int widget_listbox_count(widget_listbox_t *p_widget_listbox)
 {
