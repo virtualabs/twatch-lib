@@ -44,6 +44,12 @@ void ui_select_tile(tile_t *p_tile)
 }
 
 
+/**
+ * ui_process_events()
+ * 
+ * @brief: Process UI events (user interaction and animation/rendering)
+ **/
+
 void IRAM_ATTR ui_process_events(void)
 {
   touch_event_t touch;
@@ -279,6 +285,7 @@ void IRAM_ATTR ui_process_events(void)
   st7789_commit_fb();
 }
 
+
 /**********************************************************************
  * Handle press/release events
  *********************************************************************/
@@ -324,7 +331,6 @@ int ui_forward_event_to_widget(touch_event_type_t state, int x, int y, int veloc
 
   /* No widget processed this event. */
   return 1;
-
 }
 
 
@@ -396,12 +402,34 @@ void tile_draw_line(tile_t *p_tile, int x0, int y0, int x1, int y1, uint16_t col
 }
 
 
+/**
+ * tile_draw_char()
+ * 
+ * @brief: Draw a character at a given position with a given color.
+ * @param p_tile: pointer to a `tile_t` structure
+ * @param x: X coordinate
+ * @param y: Y cooordinate
+ * @param c: character to draw
+ * @param color: character color
+ **/
+
 void tile_draw_char(tile_t *p_tile, int x, int y, char c, uint16_t color)
 {
     /* Draw character with tile offset. */
     font_draw_char(p_tile->offset_x + x, p_tile->offset_y + y, c, color);
 }
 
+
+/**
+ * tile_draw_text()
+ * 
+ * @brief: Draw a text at a given position with a given color.
+ * @param p_tile: pointer to a `tile_t` structure
+ * @param x: X coordinate
+ * @param y: Y cooordinate
+ * @param psz_text: text string to draw
+ * @param color: character color
+ **/
 
 void tile_draw_text(tile_t *p_tile, int x, int y, char *psz_text, uint16_t color)
 {
@@ -486,7 +514,6 @@ int _tile_default_draw(tile_t *p_tile)
 }
 
 
-
 /**
  * @brief Initialize a tile object.
  * @param p_tile: pointer to a  `tile_t` structure
@@ -524,14 +551,24 @@ void tile_set_drawfunc(tile_t *p_tile, FDrawTile pfn_drawfunc)
 }
 
 
+/**
+ * tile_get_user_data()
+ * 
+ * @brief: get tile user data
+ * @param p_tile: pointer to a `tile_t` structure
+ **/
+
 void *tile_get_user_data(tile_t *p_tile)
 {
   return p_tile->p_user_data;
 }
 
+
 /**
- * @brief: draw tile (in memory)
- * @param p_tile: tile to draw in memory
+ * tile_draw()
+ * 
+ * @brief: draw a tile
+ * @param p_tile: pointer to a `tile_t` structure
  **/
 
 int IRAM_ATTR tile_draw(tile_t *p_tile)
@@ -546,6 +583,15 @@ int IRAM_ATTR tile_draw(tile_t *p_tile)
   return -2;
 }
 
+
+/**
+ * tile_link_right()
+ * 
+ * @brief: Connect a tile to the right of another tile
+ * @param p_tile: pointer to a `tile_t` structure (parent tile)
+ * @param p_right_tile: pointer to a `tile_t` structure to connect to the right
+ **/
+
 void tile_link_right(tile_t *p_tile, tile_t *p_right_tile)
 {
   /* Sanity check. */
@@ -558,6 +604,14 @@ void tile_link_right(tile_t *p_tile, tile_t *p_right_tile)
 }
 
 
+/**
+ * tile_link_left()
+ * 
+ * @brief: Connect a tile to the left of another tile
+ * @param p_tile: pointer to a `tile_t` structure (parent tile)
+ * @param p_left_tile: pointer to a `tile_t` structure to connect to the left
+ **/
+
 void tile_link_left(tile_t *p_tile, tile_t *p_left_tile)
 {
   /* Sanity check. */
@@ -568,6 +622,15 @@ void tile_link_left(tile_t *p_tile, tile_t *p_left_tile)
   p_tile->p_left = p_left_tile;
   p_left_tile->p_right = p_tile;
 }
+
+
+/**
+ * tile_link_top()
+ * 
+ * @brief: Connect a tile to the top of another tile
+ * @param p_tile: pointer to a `tile_t` structure (parent tile)
+ * @param p_top_tile: pointer to a `tile_t` structure to connect to the top
+ **/
 
 void tile_link_top(tile_t *p_tile, tile_t *p_top_tile)
 {
@@ -584,6 +647,14 @@ void tile_link_top(tile_t *p_tile, tile_t *p_top_tile)
 }
 
 
+/**
+ * tile_link_bottom()
+ * 
+ * @brief: Connect a tile to the bottom of another tile
+ * @param p_tile: pointer to a `tile_t` structure (parent tile)
+ * @param p_bottom_tile: pointer to a `tile_t` structure to connect to the bottom
+ **/
+
 void tile_link_bottom(tile_t *p_tile, tile_t *p_bottom_tile)
 {
   /* Sanity check. */
@@ -598,18 +669,26 @@ void tile_link_bottom(tile_t *p_tile, tile_t *p_bottom_tile)
   p_bottom_tile->t_type = TILE_SECONDARY;
 }
 
+
 /**************************************************
  * Widget related functions
  *************************************************/
 
- void IRAM_ATTR tile_draw_widgets(tile_t *p_tile)
- {
-   widget_t *p_widget;
+/**
+ * tile_draw_widgets()
+ * 
+ * @brief: Draw widgets belonging to a given tile.
+ * @param p_tile: pointer to a `tile_t` structure
+ **/
 
-   /*
-    * Iterate over all the widgets, and display only those belonging to
-    * the specified tile.
-    */
+void IRAM_ATTR tile_draw_widgets(tile_t *p_tile)
+{
+  widget_t *p_widget;
+
+  /*
+  * Iterate over all the widgets, and display only those belonging to
+  * the specified tile.
+  */
   p_widget = widget_enum_first();
   while (p_widget != NULL)
   {
@@ -619,4 +698,4 @@ void tile_link_bottom(tile_t *p_tile, tile_t *p_bottom_tile)
     /* Go to next widget. */
     p_widget = widget_enum_next(p_widget);
   }
- }
+}

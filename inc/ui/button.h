@@ -40,5 +40,6 @@ void widget_button_init(
 );
 
 void widget_button_set_handler(widget_button_t *p_widget_button, FTapHandler pfn_handler);
+void widget_button_set_text(widget_button_t *p_widget_button, char *psz_text);
 
 #endif /* __INC_WIDGET_BUTTON_H */

@@ -1,5 +1,13 @@
 #include "ui/button.h"
 
+
+/**
+ * widget_button_drawfunc()
+ * 
+ * @brief: Callback function that renders a button on screen.
+ * @param p_widget: pointer to a `widget_t` structure.
+ **/
+
 void widget_button_drawfunc(widget_t *p_widget)
 {
   int text_width, dx, dy;
@@ -90,6 +98,12 @@ void widget_button_drawfunc(widget_t *p_widget)
  * widget_button_event_handler()
  * 
  * @brief: Event handler for buttons
+ * @param p_widget: pointer to a ̀`widget_t` structure
+ * @param event: event type
+ * @param x: X coordinate of the event
+ * @param y: Y coordinate of the event
+ * @param velocity: swipe velocity if event is a swipe event, 0 otherwise.
+ * @return: WE_PROCESSED if event has been processed, WE_ERROR otherwise
  **/
 
 int widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x, int  y, int velocity)
@@ -101,6 +115,7 @@ int widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x,
   {
     switch(event)
     {
+      /* Button is pressed */
       case WE_PRESS:
         {
           p_button->state = BUTTON_PRESSED;
@@ -108,6 +123,7 @@ int widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x,
         }
         break;
 
+      /* Button is released. */
       case WE_RELEASE:
         {
           p_button->state = BUTTON_RELEASED;
@@ -115,6 +131,7 @@ int widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x,
         }
         break;
 
+      /* Button has been quickly pressed and released. */
       case WE_TAP:
         {
             if (p_button->pfn_tap_handler != NULL)
@@ -134,6 +151,20 @@ int widget_button_event_handler(widget_t *p_widget, widget_event_t event, int x,
   /* Event not processed. */
   return WE_ERROR;
 }
+
+
+/**
+ * widget_button_init()
+ * 
+ * @brief: Initialize a button widget.
+ * @param p_widget_button: pointer to a `widget_button_t` structure
+ * @param p_tile: pointer to a `tile_t` structure
+ * @param x: X coordinate
+ * @param y: Y coordinate
+ * @param width: button width
+ * @param height: button height
+ * @param psz_label: button text
+ **/
 
 void widget_button_init(
   widget_button_t *p_widget_button,
@@ -167,8 +198,29 @@ void widget_button_init(
 }
 
 
+/**
+ * widget_button_set_handler()
+ * 
+ * @brief: Set button handler that will called on press
+ * @param p_widget_button: pointer to a `widget_button_t` structure
+ * @param pfn_handler: pointer to the associated handler (function)
+ **/
+
 void widget_button_set_handler(widget_button_t *p_widget_button, FTapHandler pfn_handler)
 {
   p_widget_button->pfn_tap_handler = pfn_handler;
 }
 
+
+/**
+ * widget_button_set_text()
+ * 
+ * @brief: Set button text
+ * @param p_widget_button: pointer to a `widget_button_t` structure
+ * @param psz_text: pointer to a text string to set as button text
+ **/
+
+void widget_button_set_text(widget_button_t *p_widget_button, char *psz_text)
+{
+  p_widget_button->psz_label = psz_text;
+}

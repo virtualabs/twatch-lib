@@ -2,6 +2,14 @@
 
 #define WIDGET(x) (widget_t *)(&x->widget)
 
+
+/**
+ * widget_image_drawfunc()
+ * 
+ * @brief: Image widget drawing function (callback)
+ * @param p_widget: pointer to a `widget_t` structure
+ **/
+
 void widget_image_drawfunc(widget_t *p_widget)
 {
   /* Retrieve the image widget structure. */
@@ -15,12 +23,24 @@ void widget_image_drawfunc(widget_t *p_widget)
     0,
     p_widget_img->widget.box.width,
     p_widget_img->widget.box.height,
-    //p_widget_img->p_image->width,
-    //p_widget_img->p_image->height,
     0,
     0
   );
 }
+
+
+/**
+ * widget_image_init()
+ * 
+ * @brief: Initialize an Image widget.
+ * @param p_widget_img: pointer to a `widget_image_t` structure
+ * @param p_tile: pointer to a `tile_t` structure (parent tile)
+ * @param x: widget X coordinate
+ * @param y: widget Y coordinate
+ * @param width: widget width
+ * @param height: widget height
+ * @param p_image: pointer to an `image_t` structure
+ **/
 
 void widget_image_init(widget_image_t *p_widget_img, tile_t *p_tile, int x, int y, int width, int height, image_t *p_image)
 {

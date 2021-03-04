@@ -1,5 +1,13 @@
 #include "ui/scrollbar.h"
 
+
+/**
+ * widget_scrollbar_drawfunc()
+ * 
+ * @brief: Scrollbar drawing function (callback)
+ * @param p_widget: pointer to a `widget_t` structure
+ **/
+
 void widget_scrollbar_drawfunc(widget_t *p_widget)
 {
   int cursor_size;
@@ -44,7 +52,7 @@ void widget_scrollbar_drawfunc(widget_t *p_widget)
       SCROLLBAR_STYLE_BORDER
     );
 
-    /* Draw cursor. */
+    /* Draw cursor, only vertical at the moment (TODO !). */
     if (p_scrollbar->max < p_scrollbar->widget.box.height)
     {
       cursor_size = p_scrollbar->widget.box.height / 2;
@@ -60,6 +68,19 @@ void widget_scrollbar_drawfunc(widget_t *p_widget)
     widget_fill_region(&p_scrollbar->widget, 1, 1 + cursor_offset, p_scrollbar->widget.box.width-2, cursor_size, RGB(0xf, 0xf,0xf));
   }
 }
+
+/**
+ * widget_scrollbar_init()
+ * 
+ * @brief: Initialize a scrollbar widget
+ * @param p_widget_scrollbar: pointer to a `widget_scrollbar_t` structure
+ * @param p_tile: pointer to a `tile_t` structure (parent tile)
+ * @param x: widget X coordinate
+ * @param y: widget Y coordinate
+ * @param widht: widget width
+ * @param height: widget height
+ * @param type: scrollbar type
+ **/
 
 void widget_scrollbar_init(
   widget_scrollbar_t *p_widget_scrollbar,

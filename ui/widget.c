@@ -5,6 +5,13 @@
 widget_t *gp_widgets = NULL;
 widget_t *gp_last_widget = NULL;
 
+/**
+ * register_widget()
+ * 
+ * @brief: Register the widget into our global widgets list
+ * @param p_widget: pointer to a `widget_t` structure
+ **/
+
 void register_widget(widget_t *p_widget)
 {
   if (gp_widgets == NULL)
@@ -19,10 +26,25 @@ void register_widget(widget_t *p_widget)
   }
 }
 
+/**
+ * widget_enum_first()
+ * 
+ * @brief: Returns the first item of our global widgets list
+ * @return: pointer to a `widget_t` structure corresponding to the first list item, or NULL if none.
+ **/
+
 widget_t *widget_enum_first(void)
 {
   return gp_widgets;
 }
+
+/**
+ * widget_enum_next()
+ * 
+ * @brief: Returns the next item of our global widgets list
+ * @param p_widget: pointer to a `widget_t` structure
+ * @param: pointer to a `widget_t` structure corresponding to the next item, or NULL if none.
+ **/
 
 widget_t *widget_enum_next(widget_t *p_widget)
 {
@@ -39,6 +61,9 @@ widget_t *widget_enum_next(widget_t *p_widget)
 
 
 /**
+ * 
+ * widget_init()
+ * 
  * @brief: Initialize a `widget_t` structure.
  * @param p_tile: pointer to the widget's parent tile
  * @param x: widget X coordinate
@@ -62,13 +87,6 @@ void widget_init(widget_t *p_widget, tile_t *p_tile, int x, int y, int width, in
   p_widget->style.border = STYLE_BORDER_DEFAULT;
   p_widget->style.front = STYLE_FRONT_DEFAULT;
 
-  /*
-  p_widget->offset_x = x;
-  p_widget->offset_y = y;
-  p_widget->width = width;
-  p_widget->height = height;
-  */
-
   p_widget->p_next = NULL;
 
   /* Set drawing func to NULL. */
@@ -81,6 +99,8 @@ void widget_init(widget_t *p_widget, tile_t *p_tile, int x, int y, int width, in
 }
 
 /**
+ * widget_set_drawfunc()
+ * 
  * @brief: Set drawing function for a given widget.
  * @param p_widget: target widget
  * @param pfn_drawfunc: pointer to a FDrawWidget procedure
@@ -98,6 +118,8 @@ void widget_set_drawfunc(widget_t *p_widget, FDrawWidget pfn_drawfunc)
 
 
 /**
+ * widget_set_eventhandler()
+ * 
  * @brief: Set event handler function for a given widget.
  * @param p_widget: target widget
  * @param pfn_eventhandler: pointer to a FEventHandler procedure
@@ -114,6 +136,14 @@ void widget_set_eventhandler(widget_t *p_widget, FEventHandler pfn_eventhandler)
 }
 
 
+/**
+ * widget_send_event()
+ * 
+ * @brief: Set event handler function for a given widget.
+ * @param p_widget: target widget
+ * @param pfn_eventhandler: pointer to a FEventHandler procedure
+ **/
+
 int widget_send_event(widget_t *p_widget, widget_event_t event, int x, int y, int velocity)
 {
   if (p_widget == NULL)
@@ -128,6 +158,8 @@ int widget_send_event(widget_t *p_widget, widget_event_t event, int x, int y, in
 }
 
 /**
+ * widget_set_userdata()
+ * 
  * @brief: Set user data for a given widget
  * @param p_widget: target widget
  * @param p_user_data: pointer to some user data to link to the widget
@@ -144,6 +176,14 @@ void widget_set_userdata(widget_t *p_widget, void *p_user_data)
 }
 
 
+/**
+ * widget_get_tile()
+ * 
+ * @brief: Get tile associated with a widget
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @return: pointer to the corresponding `tile_t` structure (parent tile)
+ **/
+
 tile_t *widget_get_tile(widget_t *p_widget)
 {
   if (p_widget != NULL)
@@ -153,6 +193,14 @@ tile_t *widget_get_tile(widget_t *p_widget)
 }
 
 
+/**
+ * widget_set_style()
+ * 
+ * @brief: Set widget style
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @param p_style: pointer to a `widget_style_t` structure
+ **/
+
 void widget_set_style(widget_t *p_widget, widget_style_t *p_style)
 {
   p_widget->style.background = p_style->background;
@@ -160,11 +208,28 @@ void widget_set_style(widget_t *p_widget, widget_style_t *p_style)
   p_widget->style.front = p_style->front;
 }
 
+
+/**
+ * widget_set_bg_color()
+ * 
+ * @brief: Set widget background color
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @param color: background color
+ **/
+
 void widget_set_bg_color(widget_t *p_widget, uint16_t color)
 {
   p_widget->style.background = color;
 }
 
+
+/**
+ * widget_set_border_color()
+ * 
+ * @brief: Set widget border color
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @param color: border color
+ **/
 
 void widget_set_border_color(widget_t *p_widget, uint16_t color)
 {
@@ -172,11 +237,26 @@ void widget_set_border_color(widget_t *p_widget, uint16_t color)
 }
 
 
+/**
+ * widget_set_front_color()
+ * 
+ * @brief: Set widget front color
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @param color: front color
+ **/
+
 void widget_set_front_color(widget_t *p_widget, uint16_t color)
 {
   p_widget->style.front = color;
 }
 
+
+/**
+ * widget_draw()
+ * 
+ * @brief: Draw widget to screen
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ **/
 
 int widget_draw(widget_t *p_widget)
 {
@@ -213,6 +293,15 @@ int widget_draw(widget_t *p_widget)
   return -2;
 }
 
+
+/**
+ * widget_get_abs_x()
+ * 
+ * @brief: Get widget absolute X coordinate
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @return: widget X screen coordinate
+ **/
+
 int widget_get_abs_x(widget_t *p_widget)
 {
   if (p_widget->p_tile != NULL)
@@ -222,6 +311,14 @@ int widget_get_abs_x(widget_t *p_widget)
 }
 
 
+/**
+ * widget_get_abs_y()
+ * 
+ * @brief: Get widget absolute Y coordinate
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @return: widget Y screen coordinate
+ **/
+
 int widget_get_abs_y(widget_t *p_widget)
 {
   if (p_widget->p_tile != NULL)
@@ -230,6 +327,14 @@ int widget_get_abs_y(widget_t *p_widget)
     return p_widget->box.y;
 }
 
+
+/**
+ * widget_get_abs_box()
+ * 
+ * @brief: Get widget absolute box info
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @param p_box: pointer to a `widget_box_t` structure
+ **/
 
 void widget_get_abs_box(widget_t *p_widget, widget_box_t *p_box)
 {
@@ -258,6 +363,8 @@ void widget_get_abs_box(widget_t *p_widget, widget_box_t *p_box)
  **********************************************************************/
 
 /**
+ * widget_set_pixel()
+ * 
  * @brief Set a pixel color in framebuffer
  * @param p_tile: pointer to a `widget_t` structure
  * @param x: pixel X coordinate in tile
@@ -277,6 +384,8 @@ void widget_set_pixel(widget_t *p_widget, int x, int y, uint16_t pixel)
 
 
 /**
+ * widget_fill_region()
+ * 
  * @brief Fills a region of the screen with a specific color
  * @param p_tile: pointer to a `widget_t` structure
  * @param x: top-left X coordinate of tile
@@ -301,6 +410,8 @@ void widget_fill_region(widget_t *p_widget, int x, int y, int width, int height,
 
 
 /**
+ * widget_draw_line()
+ * 
  * @brief Draw a line of color `color` between (x0,y0) and (x1, y1)
  * @param p_tile: pointer to a `widget_t` structure
  * @param x0: X coordinate of the start of the line in tile
@@ -323,6 +434,8 @@ void widget_draw_line(widget_t *p_widget, int x0, int y0, int x1, int y1, uint16
 
 
 /**
+ * widget_bitblt()
+ * 
  * @brief Copy a portion of source image into destination buffer
  * @param p_tile: pointer to a `widget_t` structure
  * @param source: source image
@@ -348,6 +461,17 @@ void widget_bitblt(widget_t *p_widget, image_t *source, int source_x, int source
 }
 
 
+/**
+ * widget_draw_char()
+ * 
+ * @brief: Draw a given character at (x,y) on screen, with the given color
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @param x: X coordinate
+ * @param y: Y coordinate
+ * @param c: character
+ * @param color: target color
+ **/
+
 void widget_draw_char(widget_t *p_widget, int x, int y, char c, uint16_t color)
 {
     /* Draw character with tile offset. */
@@ -360,6 +484,17 @@ void widget_draw_char(widget_t *p_widget, int x, int y, char c, uint16_t color)
 }
 
 
+/**
+ * widget_draw_text()
+ * 
+ * @brief: Draw a given text at (x,y) on screen, with the given color
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @param x: X coordinate
+ * @param y: Y coordinate
+ * @param psz_text: target text
+ * @param color: target color
+ **/
+
 void widget_draw_text(widget_t *p_widget, int x, int y, char *psz_text, uint16_t color)
 {
     /* Draw character with tile offset. */
@@ -371,6 +506,16 @@ void widget_draw_text(widget_t *p_widget, int x, int y, char *psz_text, uint16_t
     );
 }
 
+/**
+ * widget_draw_char_x2()
+ * 
+ * @brief: Draw a given character at (x,y) on screen, with the given color
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @param x: X coordinate
+ * @param y: Y coordinate
+ * @param c: character
+ * @param color: target color
+ **/
 
 void widget_draw_char_x2(widget_t *p_widget, int x, int y, char c, uint16_t color)
 {
@@ -383,6 +528,16 @@ void widget_draw_char_x2(widget_t *p_widget, int x, int y, char c, uint16_t colo
     );
 }
 
+/**
+ * widget_draw_text_x2()
+ * 
+ * @brief: Draw a given text at (x,y) on screen, with the given color, 2 times bigger
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @param x: X coordinate
+ * @param y: Y coordinate
+ * @param psz_text: target text
+ * @param color: target color
+ **/
 
 void widget_draw_text_x2(widget_t *p_widget, int x, int y, char *psz_text, uint16_t color)
 {

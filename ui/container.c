@@ -1,10 +1,16 @@
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 #include "ui/container.h"
 
 #define TAG "ui::container"
-
 #define WIDGET(x) (widget_t *)(&x->widget)
+
+
+/**
+ * widhget_container_drawfunc()
+ * 
+ * @brief: Container drawing function (callback)
+ * @param p_widget: pointer to a `widget_t` structure
+ **/
 
 void widget_container_drawfunc(widget_t *p_widget)
 {
@@ -27,7 +33,6 @@ void widget_container_drawfunc(widget_t *p_widget)
       RGB(0,0,0)
     );
     
-
     /* Restrict our drawing window to our box. */
     st7789_set_drawing_window(
       widget_get_abs_x(&p_container->widget)+1,
@@ -61,6 +66,18 @@ void widget_container_drawfunc(widget_t *p_widget)
   }
 }
 
+
+/**
+ * widget_container_event_handler()
+ * 
+ * @brief: Container event handler (callback)
+ * @param p_widget: pointer to a `widget_t` structure
+ * @param event: event type
+ * @param x: X coordinate
+ * @param y: Y coordinate
+ * @param velocity: velocity in case of a swipe event, 0 otherwise
+ * @return: WE_PROCESSED if the event has been processed, WE_ERROR otherwise.
+ **/
 
 int widget_container_event_handler(widget_t *p_widget, widget_event_t event, int x, int y, int velocity)
 {
@@ -104,6 +121,18 @@ int widget_container_event_handler(widget_t *p_widget, widget_event_t event, int
 }
 
 
+/**
+ * widget_container_init()
+ * 
+ * @brief: Initialize a container widget
+ * @param p_widget_container: pointer to a `widget_container_t` structure
+ * @param p_tile: pointer to a `tile_t` structure (parent tile)
+ * @param x: widget X coordinate
+ * @param y: widget Y coordinate
+ * @param width: widget width
+ * @param height: widget height
+ **/
+
 void widget_container_init(widget_container_t *p_widget_container, tile_t *p_tile, int x, int y, int width, int height)
 {
   /* Initialize the underlying widget. */
@@ -122,9 +151,16 @@ void widget_container_init(widget_container_t *p_widget_container, tile_t *p_til
 
   /* Set default event handler. */
   widget_set_eventhandler(&p_widget_container->widget, widget_container_event_handler);
-
 }
 
+
+/**
+ * widget_container_add()
+ * 
+ * @brief: add a widget to a container
+ * @param p_widget_container: pointer to a `widget_container_t` structure
+ * @param p_widget: pointer to a `widget_t` structure
+ **/
 
 void widget_container_add(widget_container_t *p_widget_container, widget_t *p_widget)
 {
@@ -179,6 +215,14 @@ void widget_container_add(widget_container_t *p_widget_container, widget_t *p_wi
 }
 
 
+/**
+ * widget_container_remove()
+ * 
+ * @brief: Remove a widget from a container.
+ * @param p_widget_container: pointer to a `widget_container_t` structure
+ * @param p_widget: pointer to a `widget_t` structure of the widget to remove
+ **/
+
 void widget_container_remove(widget_container_t *p_widget_container, widget_t *p_widget)
 {
   widget_container_item_t *p_item, *p_item_before;
@@ -217,6 +261,13 @@ void widget_container_remove(widget_container_t *p_widget_container, widget_t *p
   }
 }
 
+
+/**
+ * widget_debug_list()
+ * 
+ * @brief: Display the content of a container (list of widgets).
+ * @param p_widget_container: pointer to a `widget_container_t` structure
+ **/
 
 void widget_debug_list(widget_container_t *p_widget_container)
 {

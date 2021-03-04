@@ -3,6 +3,7 @@
 
 #define TAG "listbox"
 
+
 /**
  * widget_listbox_animate()
  * 
@@ -154,7 +155,7 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
   {
     switch(event)
     {
-
+      /* An item of this listbox has been tapped. */
       case WE_TAP:
         {
           /* Check if coordinates match a widget. */
@@ -186,6 +187,7 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
         }
         break;
 
+      /* Listbox has been pressed, stop scrolling. */
       case WE_PRESS:
         {
           if (p_listbox->state == LB_STATE_MOVING)
@@ -196,6 +198,7 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
         }
         break;
 
+      /* User has swiped up. */
       case WE_SWIPE_UP:
         {
           ESP_LOGI(TAG, "[listbox] event: swipe up (%d)", velocity);
@@ -215,6 +218,7 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
         }
         break;
 
+      /* User has swiped down. */
       case WE_SWIPE_DOWN:
         {
           ESP_LOGI(TAG, "[listbox] event: swipe down (%d)", velocity);
@@ -282,6 +286,7 @@ void update_scrollbar(widget_listbox_t *p_widget_listbox)
 
   p_widget_listbox->scrollbar.max = height;
 }
+
 
 /**
  * widget_listbox_init()
