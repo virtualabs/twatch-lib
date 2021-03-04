@@ -11,5 +11,8 @@
 /* Include touch HAL. */
 #include "hal/touch.h"
 
+/* Include screen HAL. */
+#include "hal/screen.h"
+
 /* Include vibrator HAL. */
 #include "hal/vibrate.h"

@@ -13,6 +13,7 @@ idf_component_register(
   "hal/pmu.c"
   "hal/touch.c"
   "hal/vibrate.c"
+  "hal/screen.c"
 
   "img/img.c"
   "ui/ui.c"
