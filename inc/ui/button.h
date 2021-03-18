@@ -3,7 +3,6 @@
 
 #include "ui/ui.h"
 #include "ui/widget.h"
-#include "twatch.h"
 
 #define BUTTON_STYLE_BORDER RGB(0xf, 0xf, 0xf)
 #define BUTTON_STYLE_BG RGB(0x0, 0x0, 0x0)

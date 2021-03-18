@@ -9,7 +9,9 @@
 
 typedef enum {
   LB_STATE_IDLE,
-  LB_STATE_MOVING
+  LB_STATE_MOVING,
+  LB_STATE_MOVING_FREE,
+  LB_STATE_STOPPED
 } widget_listbox_anim_state_t;
 
 typedef struct {

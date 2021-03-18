@@ -3,7 +3,6 @@
 
 #include "ui/ui.h"
 #include "ui/widget.h"
-#include "twatch.h"
 
 #define SCROLLBAR_STYLE_BORDER RGB(0xf, 0xf, 0xf)
 #define SCROLLBAR_MIN_HANDLE_SIZE 10

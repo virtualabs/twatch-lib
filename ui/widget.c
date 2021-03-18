@@ -123,16 +123,23 @@ void widget_set_drawfunc(widget_t *p_widget, FDrawWidget pfn_drawfunc)
  * @brief: Set event handler function for a given widget.
  * @param p_widget: target widget
  * @param pfn_eventhandler: pointer to a FEventHandler procedure
+ * @return: a pointer to the previous event handler.
  **/
 
-void widget_set_eventhandler(widget_t *p_widget, FEventHandler pfn_eventhandler)
+FEventHandler widget_set_eventhandler(widget_t *p_widget, FEventHandler pfn_eventhandler)
 {
+  FEventHandler pfn_eventhandler_orig;
+
   /* Sanity check. */
   if (p_widget == NULL)
-    return;
+    return NULL;
 
   /* Set callback function. */
+  pfn_eventhandler_orig = p_widget->pfn_eventhandler;
   p_widget->pfn_eventhandler = pfn_eventhandler;
+
+  /* Return the original event handler. */
+  return pfn_eventhandler_orig;
 }
 
 

@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 #include "drivers/st7789.h"
-#include "twatch.h"
+
+#include "hal/touch.h"
+
 #include "img.h"
 #include "font/font16.h"
 
@@ -25,7 +27,8 @@ typedef enum {
   TILE_SECONDARY
 } ui_tile_type_t;
 
-typedef struct tile_t;
+
+struct tile_t;
 
 typedef int (*FDrawTile)(struct tile_t *p_tile);
 
@@ -92,6 +95,18 @@ typedef struct {
 void ui_init(void);
 void ui_select_tile(tile_t *p_tile);
 void ui_process_events(void);
+
+/* Swipe management. */
+void ui_swipe_right(void);
+void ui_swipe_left(void);
+void ui_swipe_up(void);
+void ui_swipe_down(void);
+
+void ui_go_right(void);
+void ui_go_left(void);
+void ui_go_up(void);
+void ui_go_down(void);
+
 
 /* Tiles */
 void tile_init(tile_t *p_tile, void *p_user_data);

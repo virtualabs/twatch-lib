@@ -11,7 +11,7 @@
 #define WE_ERROR      (1)
 #define WE_PROCESSED  (0)
 
-typedef struct widget_t;
+struct widget_t;
 
 typedef enum {
   /* Default events. */
@@ -70,7 +70,7 @@ typedef struct tWidget {
 
 void widget_init(widget_t *p_widget, tile_t *p_tile, int x, int y, int width, int height);
 void widget_set_drawfunc(widget_t *p_widget, FDrawWidget pfn_drawfunc);
-void widget_set_eventhandler(widget_t *p_widget, FEventHandler pfn_eventhandler);
+FEventHandler widget_set_eventhandler(widget_t *p_widget, FEventHandler pfn_eventhandler);
 void widget_set_userdata(widget_t *p_widget, void *p_user_data);
 int widget_draw(widget_t *p_widget);
 tile_t *widget_get_tile(widget_t *p_widget);

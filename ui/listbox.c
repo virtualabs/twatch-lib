@@ -28,7 +28,7 @@ void widget_listbox_animate(widget_listbox_t *p_listbox)
     }
 
     /* Adapt speed. */
-    p_listbox->speed = (9*p_listbox->speed)/10.0;
+    p_listbox->speed = (9.8*p_listbox->speed)/10.0;
   }
   else if (p_listbox->speed > 0)
   {
@@ -44,7 +44,7 @@ void widget_listbox_animate(widget_listbox_t *p_listbox)
     }
 
     /* Adapt speed. */
-    p_listbox->speed = (9*p_listbox->speed)/10.0;
+    p_listbox->speed = (9.8*p_listbox->speed)/10.0;
   }
   else
   {
@@ -91,10 +91,10 @@ void widget_listbox_drawfunc(widget_t *p_widget)
     p_listbox->scrollbar.widget.box.y = widget_get_abs_y(p_widget);
 
     /* Draw container. */
-    widget_draw(&p_listbox->container);
+    widget_draw((widget_t *)&p_listbox->container);
 
     /* Draw scrollbar. */
-    widget_draw(&p_listbox->scrollbar);
+    widget_draw((widget_t *)&p_listbox->scrollbar);
 
     /* Draw listbox borders. */
     widget_draw_line(
@@ -108,7 +108,7 @@ void widget_listbox_drawfunc(widget_t *p_widget)
     widget_draw_line(
       p_widget,
       1,
-      p_widget->box.height - 1,
+      p_widget->box.height - 1, 
       p_widget->box.width - 2,
       p_widget->box.height - 1,
       LISTBOX_STYLE_BORDER
@@ -158,41 +158,55 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
       /* An item of this listbox has been tapped. */
       case WE_TAP:
         {
-          /* Check if coordinates match a widget. */
-          p_item = p_listbox->container.p_children;
-          if (p_item != NULL)
+          if (p_listbox->state == LB_STATE_STOPPED)
           {
-            do
-            {
-              /* Check if tap happened in this widget. */
-              if (
-                (p_item->p_widget->box.x <= x) &&
-                ((p_item->p_widget->box.x + p_item->p_widget->box.width) > x) &&
-                (p_item->p_widget->box.y <= y) &&
-                ((p_item->p_widget->box.y + p_item->p_widget->box.height) > y)
-              )
-              {
-                /* Deselect previous item if any. */
-                if (p_listbox->p_selected_item != NULL)
-                  widget_send_event(p_listbox->p_selected_item, LB_ITEM_DESELECTED, 0, 0, 0);
-
-                /* Select this item. */
-                widget_send_event(p_item->p_widget, LB_ITEM_SELECTED, 0, 0, 0);
-                p_listbox->p_selected_item = p_item->p_widget;
-              }
-              p_item = p_item->p_next;
-            }
-            while (p_item != NULL);
+            /* Stop animation. */
+            p_listbox->state = LB_STATE_IDLE;
           }
+          else
+          {
+            /* Check if coordinates match a widget. */
+            p_item = p_listbox->container.p_children;
+            if (p_item != NULL)
+            {
+              do
+              {
+                /* Check if tap happened in this widget. */
+                if (
+                  (p_item->p_widget->box.x <= x) &&
+                  ((p_item->p_widget->box.x + p_item->p_widget->box.width) > x) &&
+                  (p_item->p_widget->box.y <= y) &&
+                  ((p_item->p_widget->box.y + p_item->p_widget->box.height) > y)
+                )
+                {
+                  /* Deselect previous item if any. */
+                  if (p_listbox->p_selected_item != NULL)
+                    widget_send_event(p_listbox->p_selected_item, LB_ITEM_DESELECTED, 0, 0, 0);
+
+                  /* Select this item. */
+                  widget_send_event(p_item->p_widget, LB_ITEM_SELECTED, 0, 0, 0);
+                  p_listbox->p_selected_item = p_item->p_widget;
+
+                  /* Notify hooks with specific event. */
+                  widget_send_event(p_widget, LB_ITEM_SELECTED, 0, 0, 0);
+                }
+                p_item = p_item->p_next;
+              }
+              while (p_item != NULL);
+            }
+          }
+
+          /* Event has been processed. */
+          b_processed = true;
         }
         break;
 
       /* Listbox has been pressed, stop scrolling. */
       case WE_PRESS:
         {
-          if (p_listbox->state == LB_STATE_MOVING)
+          if (p_listbox->state == LB_STATE_MOVING_FREE)
           {
-            p_listbox->state = LB_STATE_IDLE;
+            p_listbox->state = LB_STATE_STOPPED;
             b_processed = true;
           }
         }
@@ -235,6 +249,15 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
 
           }
           b_processed = true;
+        }
+        break;
+
+      case WE_RELEASE:
+        {
+          if (p_listbox->state == LB_STATE_MOVING)
+          {
+            p_listbox->state = LB_STATE_MOVING_FREE;
+          }
         }
         break;
 
