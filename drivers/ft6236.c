@@ -7,7 +7,7 @@
 
 bool ft6236_initialized = false;
 uint8_t current_dev_addr;
-SemaphoreHandle_t touch_sem;
+FT6X36_IRQ_HANDLER ft6236_irq_handler = NULL;
 
 /**
  * _touch_interrupt_handler()
@@ -18,8 +18,14 @@ SemaphoreHandle_t touch_sem;
 
 void IRAM_ATTR _touch_interrupt_handler(void *parameter)
 {
-  /* Notify our monitoring task. */
-  xSemaphoreGiveFromISR(touch_sem, NULL);
+  ft6236_touch_t touch_data;
+
+  /* Forward to our IRQ Handler. */
+  if (ft6236_irq_handler != NULL)
+  {
+    /* Call our callback with the read touch points. */
+    ft6236_irq_handler();
+  }
 }
 
 /**
@@ -90,12 +96,10 @@ esp_err_t ft6x06_i2c_write8(uint8_t slave_addr, uint8_t register_addr, uint8_t d
   * @param  dev_addr: Device address on communication Bus (I2C slave address of FT6X36).
   * @retval None
   */
-void ft6x36_init(uint16_t dev_addr) {
+void ft6x36_init(uint16_t dev_addr, FT6X36_IRQ_HANDLER pfn_handler) {
   gpio_config_t irq_conf;
 
-  touch_sem = xSemaphoreCreateCounting(1024, 0);
-
-  /* Initialize AXP202 IRQ pin as input pin. */
+  /* Initialize FT6x36 IRQ pin as input pin. */
   irq_conf.intr_type = GPIO_INTR_NEGEDGE;
   irq_conf.pin_bit_mask = (1ULL << 38);
   irq_conf.mode = GPIO_MODE_INPUT;
@@ -104,10 +108,12 @@ void ft6x36_init(uint16_t dev_addr) {
   gpio_config(&irq_conf);
 
   /* Install our user button interrupt handler. */
-  //gpio_uninstall_isr_service();
   if (gpio_install_isr_service(0) != ESP_OK)
     printf("[isr2] Error while installing service\r\n");
   gpio_isr_handler_add(GPIO_NUM_38, _touch_interrupt_handler, NULL);
+
+  /* Save IRQ Handler. */
+  ft6236_irq_handler = pfn_handler;
 
   if (!ft6236_initialized) {
     /* Make sure I2C is configured and ready. */
@@ -193,16 +199,6 @@ bool ft6x36_read(ft6236_touch_t *touch) {
 
   // Read X value
   return false;
-}
-
-bool ft6x36_read_touch_data(ft6236_touch_t *touch_data)
-{
-  if(xSemaphoreTake(touch_sem, 10)){
-    ft6x36_read(touch_data);
-    return true;
-  }
-  else
-    return false;
 }
 
 

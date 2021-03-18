@@ -11,11 +11,20 @@ int16_t dx,dy;
 double distance;
 int duration, touch_start_ms, touch_stop_ms;
 
+volatile bool bTouched = false;
+volatile ft6236_touch_t touch_data;
+
 QueueHandle_t _touch_queue;
 
 unsigned long IRAM_ATTR millis()
 {
     return (unsigned long) (esp_timer_get_time() / 1000ULL);
+}
+
+
+void _touch_irq_handler(void)
+{
+  bTouched = true;
 }
 
 
@@ -38,13 +47,13 @@ void _touch_report_event(touch_event_t *event)
 void _process_touch_data(ft6236_touch_t *touch)
 {
   touch_event_t event;
-  
+
   switch(touch_state)
   {
     case TOUCH_STATE_CLEAR:
     {
       /* Is it a press ? */
-      if (touch->touches[0].event == TOUCH_PRESS)
+      if ((touch->touches[0].event == TOUCH_PRESS) || (touch->touches[0].event == TOUCH_CONTACT))
       {
         /* Notify touch press. */
         event.type = TOUCH_EVENT_PRESS;
@@ -68,6 +77,7 @@ void _process_touch_data(ft6236_touch_t *touch)
       /* Is it released ? */
       if (touch->touches[0].event == TOUCH_RELEASE)
       {
+
         /* Notify release. */
         event.type = TOUCH_EVENT_RELEASE;
         event.coords.x = last.x;
@@ -79,11 +89,7 @@ void _process_touch_data(ft6236_touch_t *touch)
         /* If touch lasts less than 500ms, then it is a tap ! */
         touch_stop_ms = millis();
 
-        /* Compute distance. */
-        dx = last.x-first.x;
-        dy = last.y-first.y;
-        distance=sqrt(dx*dx+dy*dy);
-        velocity = (distance*100)/(touch_stop_ms - touch_start_ms);
+        printf("Release: stop=%d start=%d\r\n", touch_stop_ms, touch_start_ms);
 
         if (((touch_stop_ms - touch_start_ms) < TOUCH_TAP_MAX_TIME) && (distance < TOUCH_TAP_MAX_DIST))
         {
@@ -94,62 +100,75 @@ void _process_touch_data(ft6236_touch_t *touch)
           event.velocity = 0.0;
           _touch_report_event(&event);
         }
-        else
-        {
-          /* Check if we have a swipe. */
-          if (distance >= TOUCH_SWIPE_MIN_DIST)
-          {
-            /* Determine direction. */
-            if (abs(dx) > abs(dy))
-            {
-              if (dx > 0)
-              {
-                ESP_LOGD(TOUCH_TAG, "SWIPE RIGHT, velocity: %f", velocity);
-                event.type = TOUCH_EVENT_SWIPE_RIGHT;
-                event.coords.x = first.x;
-                event.coords.y = first.y;
-                event.velocity = velocity;
-                _touch_report_event(&event);
-              }
-              else
-              {
-                ESP_LOGD(TOUCH_TAG, "SWIPE LEFT, velocity: %f", velocity);
-                event.type = TOUCH_EVENT_SWIPE_LEFT;
-                event.coords.x = first.x;
-                event.coords.y = first.y;
-                event.velocity = velocity;
-                _touch_report_event(&event);
-              }
-            }
-            else if (abs(dy) > abs(dx))
-            {
-              if (dy > 0)
-              {
-                ESP_LOGD(TOUCH_TAG, "SWIPE DOWN, velocity: %f", velocity);
-                event.type = TOUCH_EVENT_SWIPE_DOWN;
-                event.coords.x = first.x;
-                event.coords.y = first.y;
-                event.velocity = velocity;
-                _touch_report_event(&event);
-              }
-              else
-              {
-                ESP_LOGD(TOUCH_TAG, "SWIPE UP, velocity: %f", velocity);
-                event.type = TOUCH_EVENT_SWIPE_UP;
-                event.coords.x = first.x;
-                event.coords.y = first.y;
-                event.velocity = velocity;
-                _touch_report_event(&event);
-              }
-            }
-          }
-        }
+
         touch_state = TOUCH_STATE_CLEAR;
       }
       else
       {
         last.x = touch->touches[0].x;
         last.y = touch->touches[0].y;
+
+        /* If touch lasts less than 500ms, then it is a tap ! */
+        touch_stop_ms = millis();
+
+        /* Compute distance. */
+        dx = last.x-first.x;
+        dy = last.y-first.y;
+        distance=sqrt(dx*dx+dy*dy);
+        if ((touch_stop_ms - touch_start_ms) > 0)
+        {
+          velocity = (distance*100)/(touch_stop_ms - touch_start_ms);
+        }
+        else
+          velocity = 0.0;
+
+        /* Check if we have a swipe. */
+        if (/*(distance >= TOUCH_SWIPE_MIN_DIST) &&*/ (velocity >= TOUCH_SWIPE_MIN_VELOCITY))
+        {
+          /* Determine direction. */
+          if (abs(dx) > abs(dy))
+          {
+            if (dx > 0)
+            {
+              ESP_LOGD(TOUCH_TAG, "SWIPE RIGHT, velocity: %f", velocity);
+              event.type = TOUCH_EVENT_SWIPE_RIGHT;
+              event.coords.x = first.x;
+              event.coords.y = first.y;
+              event.velocity = velocity;
+              _touch_report_event(&event);
+            }
+            else
+            {
+              ESP_LOGD(TOUCH_TAG, "SWIPE LEFT, velocity: %f", velocity);
+              event.type = TOUCH_EVENT_SWIPE_LEFT;
+              event.coords.x = first.x;
+              event.coords.y = first.y;
+              event.velocity = velocity;
+              _touch_report_event(&event);
+            }
+          }
+          else if (abs(dy) > abs(dx))
+          {
+            if (dy > 0)
+            {
+              ESP_LOGD(TOUCH_TAG, "SWIPE DOWN, velocity: %f", velocity);
+              event.type = TOUCH_EVENT_SWIPE_DOWN;
+              event.coords.x = first.x;
+              event.coords.y = first.y;
+              event.velocity = velocity;
+              _touch_report_event(&event);
+            }
+            else
+            {
+              ESP_LOGD(TOUCH_TAG, "SWIPE UP, velocity: %f", velocity);
+              event.type = TOUCH_EVENT_SWIPE_UP;
+              event.coords.x = first.x;
+              event.coords.y = first.y;
+              event.velocity = velocity;
+              _touch_report_event(&event);
+            }
+          }
+        }
 
         /* Notify touch press. */
         event.type = TOUCH_EVENT_PRESS;
@@ -166,24 +185,6 @@ void _process_touch_data(ft6236_touch_t *touch)
   }
 }
 
-
-/**
- * @brief Task monitoring the FT6236 chip, and send data to _process_touch_data()
- **/
-
-void ft6x36_monitor(void *parameter)
-{
-  ft6236_touch_t touch;
-
-  while(true){
-  	if(ft6x36_read_touch_data(&touch)){
-      _process_touch_data(&touch);
-  	}
-  }
-  vTaskDelete( NULL );
-}
-
-
 /**
  * @brief Initialize touch abstraction layer
  * @retval Always ESP_OK
@@ -198,10 +199,7 @@ esp_err_t twatch_touch_init(void)
   touch_state = TOUCH_STATE_CLEAR;
 
   /* Initialize our FT6236. */
-  ft6x36_init(FT6236_I2C_SLAVE_ADDR);
-
-  /* Create a task to monitor the touch screen and process events. */
-  xTaskCreate(ft6x36_monitor, "ft6x36_monitor", 10000, NULL, 1, NULL);
+  ft6x36_init(FT6236_I2C_SLAVE_ADDR, (FT6X36_IRQ_HANDLER)_touch_irq_handler);
 
   return ESP_OK;
 }
@@ -216,6 +214,19 @@ esp_err_t twatch_touch_init(void)
 
 esp_err_t twatch_get_touch_event(touch_event_t *event, TickType_t ticks_to_wait)
 {
+  /* Handle IRQ if any. */
+  if (bTouched)
+  {
+    /* Read touch data. */
+    ft6x36_read(&touch_data);
+
+    _process_touch_data(&touch_data);
+
+    /* Reset bTouched. */
+    bTouched = false;
+  }
+
+  /* Do we have some event to process ? */
   if (xQueueReceive(_touch_queue, event, ticks_to_wait))
   {
     return ESP_OK;

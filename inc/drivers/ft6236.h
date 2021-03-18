@@ -160,19 +160,16 @@ typedef struct {
   ft6236_touchpoint_t touches[FT6X36_MAX_TOUCH_PNTS];
 } ft6236_touch_t;
 
+/* Define IRQ handler. */
+typedef void (*FT6X36_IRQ_HANDLER)(void);
+
 /**
   * @brief  Initialize for FT6x36 communication via I2C
   * @param  dev_addr: Device address on communication Bus (I2C slave address of FT6X36).
   * @retval None
   */
-void ft6x36_init(uint16_t dev_addr);
-
-/**
-  * @brief  Read touch screen data
-  * @param  touch_data: Store data here
-  * @retval True if some data have been fetched, false otherwise.
-  */
-bool ft6x36_read_touch_data(ft6236_touch_t *touch_data);
+void ft6x36_init(uint16_t dev_addr, FT6X36_IRQ_HANDLER pfn_handler);
+bool ft6x36_read(ft6236_touch_t *touch);
 
 esp_err_t ft6x36_enable_active_mode(void);
 esp_err_t ft6x36_enable_monitor_mode(void);

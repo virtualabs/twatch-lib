@@ -1,13 +1,20 @@
 #ifndef __INC_TWATCH_TOUCH_H
 #define __INC_TWATCH_TOUCH_H
 
-//#define TOUCH_PRESS 2
-#define TOUCH_RELEASE 0
-#define TOUCH_PRESS 2
+#if 0
+  #define TOUCH_RELEASE 0
+  #define TOUCH_CONTACT
+  #define TOUCH_PRESS 2
+#else
+  #define TOUCH_RELEASE 0
+  #define TOUCH_CONTACT 2
+  #define TOUCH_PRESS 0
+#endif
 
-#define TOUCH_TAP_MAX_TIME  500
+#define TOUCH_TAP_MAX_TIME  300
 #define TOUCH_TAP_MAX_DIST  5
 #define TOUCH_SWIPE_MIN_DIST 10
+#define TOUCH_SWIPE_MIN_VELOCITY 20
 
 #include "drivers/ft6236.h"
 #include "freertos/queue.h"
