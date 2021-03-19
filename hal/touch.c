@@ -11,8 +11,17 @@ int16_t dx,dy;
 double distance;
 int duration, touch_start_ms, touch_stop_ms;
 
-volatile bool bTouched = false;
+/* b_touched: used by ISR to notify touch HAL some touch data need to be retrieved. */
+volatile bool b_touched = false;
 volatile ft6236_touch_t touch_data;
+
+/*
+ b_swipe_sent: true if we already sent a swipe event.
+
+ This boolean is used to avoid sending multiple swipe events during the same swipe
+ movement. It is reset on TOUCH_RELEASE. */
+*/
+volatile bool b_swipe_sent = false;
 
 QueueHandle_t _touch_queue;
 
@@ -21,10 +30,13 @@ unsigned long IRAM_ATTR millis()
     return (unsigned long) (esp_timer_get_time() / 1000ULL);
 }
 
+/**
+ * @brief IRQ handler ISR
+ **/
 
 void _touch_irq_handler(void)
 {
-  bTouched = true;
+  b_touched = true;
 }
 
 
@@ -101,6 +113,9 @@ void _process_touch_data(ft6236_touch_t *touch)
           _touch_report_event(&event);
         }
 
+        /* Rearm b_swipe_sent. */
+        b_swipe_sent = false;
+
         touch_state = TOUCH_STATE_CLEAR;
       }
       else
@@ -123,7 +138,7 @@ void _process_touch_data(ft6236_touch_t *touch)
           velocity = 0.0;
 
         /* Check if we have a swipe. */
-        if (/*(distance >= TOUCH_SWIPE_MIN_DIST) &&*/ (velocity >= TOUCH_SWIPE_MIN_VELOCITY))
+        if ((velocity >= TOUCH_SWIPE_MIN_VELOCITY) && !b_swipe_sent)
         {
           /* Determine direction. */
           if (abs(dx) > abs(dy))
@@ -136,6 +151,9 @@ void _process_touch_data(ft6236_touch_t *touch)
               event.coords.y = first.y;
               event.velocity = velocity;
               _touch_report_event(&event);
+
+              /* Mark swipe event as sent. */
+              b_swipe_sent = true;
             }
             else
             {
@@ -145,6 +163,9 @@ void _process_touch_data(ft6236_touch_t *touch)
               event.coords.y = first.y;
               event.velocity = velocity;
               _touch_report_event(&event);
+
+              /* Mark swipe event as sent. */
+              b_swipe_sent = true;
             }
           }
           else if (abs(dy) > abs(dx))
@@ -157,6 +178,9 @@ void _process_touch_data(ft6236_touch_t *touch)
               event.coords.y = first.y;
               event.velocity = velocity;
               _touch_report_event(&event);
+
+              /* Mark swipe event as sent. */
+              b_swipe_sent = true;
             }
             else
             {
@@ -166,6 +190,9 @@ void _process_touch_data(ft6236_touch_t *touch)
               event.coords.y = first.y;
               event.velocity = velocity;
               _touch_report_event(&event);
+
+              /* Mark swipe event as sent. */
+              b_swipe_sent = true;
             }
           }
         }
@@ -215,15 +242,15 @@ esp_err_t twatch_touch_init(void)
 esp_err_t twatch_get_touch_event(touch_event_t *event, TickType_t ticks_to_wait)
 {
   /* Handle IRQ if any. */
-  if (bTouched)
+  if (b_touched)
   {
     /* Read touch data. */
     ft6x36_read(&touch_data);
 
     _process_touch_data(&touch_data);
 
-    /* Reset bTouched. */
-    bTouched = false;
+    /* Reset b_touched. */
+    b_touched = false;
   }
 
   /* Do we have some event to process ? */
