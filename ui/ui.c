@@ -451,6 +451,26 @@ void tile_draw_line(tile_t *p_tile, int x0, int y0, int x1, int y1, uint16_t col
   );
 }
 
+void tile_draw_circle(tile_t *p_tile, int x, int y, int r, uint16_t color)
+{
+  st7789_draw_circle(
+    x + p_tile->offset_x,
+    y + p_tile->offset_y,
+    r,
+    color
+  );
+}
+
+void tile_draw_disc(tile_t *p_tile, int x, int y, int r, uint16_t color)
+{
+  st7789_draw_disc(
+    x + p_tile->offset_x,
+    y + p_tile->offset_y,
+    r,
+    color
+  );
+}
+
 
 /**
  * tile_draw_char()
