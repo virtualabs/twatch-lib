@@ -439,6 +439,25 @@ void widget_draw_line(widget_t *p_widget, int x0, int y0, int x1, int y1, uint16
   );
 }
 
+void widget_draw_circle(widget_t *p_widget, int x, int y, int r, uint16_t color)
+{
+  st7789_draw_circle(
+    x + widget_get_abs_x(p_widget),
+    y + widget_get_abs_y(p_widget),
+    r,
+    color
+  );
+}
+
+void widget_draw_disc(widget_t *p_widget, int x, int y, int r, uint16_t color)
+{
+  st7789_draw_disc(
+    x + widget_get_abs_x(p_widget),
+    y + widget_get_abs_y(p_widget),
+    r,
+    color
+  );
+}
 
 /**
  * widget_bitblt()

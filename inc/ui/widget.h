@@ -96,6 +96,8 @@ widget_t *widget_enum_next(widget_t *p_widget);
 void widget_set_pixel(widget_t *p_widget, int x, int y, uint16_t pixel);
 void widget_fill_region(widget_t *p_widget, int x, int y, int width, int height, uint16_t color);
 void widget_draw_line(widget_t *p_widget, int x0, int y0, int x1, int y1, uint16_t color);
+void widget_draw_circle(widget_t *p_widget, int x, int y, int r, uint16_t color);
+void widget_draw_disc(widget_t *p_widget, int x, int y, int r, uint16_t color);
 void widget_bitblt(widget_t *p_widget, image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y);
 void widget_draw_char(widget_t *p_widget, int x, int y, char c, uint16_t color);
 void widget_draw_text(widget_t *p_widget, int x, int y, char *psz_text, uint16_t color);
