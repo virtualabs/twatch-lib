@@ -19,7 +19,7 @@ volatile ft6236_touch_t touch_data;
  b_swipe_sent: true if we already sent a swipe event.
 
  This boolean is used to avoid sending multiple swipe events during the same swipe
- movement. It is reset on TOUCH_RELEASE. */
+ movement. It is reset on TOUCH_RELEASE.
 */
 volatile bool b_swipe_sent = false;
 
