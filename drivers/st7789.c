@@ -703,3 +703,74 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
     }
   }
 }
+
+
+/**
+ * st7789_draw_circle()
+ * 
+ * @brief: Draw a circle of a given radius at given coordinates
+ * @param xc: circle center X coordinate
+ * @param yc: circle center Y coordinate
+ * @param r: circle radius
+ * @param color: circle color
+ **/
+
+void st7789_draw_circle(int xc, int yc, int r, uint16_t color)
+{
+  int x = 0;
+  int y = r;
+  int d = r - 1;
+
+  while (y >= x)
+  {
+    st7789_set_pixel(xc + x, yc + y, color);
+    st7789_set_pixel(xc + y, yc + x, color);
+    st7789_set_pixel(xc - x, yc + y, color);
+    st7789_set_pixel(xc - y, yc + x, color);
+    st7789_set_pixel(xc + x, yc - y, color);
+    st7789_set_pixel(xc + y, yc - x, color);
+    st7789_set_pixel(xc - x, yc - y, color);
+    st7789_set_pixel(xc - y, yc - x, color);
+
+    if (d >= (2*x))
+    {
+      d = d - 2*x - 1;
+      x++;
+    }
+    else if (d < (2*(r-y)))
+    {
+      d = d + 2*y - 1;
+      y--;
+    }
+    else
+    {
+      d = d + 2*(y - x - 1);
+      y--;
+      x++;
+    }
+  }
+}
+
+
+/**
+ * st7789_draw_disc()
+ * 
+ * @brief: Draw a disc of a given radius at given coordinates
+ * @param xc: disc center X coordinate
+ * @param yc: disc center Y coordinate
+ * @param r: disc radius
+ * @param color: disc color
+ **/
+
+void st7789_draw_disc(int xc, int yc, int r, uint16_t color)
+{
+  int i;
+
+  for (i=0;i<r;i++)
+  {
+    if (i==0)
+      st7789_set_pixel(xc, yc, color);
+    else
+      st7789_draw_circle(xc, yc, i, color);
+  }
+}
