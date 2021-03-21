@@ -14,6 +14,8 @@
 #define FB_PIXCHUNK ((uint32_t *)(&framebuffer[fb_blk_off]))
 #define FB_PIXCHUNK2 ((uint32_t *)(&framebuffer[fb_blk_off+4]))
 
+#define MIX_ALPHA(x,y,a) ((x*(15-a) + (y*a))/15)
+
 #define P1MASK    0xFFFF0F00
 #define P1MASKP   0x0000F0FF
 #define P2MASK    0xFF00F0FF
@@ -23,9 +25,9 @@ spi_device_handle_t spi;
 ledc_timer_config_t backlight_timer = {
   .duty_resolution = LEDC_TIMER_13_BIT, // resolution of PWM duty
   .freq_hz = 5000,                      // frequency of PWM signal
-  .speed_mode = LEDC_HIGH_SPEED_MODE,           // timer mode
+  .speed_mode = LEDC_HIGH_SPEED_MODE,   // timer mode
   .timer_num = LEDC_TIMER_0,            // timer index
-  .clk_cfg = LEDC_AUTO_CLK,              // Auto select the source clock
+  .clk_cfg = LEDC_AUTO_CLK,             // Auto select the source clock
 };
 
 ledc_channel_config_t backlight_config = {
@@ -311,6 +313,112 @@ void IRAM_ATTR st7789_blank(void)
 
 
 /**
+ * @brief Get color of a given pixel in framebuffer
+ * @param x: pixel X coordinate
+ * @param y: pixel Y coordinate
+ * @return: pixel color (12 bits)
+ **/
+
+uint16_t IRAM_ATTR st7789_get_pixel(int x, int y)
+{
+  int fb_blk, fb_blk_off;
+  uint16_t pix = 0;
+
+  /* Sanity checks. */
+
+  if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
+    return pix;
+
+  /* Invert if required. */
+  if (g_inv_x)
+    x = WIDTH - x - 1;
+  if (g_inv_y)
+    y = HEIGHT - y - 1;
+
+  return _st7789_get_pixel(x, y);
+}
+
+
+/**
+ * @brief Get color of a given pixel in framebuffer
+ * @param x: pixel X coordinate
+ * @param y: pixel Y coordinate
+ * @return: pixel color (12 bits)
+ **/
+
+uint16_t IRAM_ATTR _st7789_get_pixel(int x, int y)
+{
+  int fb_blk, fb_blk_off;
+  uint16_t pix = 0;
+
+  /* Sanity checks. */
+
+  if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
+    return pix;
+  
+  /* 4-pixel block index */
+  fb_blk = (y*WIDTH+x)/4;
+
+  /* Compute address of our 4-pixel block (stored on 6 bytes). */
+  fb_blk_off = fb_blk*6;
+
+  /* Modify pixel by 4-byte blocks, as ESP32 does not allow byte-level access. */
+  switch(x%4)
+  {
+    /**
+     * Case 0: pixel is stored in byte 0 and 1 of a 4-byte dword.
+     * pixel is 0B RG
+     * RG BX XX XX
+     **/
+    case 0:
+      {
+        pix = (*FB_PIXCHUNK & 0x000000ff) | ((*FB_PIXCHUNK & 0x0000f000) >> 4);
+      }
+      break;
+
+    /**
+     * Case 1: pixel is stored in byte 1 and 2 of a 4-byte dword.
+     * pixel is 0B RG
+     * XX XR GB XX
+     **/
+
+    case 1:
+      {
+        pix = ((*FB_PIXCHUNK & 0x00000f00) >> 4) | ((*FB_PIXCHUNK & 0x000f0000) >> 8) | ((*FB_PIXCHUNK & 0x00f00000) >> 20);
+      }
+      break;
+
+    /**
+     * Case 2: pixel is stored in byte 3 and 4 of a double 4-byte dword.
+     * pixel is 0B RG
+     * XX XX XX RG | BX XX XX XX
+     **/
+
+    case 2:
+      {
+        pix = ((*FB_PIXCHUNK & 0xff000000) >> 24) | ((*FB_PIXCHUNK2 & 0x000000f0) << 4);
+      }
+      break;
+
+    /**
+     * Case 3: pixel is stored in byte 4 and 5 of a double 4-byte dword.
+     * pixel is 0B RG
+     * XX XX XX XX | XR GB XX XX
+     **/
+
+    case 3:
+      {
+        pix = ((*FB_PIXCHUNK2 & 0x0000000f) << 4) | (*FB_PIXCHUNK2 & 0x00000f00) | ((*FB_PIXCHUNK2 & 0x0000f000) >> 12);
+      }
+      break;
+  }
+
+  /* Return color. */
+  return pix;
+}
+
+
+/**
  * @brief Set a pixel color in framebuffer
  * @param x: pixel X coordinate
  * @param y: pixel Y coordinate
@@ -320,20 +428,14 @@ void IRAM_ATTR st7789_blank(void)
 void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
 {
   int fb_blk, fb_blk_off;
-  uint32_t *ppixel;
-  uint32_t *ppixel2;
-  uint16_t pix;
+  uint16_t orig_color;
+  int r,g,b;
+  int a;
 
   /* Sanity checks. */
-
   if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
     return;
   
-  /*
-  if ((x<0) || (x>=WIDTH) || (y<0) || (y>=HEIGHT))
-    return;
-  */
-
   /* Invert if required. */
   if (g_inv_x)
     x = WIDTH - x - 1;
@@ -342,12 +444,21 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
 
   /* 4-pixel block index */
   fb_blk = (y*WIDTH+x)/4;
+
   /* Compute address of our 4-pixel block (stored on 6 bytes). */
   fb_blk_off = fb_blk*6;
 
-  //printf("[enter setpixel] (%d,%d) color %03x\r\n", x,y,color);
-  //printf(" fb_blk=%d\r\n", fb_blk);
-  //printf(" fb_blk_off=%d\r\n", fb_blk_off);
+  /* Handle alpha if required. */
+  if (color & 0xf000)
+  {
+    /* Mix original pixel color with our color. */
+    a = (color & 0xf000)>>12;
+    orig_color = _st7789_get_pixel(x, y);
+    b = MIX_ALPHA( ((color & 0xf00)>>8), ((orig_color & 0xf00)>>8), a);
+    r = MIX_ALPHA( ((color & 0x0f0)>>4), ((orig_color & 0x0f0)>>4), a);
+    g = MIX_ALPHA( (color & 0x00f), (orig_color & 0x00f), a);
+    color = RGB(r,g,b);
+  }
 
   /* Modify pixel by 4-byte blocks, as ESP32 does not allow byte-level access. */
   switch(x%4)
@@ -360,13 +471,6 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
     case 0:
       {
         *FB_PIXCHUNK = (*FB_PIXCHUNK & 0xffff0f00) | (color & 0x00ff) | ((color&0xf00)<<4);
-        /*
-        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
-        //printf("[screen] color: %03x\r\n", color);
-        //printf("[screen] (before) 32-bit data: %08x\r\n", *ppixel);
-        *ppixel = (*ppixel & 0xffff0f00) | (color & 0x00ff) | ((color&0xf00)<<4);
-        //printf("[screen] (now)    32-bit data: %08x\r\n", *ppixel);
-        */
       }
       break;
 
@@ -379,10 +483,6 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
     case 1:
       {
         *FB_PIXCHUNK = (*FB_PIXCHUNK & 0xfff00f0ff) | ((color&0xf0)<<4) | ((color&0xf)<<20) | ((color&0xf00)<<8);
-        /*
-        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
-        *ppixel = (*ppixel & 0xfff00f0ff) | ((color&0xf0)<<4) | ((color&0xf)<<20) | ((color&0xf00)<<8);
-        */
       }
       break;
 
@@ -396,12 +496,6 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
       {
         *FB_PIXCHUNK = (*FB_PIXCHUNK & 0x00ffffff) | (color&0xff)<<24;
         *FB_PIXCHUNK2 = (*FB_PIXCHUNK2 & 0xffffff0f) | (color&0xf00)>>4;
-        /*
-        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
-        ppixel2 = (uint32_t *)(&framebuffer[fb_blk_off+4]);
-        *ppixel = (*ppixel & 0x00ffffff) | (color&0xff)<<24;
-        *ppixel2 = (*ppixel2 & 0xffffff0f) | (color&0xf00)>>4;
-        */
       }
       break;
 
@@ -414,10 +508,6 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
     case 3:
       {
         *FB_PIXCHUNK2 = (*FB_PIXCHUNK2 & 0xffff00f0) | (color&0xf0)>>4 | (color&0xf)<<12 | (color&0xf00);
-        /*
-        ppixel = (uint32_t *)(&framebuffer[fb_blk_off+4]);
-        *ppixel = (*ppixel & 0xffff00f0) | (color&0xf0)>>4 | (color&0xf)<<12 | (color&0xf00);
-        */
       }
       break;
   }
@@ -435,25 +525,30 @@ void IRAM_ATTR _st7789_set_pixel(int x, int y, uint16_t color)
   int fb_blk, fb_blk_off;
   uint32_t *ppixel;
   uint32_t *ppixel2;
+  uint16_t orig_color;
+  uint8_t r,g,b,a;
 
   /* Sanity checks. */
-
   if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
     return;
-  
-  /*
-  if ((x<0) || (x>=WIDTH) || (y<0) || (y>=HEIGHT))
-    return;
-  */
 
   /* 4-pixel block index */
   fb_blk = (y*WIDTH+x)/4;
+
   /* Compute address of our 4-pixel block (stored on 6 bytes). */
   fb_blk_off = fb_blk*6;
 
-  //printf("[enter setpixel] (%d,%d) color %03x\r\n", x,y,color);
-  //printf(" fb_blk=%d\r\n", fb_blk);
-  //printf(" fb_blk_off=%d\r\n", fb_blk_off);
+ /* Handle alpha if required. */
+  if (color & 0xf000)
+  {
+    /* Mix original pixel color with our color. */
+    a = (color & 0xf000)>>12;
+    orig_color = _st7789_get_pixel(x, y);
+    b = MIX_ALPHA( ((color & 0xf00)>>8), ((orig_color & 0xf00)>>8), a);
+    r = MIX_ALPHA( ((color & 0x0f0)>>4), ((orig_color & 0x0f0)>>4), a);
+    g = MIX_ALPHA( (color & 0x00f), (orig_color & 0x00f), a);
+    color = RGB(r,g,b);
+  }
 
   /* Modify pixel by 4-byte blocks, as ESP32 does not allow byte-level access. */
   switch(x%4)
@@ -466,10 +561,7 @@ void IRAM_ATTR _st7789_set_pixel(int x, int y, uint16_t color)
     case 0:
       {
         ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
-        //printf("[screen] color: %03x\r\n", color);
-        //printf("[screen] (before) 32-bit data: %08x\r\n", *ppixel);
         *ppixel = (*ppixel & 0xffff0f00) | (color & 0x00ff) | ((color&0xf00)<<4);
-        //printf("[screen] (now)    32-bit data: %08x\r\n", *ppixel);
       }
       break;
 
@@ -528,7 +620,7 @@ void IRAM_ATTR _st7789_set_pixel(int x, int y, uint16_t color)
 
 void st7789_fill_region(int x, int y, int width, int height, uint16_t color)
 {
-  int _x,_y;
+  int _y;
 
   /* X and y cannot be less than zero. */
   if (x<g_dw_x0)
@@ -559,7 +651,12 @@ void st7789_fill_region(int x, int y, int width, int height, uint16_t color)
   {
     for (_y=y; _y<(y+height); _y++)
     {
-      st7789_draw_fastline(x, _y, x+width-1, color);
+      /* If alpha channel set, use classic draw line function to blend pixels. */
+      if (color&0xf000)
+        st7789_draw_line(x, _y, x+width-1, _y, color);
+      else
+        /* Otherwise use fast line drawing routine. */
+        st7789_draw_fastline(x, _y, x+width-1, color);
     }
   }
 }
@@ -681,8 +778,18 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
        * Use st7789_fill_region() rather than st7789_draw_fastline()
        * as it will check boundaries, adapt coordinates and relies
        * on fast line drawing.
+       * 
+       * If color alpha channel is set, use a classic for loop to
+       * set pixels. We cannot use the fast way as we need to blend
+       * pixels.
        */
-      st7789_fill_region(x0, y0, x1 - x0 + 1, 1, color);
+      if (color & 0xf000)
+      {
+        for (x=x0; x<=x1; x++)
+          st7789_set_pixel(x, y0, color);
+      }
+      else
+        st7789_fill_region(x0, y0, x1 - x0 + 1, 1, color);
     }
     else
     {
@@ -720,6 +827,9 @@ void st7789_draw_circle(int xc, int yc, int r, uint16_t color)
   int x = 0;
   int y = r;
   int d = r - 1;
+
+  /* Does not support alpha channel. */
+  color &= 0x0fff;
 
   while (y >= x)
   {

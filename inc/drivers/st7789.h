@@ -68,6 +68,7 @@
 #define ST7789_CMD_WAIT       0xFF
 
 #define RGB(r,g,b) ((g&0xf) | ((r&0xf)<<4) | ((b&0x0f)<<8))
+#define RGBA(r,g,b,a) ((g&0xf) | ((r&0xf)<<4) | ((b&0x0f)<<8) | ((a<16)?(15-a)<<12:0))
 
 esp_err_t st7789_init(void);
 void st7789_backlight_on(void);
@@ -77,6 +78,7 @@ void st7789_get_drawing_window(int *x0, int *y0, int *x1, int *y1);
 void st7789_blank(void);
 void st7789_commit_fb(void);
 void st7789_set_pixel(int x, int y, uint16_t pixel);
+uint16_t st7789_get_pixel(int x, int y);
 void st7789_fill_region(int x, int y, int width, int height, uint16_t color);
 void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color);
 void st7789_draw_fastline(int x0, int y, int x1, uint16_t color);
