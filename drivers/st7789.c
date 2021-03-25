@@ -319,33 +319,6 @@ void IRAM_ATTR st7789_blank(void)
  * @return: pixel color (12 bits)
  **/
 
-uint16_t IRAM_ATTR st7789_get_pixel(int x, int y)
-{
-  int fb_blk, fb_blk_off;
-  uint16_t pix = 0;
-
-  /* Sanity checks. */
-
-  if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
-    return pix;
-
-  /* Invert if required. */
-  if (g_inv_x)
-    x = WIDTH - x - 1;
-  if (g_inv_y)
-    y = HEIGHT - y - 1;
-
-  return _st7789_get_pixel(x, y);
-}
-
-
-/**
- * @brief Get color of a given pixel in framebuffer
- * @param x: pixel X coordinate
- * @param y: pixel Y coordinate
- * @return: pixel color (12 bits)
- **/
-
 uint16_t IRAM_ATTR _st7789_get_pixel(int x, int y)
 {
   int fb_blk, fb_blk_off;
@@ -415,6 +388,33 @@ uint16_t IRAM_ATTR _st7789_get_pixel(int x, int y)
 
   /* Return color. */
   return pix;
+}
+
+
+/**
+ * @brief Get color of a given pixel in framebuffer
+ * @param x: pixel X coordinate
+ * @param y: pixel Y coordinate
+ * @return: pixel color (12 bits)
+ **/
+
+uint16_t IRAM_ATTR st7789_get_pixel(int x, int y)
+{
+  int fb_blk, fb_blk_off;
+  uint16_t pix = 0;
+
+  /* Sanity checks. */
+
+  if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
+    return pix;
+
+  /* Invert if required. */
+  if (g_inv_x)
+    x = WIDTH - x - 1;
+  if (g_inv_y)
+    y = HEIGHT - y - 1;
+
+  return _st7789_get_pixel(x, y);
 }
 
 
