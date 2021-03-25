@@ -25,6 +25,7 @@ idf_component_register(
   "ui/progress.c"
   "ui/scrollbar.c"
   "ui/listbox.c"
+  "ui/frame.c"
   "font/font16.c"
 
   INCLUDE_DIRS "inc"
