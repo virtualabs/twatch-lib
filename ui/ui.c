@@ -554,6 +554,14 @@ int _tile_default_draw(tile_t *p_tile)
     return -1;
   }
 
+  /* Set drawing window. */
+  st7789_set_drawing_window(
+    p_tile->offset_x,
+    p_tile->offset_y,
+    p_tile->offset_x + SCREEN_WIDTH,
+    p_tile->offset_y + SCREEN_HEIGHT
+  );
+
   /* Fill region with background color. */
   st7789_fill_region(
     p_tile->offset_x,

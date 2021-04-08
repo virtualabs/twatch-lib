@@ -277,12 +277,24 @@ int widget_draw(widget_t *p_widget)
       st7789_get_drawing_window(&x0, &y0, &x1, &y1);
 
       /* Set drawing window to our widget region. */
-      st7789_set_drawing_window(
-        (p_widget->box.x < x0)?x0:p_widget->box.x,
-        (p_widget->box.y < y0)?y0:p_widget->box.y,
-        ((p_widget->box.x + p_widget->box.width) > x1)?x1:(p_widget->box.x + p_widget->box.width),
-        ((p_widget->box.y + p_widget->box.height) > y1)?y1:(p_widget->box.y + p_widget->box.height)
-      );
+      if (p_widget->p_tile != NULL)
+      {
+        st7789_set_drawing_window(
+          (p_widget->box.x < x0)?x0:p_widget->box.x + p_widget->p_tile->offset_x,
+          (p_widget->box.y < y0)?y0:p_widget->box.y + p_widget->p_tile->offset_y,
+          ((p_widget->box.x + p_widget->box.width) > x1)?x1:(p_widget->box.x + p_widget->box.width + p_widget->p_tile->offset_x),
+          ((p_widget->box.y + p_widget->box.height) > y1)?y1:(p_widget->box.y + p_widget->box.height + p_widget->p_tile->offset_y)
+        );
+      }
+      else
+      {
+        st7789_set_drawing_window(
+          (p_widget->box.x < x0)?x0:p_widget->box.x,
+          (p_widget->box.y < y0)?y0:p_widget->box.y,
+          ((p_widget->box.x + p_widget->box.width) > x1)?x1:(p_widget->box.x + p_widget->box.width),
+          ((p_widget->box.y + p_widget->box.height) > y1)?y1:(p_widget->box.y + p_widget->box.height)
+        );
+      }
       
       result = p_widget->pfn_drawfunc(p_widget);
       
