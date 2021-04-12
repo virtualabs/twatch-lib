@@ -32,6 +32,7 @@ void _screen_bitblt_1bpp(image_t *source, int source_x, int source_y, int width,
   }
 }
 
+/* -- Old version of _screen_bitblt_12bpp -- 
 void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
 {
   int x, y;
@@ -40,6 +41,23 @@ void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width
   {
     for (y=0;y<height;y++)
       st7789_set_pixel(dest_x+x, dest_y+y, _get_pixel_12bpp(source, source_x+x, source_y+y));
+  }
+}*/
+
+/* Optimized version of _screen_bitblt_12bpp */
+void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
+{
+  int x, y;
+  uint16_t *p_pixels = (uint16_t *)((uint8_t *)source + sizeof(image_t));
+
+  for (y=0;y<height;y++)
+  {
+    st7789_copy_line(
+      dest_x,
+      dest_y+y,
+      &p_pixels[(source_y+y)*source->width + source_x],
+      width
+    );
   }
 }
 

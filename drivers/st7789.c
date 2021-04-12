@@ -733,6 +733,92 @@ void IRAM_ATTR st7789_draw_fastline(int x0, int y, int x1, uint16_t color)
 
 
 /**
+ * @brief Copy line p_line to the output position
+ * @param x: X coordinate of the start of the line
+ * @param y: Y cooordinate of the start of the line
+ * @param p_line: pointer to an array of colors (uint16_t)
+ * @param nb_pixels: number of pixels to copy
+ **/
+
+void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
+{
+  int _x,_y,_p=0;
+  int d=0;
+  int n=0;
+  int s = 0;
+
+
+  /* If X coordinate < 0, apply an offset to the line. */
+  if (x<0)
+  {
+    nb_pixels += x;
+    _p=-x;
+    x=0;
+  }
+
+  /* If Y coordinate < 0, no need to draw. */
+  if (y<0)
+    return;
+
+  /* Invert X coordinate if required. */
+  if (g_inv_x)
+    _x = WIDTH - x - 1;
+  else
+    _x=x;
+
+  /* Invert Y coordinate if required. */
+  if (g_inv_y)
+    _y = HEIGHT - y -1;
+  else
+    _y=y;
+
+  /* Adjust number of pixels if image goes out of screen. */
+  if ((x + nb_pixels) >= WIDTH)
+    nb_pixels = WIDTH - x;
+
+
+  /* Draw first pixel if line start in the middle of a nibble. */
+  if ((_x+d)%2 != 0)
+  {
+    _st7789_set_pixel(_x, _y, p_line[d]);
+    d++;
+  }
+
+  /* copy pixels by 2 pixels. */
+  n = (nb_pixels - d)/2;
+  s = ((_x + d)*3)/2 + ((_y*WIDTH*3)/2);
+
+  /* Fill line with the corresponding pixels. */
+  if (g_inv_x)
+  {
+    /* Draw pixels in reverse order. */
+    _p += d;
+    for (int x=0;x<n;x++)
+    {
+      framebuffer[s] = (p_line[_p] & 0x00ff);
+      framebuffer[s+1] = (p_line[_p] >> 4) | ((p_line[_p+1]>>4)&0xff);
+      framebuffer[s+2] = ((p_line[_p+1]&0xf00) >> 8) | ((p_line[_p+1]&0xf)<<4);
+      _p += 2;
+      s -= 3;
+    }
+  }
+  else
+  {
+    /* Draw pixels in normal order. */
+    for (int x=0; x<n; x++)
+    {
+      framebuffer[s + x*3] = (p_line[2*x+d] & 0x00ff);
+      framebuffer[s + x*3 + 1] = (p_line[2*x+d] >> 4) | ((p_line[2*x+d+1]>>4)&0xff);
+      framebuffer[s + x*3 + 2] = ((p_line[2*x+d+1]&0xf00) >> 8) | ((p_line[2*x+d+1]&0xf)<<4);
+    }
+  }
+
+  /* Do we need to set the last pixel ? */
+  if (2*n < (nb_pixels-d))
+    _st7789_set_pixel(_x, _y, p_line[nb_pixels-1]);
+}
+
+/**
  * @brief Draw a line of color `color` between (x0,y0) and (x1, y1)
  * @param x0: X coordinate of the start of the line
  * @param y0: Y cooordinate of the start of the line

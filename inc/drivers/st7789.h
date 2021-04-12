@@ -84,5 +84,6 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color);
 void st7789_draw_fastline(int x0, int y, int x1, uint16_t color);
 void st7789_draw_circle(int xc, int yc, int r, uint16_t color);
 void st7789_draw_disc(int xc, int yc, int r, uint16_t color);
+void st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels);
 
 #endif /* __INC_DRIVER_ST7789_H */
