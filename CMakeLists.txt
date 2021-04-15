@@ -9,11 +9,13 @@ idf_component_register(
   "drivers/bma423/bma4.c"
   "drivers/bma423/bma423.c"
   "drivers/st7789.c"
+  "drivers/pcf8563.c"
   "hal/audio.c"
   "hal/pmu.c"
   "hal/touch.c"
   "hal/vibrate.c"
   "hal/screen.c"
+  "hal/rtc.c"
 
   "img/img.c"
   "ui/ui.c"
