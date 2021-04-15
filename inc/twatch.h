@@ -20,6 +20,9 @@
 /* Include vibrator HAL. */
 #include "hal/vibrate.h"
 
+/* Include RTC HAL. */
+#include "hal/rtc.h"
+
 /* Include UI. */
 #include "ui/ui.h"
 #include "ui/button.h"
