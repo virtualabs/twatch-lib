@@ -10,6 +10,7 @@ float velocity;
 int16_t dx,dy;
 double distance;
 int duration, touch_start_ms, touch_stop_ms;
+bool b_inverted=false;
 
 /* b_touched: used by ISR to notify touch HAL some touch data need to be retrieved. */
 volatile bool b_touched = false;
@@ -47,6 +48,13 @@ void _touch_irq_handler(void)
 
 void _touch_report_event(touch_event_t *event)
 {
+  /* Invert coordinates if required. */
+  if (b_inverted)
+  {
+    event->coords.x = (TOUCH_MAX_X - event->coords.x);
+    event->coords.y = (TOUCH_MAX_Y - event->coords.y);
+  }
+
   xQueueSend(_touch_queue, event, 0);
 }
 
@@ -260,4 +268,14 @@ esp_err_t twatch_get_touch_event(touch_event_t *event, TickType_t ticks_to_wait)
   }
   else
     return ESP_FAIL;
+}
+
+/**
+ * @brief Set touch screen as inverted (or not).
+ * @param inverted: true if touch screen is inverted, false otherwise
+ **/
+
+void twatch_touch_set_inverted(bool inverted)
+{
+  b_inverted = inverted;
 }

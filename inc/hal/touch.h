@@ -16,6 +16,10 @@
 #define TOUCH_SWIPE_MIN_DIST 10
 #define TOUCH_SWIPE_MIN_VELOCITY 20
 
+/* Maximum X/Y values. */
+#define TOUCH_MAX_X 240
+#define TOUCH_MAX_Y 240
+
 #include "drivers/ft6236.h"
 #include "freertos/queue.h"
 
@@ -63,8 +67,11 @@ typedef struct {
 /* Initialize Touch HAL. */
 esp_err_t twatch_touch_init(void);
 
+/* Set touch screen as inverted. */
+void twatch_touch_set_inverted(bool inverted);
+
 /* Retrieve Touch event (if any). */
 esp_err_t twatch_get_touch_event(touch_event_t *event, TickType_t ticks_to_wait);
-//esp_err_t twatch_get_touch_event(touch_event_t **event, TickType_t ticks_to_wait);
+
 
 #endif /* __INC_TWATCH_TOUCH_H */
