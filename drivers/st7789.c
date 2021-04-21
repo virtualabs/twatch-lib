@@ -795,9 +795,9 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
     _p += d;
     for (int x=0;x<n;x++)
     {
-      framebuffer[s] = (p_line[_p] & 0x00ff);
-      framebuffer[s+1] = (p_line[_p] >> 4) | ((p_line[_p+1]>>4)&0xff);
-      framebuffer[s+2] = ((p_line[_p+1]&0xf00) >> 8) | ((p_line[_p+1]&0xf)<<4);
+      framebuffer[s] = (p_line[_p+1] & 0x00ff);
+      framebuffer[s+1] = (p_line[_p+1] >> 4) | ((p_line[_p]>>4)&0xff);
+      framebuffer[s+2] = ((p_line[_p]&0xf00) >> 8) | ((p_line[_p]&0xf)<<4);
       _p += 2;
       s -= 3;
     }
