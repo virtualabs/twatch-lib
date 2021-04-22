@@ -75,6 +75,8 @@ void st7789_backlight_on(void);
 void st7789_backlight_set(int backlight_level);
 void st7789_set_drawing_window(int x0, int y0, int x1, int y1);
 void st7789_get_drawing_window(int *x0, int *y0, int *x1, int *y1);
+void st7789_set_inverted(bool inverted);
+bool st7789_is_inverted(void);
 void st7789_blank(void);
 void st7789_commit_fb(void);
 void st7789_set_pixel(int x, int y, uint16_t pixel);

@@ -39,8 +39,8 @@ ledc_channel_config_t backlight_config = {
   .timer_sel  = LEDC_TIMER_0
 };
 
-DRAM_ATTR const bool g_inv_x = true;
-DRAM_ATTR const bool g_inv_y = true;
+DRAM_ATTR static bool g_inv_x = true;
+DRAM_ATTR static bool g_inv_y = true;
 
 /* Drawing window. */
 DRAM_ATTR static int g_dw_x0 = 0;
@@ -969,4 +969,31 @@ void st7789_draw_disc(int xc, int yc, int r, uint16_t color)
     else
       st7789_draw_circle(xc, yc, i, color);
   }
+}
+
+
+/**
+ * st7789_set_inverted()
+ * 
+ * @brief: Invert the screen (or not).
+ * @param inverted: true to invert, false to use standard mode.
+ **/
+
+void st7789_set_inverted(bool inverted)
+{
+  g_inv_x = !inverted;
+  g_inv_y = !inverted;
+}
+
+
+/**
+ * st7789_is_inverted()
+ * 
+ * @brief: Check if screen is inverted (rotated) or not.
+ * @return: true if inverted, false otherwise.
+ **/
+
+bool st7789_is_inverted(void)
+{
+  return ((!g_inv_x) && (!g_inv_y));
 }

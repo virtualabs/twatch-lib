@@ -130,3 +130,29 @@ void twatch_screen_update(void)
   /* Transmit framebuffer to screen. */
   st7789_commit_fb();
 }
+
+
+/**
+ * twatch_screen_set_inverted()
+ * 
+ * @brief: Invert the screen (or not).
+ * @param inverted: true to invert, false to use standard mode.
+ **/
+
+void twatch_screen_set_inverted(bool inverted)
+{
+  st7789_set_inverted(inverted);
+}
+
+
+/**
+ * twatch_screen_is_inverted()
+ * 
+ * @brief: Check if screen is inverted (rotated) or not.
+ * @return: true if inverted, false otherwise.
+ **/
+
+bool twatch_screen_is_inverted(void)
+{
+  return st7789_is_inverted();
+}
