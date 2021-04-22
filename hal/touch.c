@@ -279,3 +279,8 @@ void twatch_touch_set_inverted(bool inverted)
 {
   b_inverted = inverted;
 }
+
+bool twatch_touch_is_inverted(void)
+{
+  return b_inverted;
+}
