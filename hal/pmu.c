@@ -9,27 +9,21 @@
 #define AXP_CHECK(x) if(x != AXP_PASS) return ESP_FAIL
 
 /* User button handling. */
+volatile bool b_axpxx_irq_triggered = false;
 volatile int userbtn_int_count = 0;
 portMUX_TYPE userbtn_mux = portMUX_INITIALIZER_UNLOCKED;
 
 
 /**
- * _userbtn_interrupt_handler()
+ * _axpxx_interrupt_handler()
  *
- * Internal interrupt handler for user button management.
+ * Internal interrupt handler for AXP202 IRQ.
  **/
 
-void IRAM_ATTR _userbtn_interrupt_handler(void *parameter)
+void IRAM_ATTR _axpxx_interrupt_handler(void *parameter)
 {
-  /* Enter critical section. */
-  portENTER_CRITICAL(&userbtn_mux);
-
-  /* Increment user button interrupt counter. */
-  userbtn_int_count++;
-
-  /* Leave critical section. */
-  portEXIT_CRITICAL(&userbtn_mux);
-
+  /* Mark AXP202 IRQ as triggered. */
+  b_axpxx_irq_triggered = true;
 }
 
 /**
@@ -56,7 +50,7 @@ esp_err_t twatch_pmu_init(void)
   /* Install our user button interrupt handler. */
   if (gpio_install_isr_service(0) != ESP_OK)
     printf("[isr] Error while installing service\r\n");
-  gpio_isr_handler_add(GPIO_NUM_35, _userbtn_interrupt_handler, NULL);
+  gpio_isr_handler_add(GPIO_NUM_35, _axpxx_interrupt_handler, NULL);
 
   /* Initialize I2C master communication. */
   axpxx_i2c_init();
@@ -149,6 +143,32 @@ esp_err_t twatch_pmu_power(bool enable)
   return ESP_OK;
 }
 
+/**
+ * twatch_pmu_read_irq()
+ * 
+ * Fetch IRQ data from AXP202.
+ * 
+ **/
+
+void twatch_pmu_read_irq(void)
+{
+  if (b_axpxx_irq_triggered)
+  {
+    /* Read IRQ. */
+    if (axpxx_readIRQ() == AXP_PASS)
+    {
+      /* Check if user button has been pressed. */
+      if (axpxx_isPEKShortPressIRQ())
+      {
+        userbtn_int_count = 1;
+      }
+    }
+
+    /* Clear IRQ. */
+    axpxx_clearIRQ();
+    b_axpxx_irq_triggered = false;
+  }
+}
 
 /**
  * twatch_pmu_is_userbtn_pressed(void)
@@ -162,22 +182,21 @@ bool twatch_pmu_is_userbtn_pressed(void)
 {
   bool result = false;
 
+  /* Fetch IRQ data if there is any. */
+  twatch_pmu_read_irq();
+
+  /* If user button has been (short) pressed, return true. */
   if (userbtn_int_count > 0)
   {
     result = true;
-    /* Enter critical section. */
-    portENTER_CRITICAL(&userbtn_mux);
+    
     /* Reset interrupt counter. */
-    userbtn_int_count = 0;
-    /* Exit critical section. */
-    portEXIT_CRITICAL(&userbtn_mux);
-
-    /* Clear IRQ. */
-    axpxx_clearIRQ();
+    userbtn_int_count = 0;    
   }
 
   return result;
 }
+
 
 /**
  * twatch_pmu_deepsleep()
