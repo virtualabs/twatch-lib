@@ -5,6 +5,7 @@
 #include "drivers/st7789.h"
 
 #include "hal/touch.h"
+#include "hal/pmu.h"
 
 #include "img.h"
 #include "font/font16.h"
@@ -19,7 +20,8 @@
 
 typedef enum {
   TE_ENTER=0xF00,
-  TE_EXIT
+  TE_EXIT,
+  TE_USERBTN
 } tile_event_t;
 
 typedef int (*FTileEventHandler)(struct tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity);

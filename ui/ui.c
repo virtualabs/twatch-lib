@@ -261,6 +261,19 @@ void IRAM_ATTR ui_process_events(void)
     }
   }
 
+  /* Has lateral button been short-pressed ? */
+  if (twatch_pmu_is_userbtn_pressed())
+  {
+    /* Forward event to the current tile. */
+    tile_send_event(
+      g_ui.p_current_tile,
+      TE_USERBTN,
+      0,
+      0,
+      0
+    );
+  }
+
 
   /* Refresh screen. */
   st7789_blank();
