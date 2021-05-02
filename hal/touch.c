@@ -109,8 +109,6 @@ void _process_touch_data(ft6236_touch_t *touch)
         /* If touch lasts less than 500ms, then it is a tap ! */
         touch_stop_ms = millis();
 
-        printf("Release: stop=%d start=%d\r\n", touch_stop_ms, touch_start_ms);
-
         if (((touch_stop_ms - touch_start_ms) < TOUCH_TAP_MAX_TIME) && (distance < TOUCH_TAP_MAX_DIST))
         {
           ESP_LOGD(TOUCH_TAG, "[!] TAP @ %d,%d", first.x, first.y);
