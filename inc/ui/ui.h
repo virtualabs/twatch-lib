@@ -21,7 +21,8 @@
 typedef enum {
   TE_ENTER=0xF00,
   TE_EXIT,
-  TE_USERBTN
+  TE_USERBTN,
+  TE_MODAL_CLOSE
 } tile_event_t;
 
 typedef int (*FTileEventHandler)(struct tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity);
@@ -53,9 +54,15 @@ typedef struct tTile {
   /* Background color, 12bpp */
   uint16_t background_color;
 
+  /* TODO: create a tile box ? */
+
   /* Offsets */
   int offset_x;
   int offset_y;
+
+  /* Tile size. */
+  int width;
+  int height;
 
   /* Type */
   ui_tile_type_t t_type;
@@ -82,6 +89,9 @@ typedef struct tTile {
 
 } tile_t;
 
+/* Include modal.h here in order to have tile_t structure defined. */
+#include "ui/modal.h"
+
 /**
  * User interface main structure
  **/
@@ -96,6 +106,9 @@ typedef struct {
   /* Pointer to current tile. */
   tile_t *p_current_tile;
 
+  /* Pointer to a modal box. */
+  modal_t *p_modal;
+
 } ui_t;
 
 
@@ -108,6 +121,8 @@ typedef struct {
 void ui_init(void);
 void ui_select_tile(tile_t *p_tile);
 void ui_process_events(void);
+void ui_set_modal(modal_t *p_modal);
+void ui_unset_modal(void);
 
 /* Swipe management. */
 void ui_swipe_right(void);

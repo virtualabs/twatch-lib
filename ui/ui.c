@@ -25,6 +25,9 @@ void ui_init(void)
   g_ui.state = UI_STATE_IDLE;
   g_ui.p_from_tile = NULL;
   g_ui.p_to_tile = NULL;
+
+  /* Initialize our modal box. */
+  g_ui.p_modal = NULL;
 }
 
 
@@ -284,6 +287,12 @@ void IRAM_ATTR ui_process_events(void)
       {
         /* Draw current tile. */
         tile_draw(g_ui.p_current_tile);
+
+        /* If a modal is set, display it. */
+        if (g_ui.p_modal != NULL)
+        {
+          tile_draw(&g_ui.p_modal->tile);
+        }
       }
       break;
 
@@ -441,6 +450,26 @@ void IRAM_ATTR ui_process_events(void)
   st7789_commit_fb();
 }
 
+/**
+ * @brief: set UI modal box.
+ * @param p_modal: pointer to a `modal_t`
+ **/
+
+void ui_set_modal(modal_t *p_modal)
+{
+  g_ui.p_modal = p_modal;
+}
+
+
+/**
+ * @brief: unset (hide) UI modal box.
+  **/
+
+void ui_unset_modal(void)
+{
+  g_ui.p_modal = NULL;
+}
+
 
 /**********************************************************************
  * Handle press/release events
@@ -463,19 +492,50 @@ int ui_forward_event_to_widget(touch_event_type_t state, int x, int y, int veloc
       widget_send_event(p_widget, (widget_event_t)state, x, y, velocity);
     else
     {
-      if (p_widget->p_tile == g_ui.p_current_tile)
+      /* Is there a modal dialog box active ? */
+      if (g_ui.p_modal != NULL)
       {
-        if (
-          (x >= p_widget->box.x) && (y >= p_widget->box.y) && \
-          (x < (p_widget->box.x + p_widget->box.width)) && \
-          (y < (p_widget->box.y + p_widget->box.height))
-        )
+        /* No modal dialog box, handles events as usual. */
+        if (p_widget->p_tile == &g_ui.p_modal->tile)
         {
-          /* Forward the touch event to the widget. */
-          if (widget_send_event(p_widget, (widget_event_t)state, x - p_widget->box.x, y - p_widget->box.y, velocity) == WE_PROCESSED)
+          if (
+            (x >= (g_ui.p_modal->tile.offset_x + p_widget->box.x)) && (y >= (g_ui.p_modal->tile.offset_y + p_widget->box.y)) && \
+            (x < (g_ui.p_modal->tile.offset_x + p_widget->box.x + p_widget->box.width)) && \
+            (y < (g_ui.p_modal->tile.offset_y + p_widget->box.y + p_widget->box.height))
+          )
           {
-            /* Widget processed the event, we are done. */
-            return 0;
+            /* Forward the touch event to the widget. */
+            if (widget_send_event(
+              p_widget,
+              (widget_event_t)state,
+              x - (g_ui.p_modal->tile.offset_x + p_widget->box.x),
+              y - (g_ui.p_modal->tile.offset_y + p_widget->box.y),
+              velocity
+            ) == WE_PROCESSED)
+            {
+              /* Widget processed the event, we are done. */
+              return 0;
+            }
+          }
+        }
+      }
+      else
+      {
+        /* No modal dialog box, handles events as usual. */
+        if (p_widget->p_tile == g_ui.p_current_tile)
+        {
+          if (
+            (x >= p_widget->box.x) && (y >= p_widget->box.y) && \
+            (x < (p_widget->box.x + p_widget->box.width)) && \
+            (y < (p_widget->box.y + p_widget->box.height))
+          )
+          {
+            /* Forward the touch event to the widget. */
+            if (widget_send_event(p_widget, (widget_event_t)state, x - p_widget->box.x, y - p_widget->box.y, velocity) == WE_PROCESSED)
+            {
+              /* Widget processed the event, we are done. */
+              return 0;
+            }
           }
         }
       }
@@ -485,8 +545,20 @@ int ui_forward_event_to_widget(touch_event_type_t state, int x, int y, int veloc
     p_widget = widget_enum_next(p_widget);
   }
 
-  /* No widget processed this event. */
-  return 1;
+  /* If we have a modal dialog box active, disable screen swipe. */
+  if ((g_ui.p_modal != NULL) && (state >= TOUCH_EVENT_SWIPE_LEFT))
+  {
+    /*
+     * Event has been "processed" by our modal dialog box, we are done.
+     * This disables swipe support if a modal is active.
+     */
+    return 0;
+  }
+  else
+  {
+    /* No widget processed this event. */
+    return 1;
+  }
 }
 
 
@@ -685,16 +757,16 @@ int _tile_default_draw(tile_t *p_tile)
   st7789_set_drawing_window(
     p_tile->offset_x,
     p_tile->offset_y,
-    p_tile->offset_x + SCREEN_WIDTH,
-    p_tile->offset_y + SCREEN_HEIGHT
+    p_tile->offset_x + p_tile->width,
+    p_tile->offset_y + p_tile->height
   );
 
   /* Fill region with background color. */
   st7789_fill_region(
     p_tile->offset_x,
     p_tile->offset_y,
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
+    p_tile->width,
+    p_tile->height,
     p_tile->background_color
   );
 
@@ -725,6 +797,8 @@ void tile_init(tile_t *p_tile, void *p_user_data)
   p_tile->t_type = TILE_MAIN;
   p_tile->offset_x = 0;
   p_tile->offset_y = 0;
+  p_tile->width = SCREEN_WIDTH;
+  p_tile->height = SCREEN_HEIGHT;
   p_tile->p_left = NULL;
   p_tile->p_right = NULL;
   p_tile->p_top = NULL;

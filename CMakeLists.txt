@@ -19,6 +19,7 @@ idf_component_register(
 
   "img/img.c"
   "ui/ui.c"
+  "ui/modal.c"
   "ui/widget.c"
   "ui/image.c"
   "ui/button.c"
