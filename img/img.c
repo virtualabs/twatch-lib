@@ -1,6 +1,7 @@
 #include "img.h"
 #include "drivers/st7789.h"
 
+#define SCREEN_HEIGHT 240
 #define IMG_DATA(x) ((uint8_t *)((uint8_t *)(x) + 4))
 
 image_t *load_image(uint8_t *bitmap_data)
@@ -49,6 +50,18 @@ void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width
 {
   int x, y;
   uint16_t *p_pixels = (uint16_t *)((uint8_t *)source + sizeof(image_t));
+
+  if (dest_y < 0)
+  {
+    source_y -= dest_y;
+    height += dest_y;
+    dest_y = 0;
+  }
+
+  if ((height + dest_y) >= SCREEN_HEIGHT)
+  {
+    height = SCREEN_HEIGHT - dest_y;
+  }
 
   for (y=0;y<height;y++)
   {
