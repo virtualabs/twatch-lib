@@ -51,6 +51,7 @@ void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width
   int x, y;
   uint16_t *p_pixels = (uint16_t *)((uint8_t *)source + sizeof(image_t));
 
+  /* Adjust image if destination y-coordinate is below 0. */
   if (dest_y < 0)
   {
     source_y -= dest_y;
@@ -58,11 +59,13 @@ void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width
     dest_y = 0;
   }
 
+  /* Don't write past screen height. */
   if ((height + dest_y) >= SCREEN_HEIGHT)
   {
     height = SCREEN_HEIGHT - dest_y;
   }
 
+  /* Copy lines. */
   for (y=0;y<height;y++)
   {
     st7789_copy_line(
