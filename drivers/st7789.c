@@ -830,19 +830,20 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
   int x, y, dx, dy, z;
   float e, ex, ey;
 
+  /* Make sure x0 <= x1. */
+  if (x0>x1)
+  {
+    z = x0;
+    x0 = x1;
+    x1 = z;
+  }
+
   dy = y1 - y0;
   dx = x1 - x0;
 
   /* Vertical line ? */
   if (dx == 0)
   {
-    /* Make sure y0 <= y1. */
-    if (y0>y1)
-    {
-      dy = y0;
-      y0 = y1;
-      y1 = dy;
-    }
 
     for (y=y0; y<=y1; y++)
       st7789_set_pixel(x0, y, color);
@@ -852,13 +853,6 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
     /* Horizontal line ? */
     if (dy == 0)
     {
-      /* Make sure x0 <= x1. */
-      if (x0>x1)
-      {
-        dx = x0;
-        x0 = x1;
-        x1 = dx;
-      }
 
       /*
        * Use st7789_fill_region() rather than st7789_draw_fastline()
@@ -879,14 +873,6 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
     }
     else
     {
-
-      /* Make sure x0 <= x1. */
-      if (x0>x1)
-      {
-        z = x0;
-        x0 = x1;
-        x1 = z;
-      }
 
       y = y0;
       e = 0.0;
