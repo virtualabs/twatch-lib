@@ -19,7 +19,7 @@ typedef enum {
   WE_RELEASE,
   WE_TAP,
   WE_SWIPE_LEFT,
-  WE_RIGHT,
+  WE_SWIPE_RIGHT,
   WE_SWIPE_UP,
   WE_SWIPE_DOWN,
 
