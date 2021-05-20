@@ -827,7 +827,7 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
  **/
 void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
 {
-  int x, y, dx, dy;
+  int x, y, dx, dy, z;
   float e, ex, ey;
 
   dy = y1 - y0;
@@ -879,6 +879,15 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
     }
     else
     {
+
+      /* Make sure x0 <= x1. */
+      if (x0>x1)
+      {
+        z = x0;
+        x0 = x1;
+        x1 = z;
+      }
+
       y = y0;
       e = 0.0;
       ex = dy/dx;
