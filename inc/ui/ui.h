@@ -152,6 +152,8 @@ void tile_draw_disc(tile_t *p_tile, int x, int y, int r, uint16_t color);
 void tile_bitblt(tile_t *p_tile, image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y);
 void tile_draw_char(tile_t *p_tile, int x, int y, char c, uint16_t color);
 void tile_draw_text(tile_t *p_tile, int x, int y, char *psz_text, uint16_t color);
+void tile_draw_char_x2(tile_t *p_tile, int x, int y, char c, uint16_t color);
+void tile_draw_text_x2(tile_t *p_tile, int x, int y, char *psz_text, uint16_t color);
 
 
 /* Tile linkage */

@@ -708,6 +708,50 @@ void tile_draw_text(tile_t *p_tile, int x, int y, char *psz_text, uint16_t color
 
 
 /**
+ * tile_draw_char_x2()
+ * 
+ * @brief: Draw a given character at (x,y) on screen, with the given color
+ * @param p_tile: pointer to a `tile_t` structure
+ * @param x: X coordinate
+ * @param y: Y coordinate
+ * @param c: character
+ * @param color: target color
+ **/
+
+void tile_draw_char_x2(tile_t *p_tile, int x, int y, char c, uint16_t color)
+{
+    /* Draw character with tile offset. */
+    font_draw_char_x2(
+        p_tile->offset_x + x, 
+        p_tile->offset_y + y, 
+        c,
+        color
+    );
+}
+
+/**
+ * tile_draw_text_x2()
+ * 
+ * @brief: Draw a given text at (x,y) on screen, with the given color, 2 times bigger
+ * @param p_tile: pointer to a `tile_t` structure
+ * @param x: X coordinate
+ * @param y: Y coordinate
+ * @param psz_text: target text
+ * @param color: target color
+ **/
+
+void tile_draw_text_x2(tile_t *p_tile, int x, int y, char *psz_text, uint16_t color)
+{
+    /* Draw character with tile offset. */
+    font_draw_text_x2(
+        p_tile->offset_x + x,
+        p_tile->offset_y + y,
+        psz_text,
+        color
+    );
+}
+
+/**
  * @brief Copy a portion of source image into destination buffer
  * @param p_tile: pointer to a `tile_t` structure
  * @param source: source image
