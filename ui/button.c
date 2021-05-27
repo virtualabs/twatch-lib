@@ -22,7 +22,7 @@ void widget_button_drawfunc(widget_t *p_widget)
       0,
       p_widget->box.width - 2,
       0,
-      BUTTON_STYLE_BORDER
+      p_widget->style.border
     );
     widget_draw_line(
       p_widget,
@@ -30,7 +30,7 @@ void widget_button_drawfunc(widget_t *p_widget)
       p_widget->box.height - 1,
       p_widget->box.width - 2,
       p_widget->box.height - 1,
-      BUTTON_STYLE_BORDER
+      p_widget->style.border
     );
     widget_draw_line(
       p_widget,
@@ -38,7 +38,7 @@ void widget_button_drawfunc(widget_t *p_widget)
       1,
       0,
       p_widget->box.height - 2,
-      BUTTON_STYLE_BORDER
+      p_widget->style.border
     );
     widget_draw_line(
       p_widget,
@@ -46,7 +46,7 @@ void widget_button_drawfunc(widget_t *p_widget)
       1,
       p_widget->box.width - 1,
       p_widget->box.height - 2,
-      BUTTON_STYLE_BORDER
+      p_widget->style.border
     );
 
     /* Draw button background. */
@@ -69,7 +69,7 @@ void widget_button_drawfunc(widget_t *p_widget)
         1,
         p_widget->box.width-2,
         p_widget->box.height-2,
-        BUTTON_STYLE_BG
+        p_widget->style.background
       );
     }
 
@@ -87,7 +87,7 @@ void widget_button_drawfunc(widget_t *p_widget)
         dx,
         dy,
         p_button->psz_label,
-        BUTTON_STYLE_TEXT
+        p_widget->style.front
       );
     }
   }
@@ -185,6 +185,11 @@ void widget_button_init(
 
   /* Set user callbacks. */
   p_widget_button->pfn_tap_handler = NULL;
+
+  /* Set default style. */
+  p_widget_button->widget.style.background = BUTTON_STYLE_BG;
+  p_widget_button->widget.style.border = BUTTON_STYLE_BORDER;
+  p_widget_button->widget.style.front = BUTTON_STYLE_BORDER;
 
   /* Set user data. */
   widget_set_userdata(&p_widget_button->widget, (void *)p_widget_button);
