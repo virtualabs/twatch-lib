@@ -55,7 +55,7 @@ void _modal_drawfunc(tile_t *p_tile)
       1,
       p_tile->width-2,
       p_tile->height-2,
-      RGB(0,0,0)
+      p_tile->background_color
     );
 
     /* Draw the modal. */
