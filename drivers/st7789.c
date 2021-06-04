@@ -830,8 +830,8 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
  **/
 void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
 {
-  int x, y, dx, dy, z;
-  float e, ex, ey;
+  int x, y, dx, dy;
+  float e;
 
   dy = y1 - y0;
   dx = x1 - x0;
@@ -882,18 +882,87 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
     }
     else
     {
-      y = y0;
-      e = 0.0;
-      ex = dy/dx;
-      ey = -1.0;
-      for (x=x0; x<=x1; x++)
+
+      /*
+       * Make sure x0 <= x1 and dx >= 0. Swaping (x0,y0) with (x1,y1)
+       * remove 4 case by symmetry
+       */
+      if (x0 > x1)
       {
-        st7789_set_pixel(x, y, color);
-        e += ex;
-        if (e >= 0.5)
+        x = x0;
+        x0 = x1;
+        x1 = x;
+        y = y0;
+        y0 = y1;
+        y1 = y;
+        dy = -dy;
+        dx = -dx;
+      }
+
+      if (dy > 0)
+      {
+        if (dx >= dy) /* 1st quadran */
         {
-          y++;
-          e = e+ey;
+          e = dx;
+          dx *= 2;
+          dy *= 2;
+          for (; x0 <= x1; x0++)
+          {
+            st7789_set_pixel(x0, y0, color);
+            e -= dy;
+            if (e < 0) {
+              y0++;
+              e += dx;
+            }
+          }
+        }
+        else /* 2nd quadran */
+        {
+          e = dy;
+          dx *= 2;
+          dy *= 2;
+          for (;y0 <= y1; y0++)
+          {
+            st7789_set_pixel(x0, y0, color);
+            e -= dx;
+            if (e < 0) {
+              x0++;
+              e += dy;
+            }
+          }
+        }
+      }
+      else /* dy < 0 */
+      {
+        if (dx >= -dy) /* 3rd quadran */
+        {
+          e = dx;
+          dx *= 2;
+          dy *= 2;
+          for (; x0 <= x1; x0++)
+          {
+            st7789_set_pixel(x0, y0, color);
+            e += dy;
+            if (e < 0) {
+              y0--;
+              e += dx;
+            }
+          }
+        }
+        else /* 4th quadran */
+        {
+          e = dy;
+          dx *= 2;
+          dy *= 2;
+          for (;y0 >= y1; y0--)
+          {
+            st7789_set_pixel(x0, y0, color);
+            e += dx;
+            if (e > 0) {
+              x0++;
+              e += dy;
+            }
+          }
         }
       }
     }
