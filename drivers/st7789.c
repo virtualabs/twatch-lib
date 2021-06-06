@@ -230,6 +230,16 @@ void st7789_backlight_set(int backlight_level)
   ledc_update_duty(backlight_config.speed_mode, backlight_config.channel);
 }
 
+/**
+ * @brief Get screen backlight level.
+ * @return backlight level from 0 to 5000
+ **/
+
+int st7789_backlight_get()
+{
+  return ledc_get_duty(backlight_config.speed_mode, backlight_config.channel);
+}
+
 void st7789_set_drawing_window(int x0, int y0, int x1, int y1)
 {
   int x,y;
