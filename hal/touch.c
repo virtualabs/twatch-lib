@@ -75,19 +75,18 @@ void _process_touch_data(ft6236_touch_t *touch)
       /* Is it a press ? */
       if ((touch->touches[0].event == TOUCH_PRESS) || (touch->touches[0].event == TOUCH_CONTACT))
       {
-        /* Notify touch press. */
-        event.type = TOUCH_EVENT_PRESS;
-        event.coords.x = first.x;
-        event.coords.y = first.y;
-        event.velocity = 0.0;
-        _touch_report_event(&event);
-
         /* Save first point. */
         first.x = touch->touches[0].x;
         first.y = touch->touches[0].y;
         touch_start_ms = millis();
         touch_state = TOUCH_STATE_PRESS;
 
+        /* Notify touch press. */
+        event.type = TOUCH_EVENT_PRESS;
+        event.coords.x = first.x;
+        event.coords.y = first.y;
+        event.velocity = 0.0;
+        _touch_report_event(&event);
       }
     }
     break;
