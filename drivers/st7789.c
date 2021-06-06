@@ -819,9 +819,6 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
 }
 
 /**
- * TODO: Rework this function to use the general algorithm described in
- * https://fr.wikipedia.org/wiki/Algorithme_de_trac%C3%A9_de_segment_de_Bresenham
- * 
  * @brief Draw a line of color `color` between (x0,y0) and (x1, y1)
  * @param x0: X coordinate of the start of the line
  * @param y0: Y cooordinate of the start of the line
