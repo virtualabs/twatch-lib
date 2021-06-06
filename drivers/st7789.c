@@ -768,7 +768,7 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
 
   /* Invert Y coordinate if required. */
   if (g_inv_y)
-    _y = HEIGHT - y -1;
+    _y = HEIGHT - y - 1;
   else
     _y=y;
 
@@ -778,7 +778,7 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
 
 
   /* Draw first pixel if line start in the middle of a nibble. */
-  if ((_x+d)%2 != 0)
+  if ((x%2) != 0)
   {
     _st7789_set_pixel(_x, _y, p_line[d]);
     d++;
@@ -786,11 +786,30 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
 
   /* copy pixels by 2 pixels. */
   n = (nb_pixels - d)/2;
-  s = ((_x + d)*3)/2 + ((_y*WIDTH*3)/2);
+  s = ((_x*3)/2 + ((_y*WIDTH*3)/2));
 
   /* Fill line with the corresponding pixels. */
   if (g_inv_x)
   {
+    /**
+     * If X is inverted, it makes things difficult to handle. We are drawing the line
+     * backwards, but still the starting point in the framebuffer points to the second
+     * pixel rather onto the first of a 2-pixel block (stored on 3 bytes). We need to
+     * compute the address in the framebuffer of the previous pixel, by using the
+     * following trick:
+     * 
+     * s = (s/3)*3
+     * 
+     * Say we want to start the line at x=0. If screen is inversed, then _x = 240 - 0 - 1 = 239.
+     * 239*3/2 = 358, which is not a multiple of 3 (since it does not correspond to the first pixel
+     * of a 2-pixel block). Dividing by 3 and then multiplying by 3 ensures `s` is multiple of 3,
+     * and therefore points to the first pixel of the corresponding 2-pixel block.
+     * 
+     * I spent way too much time to figure this out, so I thought it would worth it to explain
+     * this a bit in here (hello, future me o/). 
+     **/
+    s = (s/3)*3;
+
     /* Draw pixels in reverse order. */
     _p += d;
     for (int x=0;x<n;x++)
@@ -804,12 +823,16 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
   }
   else
   {
+    /**
+     * Remark: everything works fine if X is not inverted, nothing special here. */
+     **/
+    
     /* Draw pixels in normal order. */
     for (int x=0; x<n; x++)
     {
-      framebuffer[s + x*3] = (p_line[2*x+d] & 0x00ff);
-      framebuffer[s + x*3 + 1] = (p_line[2*x+d] >> 4) | ((p_line[2*x+d+1]>>4)&0xff);
-      framebuffer[s + x*3 + 2] = ((p_line[2*x+d+1]&0xf00) >> 8) | ((p_line[2*x+d+1]&0xf)<<4);
+      framebuffer[s + x*3] = (p_line[2*x+d+_p] & 0x00ff);
+      framebuffer[s + x*3 + 1] = (p_line[2*x+d+_p] >> 4) | ((p_line[2*x+d+_p+1]>>4)&0xff);
+      framebuffer[s + x*3 + 2] = ((p_line[2*x+d+_p+1]&0xf00) >> 8) | ((p_line[2*x+d+_p+1]&0xf)<<4);
     }
   }
 
