@@ -824,7 +824,7 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
   else
   {
     /**
-     * Remark: everything works fine if X is not inverted, nothing special here. */
+     * Remark: everything works fine if X is not inverted, nothing special here.
      **/
     
     /* Draw pixels in normal order. */
