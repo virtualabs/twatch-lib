@@ -33,7 +33,7 @@ typedef struct {
   uint8_t type;
 } image_t;
 
-image_t *load_image(uint8_t *bitmap_data);
+image_t *load_image(const uint16_t *bitmap_data);
 void screen_bitblt(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y);
 
 #endif /* __INC_IMG_H */

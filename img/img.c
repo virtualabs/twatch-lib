@@ -4,7 +4,7 @@
 #define SCREEN_HEIGHT 240
 #define IMG_DATA(x) ((uint8_t *)((uint8_t *)(x) + 4))
 
-image_t *load_image(uint8_t *bitmap_data)
+image_t *load_image(const uint16_t *bitmap_data)
 {
   return (image_t *)bitmap_data;
 }
