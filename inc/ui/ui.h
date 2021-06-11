@@ -106,6 +106,9 @@ typedef struct {
   /* Pointer to current tile. */
   tile_t *p_current_tile;
 
+  /* Pointer to default tile. */
+  tile_t *p_default_tile;
+
   /* Pointer to a modal box. */
   modal_t *p_modal;
 
@@ -119,7 +122,9 @@ typedef struct {
 
 /* Main UI */
 void ui_init(void);
+void ui_set_default_tile(tile_t *p_tile);
 void ui_select_tile(tile_t *p_tile);
+void ui_default_tile();
 void ui_process_events(void);
 void ui_set_modal(modal_t *p_modal);
 void ui_unset_modal(void);
