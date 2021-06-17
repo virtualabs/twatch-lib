@@ -27,6 +27,7 @@ static bool IRAM_ATTR ui_inactivity_timer_cb(void *args)
  
     uint64_t timer_counter_value = timer_group_get_counter_value_in_isr(TIMER_GROUP_1, TIMER_1);
 
+    /* Inactivity detected. */
     g_ui.b_inactivity_detected = true;
 
     timer_counter_value += 5 * TIMER_SCALE;
@@ -59,6 +60,7 @@ void ui_init(void)
   g_ui.screen_mode = SCREEN_MODE_NORMAL;
 
   /* Initialize our eco timer. */
+  g_ui.b_eco_mode_enabled = false;
   g_ui.b_inactivity_detected = false;
   g_ui.eco_max_inactivity = 15; /* Inactivity set to 15 sec by default. */
   g_ui.eco_timer.divider = TIMER_DIVIDER;
@@ -76,7 +78,6 @@ void ui_init(void)
   timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
   timer_enable_intr(TIMER_GROUP_1, TIMER_1);
   timer_isr_callback_add(TIMER_GROUP_1, TIMER_1, ui_inactivity_timer_cb, NULL, ESP_INTR_FLAG_IRAM);
-  timer_start(TIMER_GROUP_1, TIMER_1);
 }
 
 
@@ -242,15 +243,18 @@ void IRAM_ATTR ui_process_events(void)
   {
     if (twatch_get_touch_event(&touch, 1) == ESP_OK)
     {
-      /* Reset inactivity timer. */
-      g_ui.b_inactivity_detected = false;
-      g_ui.screen_mode = SCREEN_MODE_NORMAL;
-      timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
-      timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
-      timer_start(TIMER_GROUP_1, TIMER_1);
+      if (g_ui.b_eco_mode_enabled)
+      {
+        /* Reset inactivity timer. */
+        g_ui.b_inactivity_detected = false;
+        g_ui.screen_mode = SCREEN_MODE_NORMAL;
+        timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+        timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+        timer_start(TIMER_GROUP_1, TIMER_1);
 
-      /* Make sure backlight is correctly set. */
-      twatch_screen_set_backlight(SCREEN_DEFAULT_BACKLIGHT);
+        /* Make sure backlight is correctly set. */
+        twatch_screen_set_backlight(SCREEN_DEFAULT_BACKLIGHT);
+      }
 
       switch(touch.type)
       {
@@ -324,7 +328,7 @@ void IRAM_ATTR ui_process_events(void)
     else
     {
       /* Handle inactivity. */
-      if (g_ui.b_inactivity_detected)
+      if (g_ui.b_inactivity_detected && g_ui.b_eco_mode_enabled)
       {
         printf("[eco] inactivity period detected\r\n");
         if (g_ui.screen_mode == SCREEN_MODE_NORMAL)
@@ -656,6 +660,53 @@ int tile_send_event(tile_t *p_tile, tile_event_t tile_event, int x, int y, int v
     y,
     velocity
   );
+}
+
+/**********************************************************************
+ * Eco mode management (screen dimming and deep sleep)
+ **********************************************************************/
+
+/**
+ * is_ecomode_set()
+ * 
+ * @brief: determine if eco mode is enabled.
+ * @return: true if eco mode enabled, false otherwise.
+ **/
+
+bool is_ecomode_enabled(void)
+{
+  return g_ui.b_eco_mode_enabled;
+}
+
+
+/**
+ * enable_ecomode()
+ * 
+ * @brief: enable eco mode.
+ **/
+
+void enable_ecomode(void)
+{
+  /* Start our timer. */
+  g_ui.b_eco_mode_enabled = true;
+
+  /* Reset counter value and alarm value. */
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_start(TIMER_GROUP_1, TIMER_1);
+}
+
+/**
+ * disable_ecomode()
+ * 
+ * @brief: disable eco mode.
+ **/
+
+void disable_ecomode(void)
+{
+  /* Stop our timer. */
+  g_ui.b_eco_mode_enabled = false;
+  timer_pause(TIMER_GROUP_1, TIMER_1);
 }
 
 

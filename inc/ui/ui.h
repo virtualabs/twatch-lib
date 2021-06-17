@@ -117,6 +117,7 @@ typedef struct {
   modal_t *p_modal;
 
   /* Eco mode timer. */
+  bool b_eco_mode_enabled;
   screen_mode_t screen_mode;
   timer_config_t eco_timer;
   int eco_max_inactivity;
@@ -148,6 +149,10 @@ void ui_go_left(void);
 void ui_go_up(void);
 void ui_go_down(void);
 
+/* Eco mode management. */
+bool is_ecomode_set(void);
+void enable_ecomode(void);
+void disable_ecomode(void);
 
 /* Tiles */
 void tile_init(tile_t *p_tile, void *p_user_data);
