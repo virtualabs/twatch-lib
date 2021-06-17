@@ -23,6 +23,7 @@ esp_err_t twatch_screen_init(void)
   {
     /* Blank screen. */
     st7789_blank();
+    st7789_commit_fb();
 
     /* Power on backlight with default setting. */
     st7789_backlight_set(SCREEN_DEFAULT_BACKLIGHT);
