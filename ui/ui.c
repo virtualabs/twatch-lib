@@ -1,5 +1,6 @@
 #include "ui/ui.h"
 #include "ui/widget.h"
+#include "hal/vibrate.h"
 
 #define TIMER_DIVIDER         (16)  //  Hardware timer clock divider
 #define TIMER_SCALE           (TIMER_BASE_CLK / TIMER_DIVIDER)  // convert counter value to seconds
@@ -342,6 +343,9 @@ void IRAM_ATTR ui_process_events(void)
         case TOUCH_EVENT_TAP:
           {
             ui_forward_event_to_widget(TOUCH_EVENT_TAP, touch.coords.x, touch.coords.y, 0);
+            
+            /* Haptic feedback. */
+            twatch_vibrate_vibrate(5);
           }
           break;
 
