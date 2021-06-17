@@ -374,6 +374,8 @@ void IRAM_ATTR ui_process_events(void)
     if (g_ui.p_current_tile == g_ui.p_default_tile)
     {
       printf("[userbtn] Sleep mode enabled\r\n");
+      st7789_blank();
+      st7789_commit_fb();
       twatch_pmu_deepsleep();
     }
     else

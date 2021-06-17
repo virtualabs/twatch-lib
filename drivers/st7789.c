@@ -63,7 +63,7 @@ typedef struct {
 
 DRAM_ATTR static const init_cmd_t st_init_cmds[]={
   {ST7789_CMD_SLPOUT, {0}, 0},
-  {ST7789_CMD_WAIT, {0}, 250},
+  {ST7789_CMD_WAIT, {0}, 50}, // was 250ms
   {ST7789_CMD_COLMOD, {0x03}, 1}, /* COLMOD: 12 bits per pixel, 4K colors */
   {ST7789_CMD_WAIT, {0}, 10},
   {ST7789_CMD_CASET, {0x00, 0x00, 0x00, 0xF0}, 4},
@@ -73,7 +73,7 @@ DRAM_ATTR static const init_cmd_t st_init_cmds[]={
   {ST7789_CMD_NORON, {0x00}, 0},
   {ST7789_CMD_WAIT, {0}, 10},
   {ST7789_CMD_DISPON, {0x00}, 0},
-  {ST7789_CMD_WAIT, {0}, 250},
+  //{ST7789_CMD_WAIT, {0}, 250},
   {0,{0}, 0xff}
 };
 
@@ -190,10 +190,8 @@ esp_err_t st7789_init(void)
         ledc_channel_config(&backlight_config);
 
         /* Set default duty cycle (0, backlight is off). */
-        ledc_set_duty(backlight_config.speed_mode, backlight_config.channel, 5000);
+        ledc_set_duty(backlight_config.speed_mode, backlight_config.channel, 0);
         ledc_update_duty(backlight_config.speed_mode, backlight_config.channel);
-
-        vTaskDelay(100 / portTICK_PERIOD_MS);
 
         /* Send init commands. */
         st7789_init_display();
