@@ -1,6 +1,9 @@
 #include "ui/ui.h"
 #include "ui/widget.h"
 
+#define TIMER_DIVIDER         (16)  //  Hardware timer clock divider
+#define TIMER_SCALE           (TIMER_BASE_CLK / TIMER_DIVIDER)  // convert counter value to seconds
+
 int ui_forward_event_to_widget(touch_event_type_t state, int x, int y, int velocity);
 
 /**
@@ -8,6 +11,29 @@ int ui_forward_event_to_widget(touch_event_type_t state, int x, int y, int veloc
  **/
 
 ui_t g_ui;
+
+
+/**
+ * ui_inactivity_timer_cb()
+ * 
+ * @brief: This callback is called after X seconds of inactivity.
+ * @param args: callback argument, shall be NULL.
+ * @return: true if we need to yield at the end of ISR, false otherwise.
+ **/
+
+static bool IRAM_ATTR ui_inactivity_timer_cb(void *args)
+{
+    BaseType_t high_task_awoken = pdFALSE;
+ 
+    uint64_t timer_counter_value = timer_group_get_counter_value_in_isr(TIMER_GROUP_1, TIMER_1);
+
+    g_ui.b_inactivity_detected = true;
+
+    timer_counter_value += 5 * TIMER_SCALE;
+    timer_group_set_alarm_value_in_isr(TIMER_GROUP_1, TIMER_1, timer_counter_value);
+
+    return high_task_awoken == pdTRUE; // return whether we need to yield at the end of ISR
+}
 
 /**
  * @brief: Initialize main UI
@@ -28,6 +54,29 @@ void ui_init(void)
 
   /* Initialize our modal box. */
   g_ui.p_modal = NULL;
+
+  /* Initialize screen mode. */
+  g_ui.screen_mode = SCREEN_MODE_NORMAL;
+
+  /* Initialize our eco timer. */
+  g_ui.b_inactivity_detected = false;
+  g_ui.eco_max_inactivity = 15; /* Inactivity set to 15 sec by default. */
+  g_ui.eco_timer.divider = TIMER_DIVIDER;
+  g_ui.eco_timer.counter_dir = TIMER_COUNT_UP;
+  g_ui.eco_timer.counter_en = TIMER_PAUSE;
+  g_ui.eco_timer.alarm_en = TIMER_ALARM_EN;
+  g_ui.eco_timer.auto_reload = false;
+  timer_init(TIMER_GROUP_1, TIMER_1, &g_ui.eco_timer);
+
+  /* Timer's counter will initially start from value below.
+      Also, if auto_reload is set, this value will be automatically reload on alarm */
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+
+  /* Configure the alarm value and the interrupt on alarm. */
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_enable_intr(TIMER_GROUP_1, TIMER_1);
+  timer_isr_callback_add(TIMER_GROUP_1, TIMER_1, ui_inactivity_timer_cb, NULL, ESP_INTR_FLAG_IRAM);
+  timer_start(TIMER_GROUP_1, TIMER_1);
 }
 
 
@@ -193,6 +242,16 @@ void IRAM_ATTR ui_process_events(void)
   {
     if (twatch_get_touch_event(&touch, 1) == ESP_OK)
     {
+      /* Reset inactivity timer. */
+      g_ui.b_inactivity_detected = false;
+      g_ui.screen_mode = SCREEN_MODE_NORMAL;
+      timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+      timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+      timer_start(TIMER_GROUP_1, TIMER_1);
+
+      /* Make sure backlight is correctly set. */
+      twatch_screen_set_backlight(SCREEN_DEFAULT_BACKLIGHT);
+
       switch(touch.type)
       {
         case TOUCH_EVENT_SWIPE_RIGHT:
@@ -260,6 +319,22 @@ void IRAM_ATTR ui_process_events(void)
         default:
           break;
 
+      }
+    }
+    else
+    {
+      /* Handle inactivity. */
+      if (g_ui.b_inactivity_detected)
+      {
+        printf("[eco] inactivity period detected\r\n");
+        if (g_ui.screen_mode == SCREEN_MODE_NORMAL)
+        {
+          /* Switch screen to dimmed mode. */
+          twatch_screen_set_backlight(100);
+          g_ui.screen_mode = SCREEN_MODE_DIMMED;
+        }
+        timer_pause(TIMER_GROUP_1, TIMER_1);
+        g_ui.b_inactivity_detected = false;
       }
     }
   }

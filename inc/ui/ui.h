@@ -2,10 +2,12 @@
 #define __INC_TWATCH_UI_H
 
 #include <stdint.h>
+#include "driver/timer.h"
 #include "drivers/st7789.h"
 
 #include "hal/touch.h"
 #include "hal/pmu.h"
+#include "hal/screen.h"
 
 #include "img.h"
 #include "font/font16.h"
@@ -39,6 +41,11 @@ typedef enum {
   TILE_MAIN,
   TILE_SECONDARY
 } ui_tile_type_t;
+
+typedef enum {
+  SCREEN_MODE_NORMAL,
+  SCREEN_MODE_DIMMED
+} screen_mode_t;
 
 
 struct tile_t;
@@ -108,6 +115,12 @@ typedef struct {
 
   /* Pointer to a modal box. */
   modal_t *p_modal;
+
+  /* Eco mode timer. */
+  screen_mode_t screen_mode;
+  timer_config_t eco_timer;
+  int eco_max_inactivity;
+  bool b_inactivity_detected;
 
 } ui_t;
 
