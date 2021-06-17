@@ -45,8 +45,9 @@ void ui_init(void)
   /* Initialize the touch screen. */
   twatch_touch_init();
 
-  /* Set current tile as none. */
+  /* Set current and default tiles as none. */
   g_ui.p_current_tile = NULL;
+  g_ui.p_default_tile = NULL;
 
   /* Set animation state and parameters. */
   g_ui.state = UI_STATE_IDLE;
@@ -81,6 +82,17 @@ void ui_init(void)
 }
 
 
+void ui_set_default_tile(tile_t *p_tile)
+{
+  /* Set default tile. */
+  g_ui.p_default_tile = p_tile;
+
+  /* Reset offsets in order to display this tile. */
+  g_ui.p_default_tile->offset_x = 0;
+  g_ui.p_default_tile->offset_y = 0;
+}
+
+
 /**
  * @brief: Select the current tile
  * @param p_tile: pointer to a `tile_t` structure (the tile to select)
@@ -88,6 +100,10 @@ void ui_init(void)
 
 void ui_select_tile(tile_t *p_tile)
 {
+  /* Set default tile as p_tile. */
+  if (g_ui.p_default_tile == NULL)
+    ui_set_default_tile(p_tile);
+
   if (g_ui.p_current_tile != NULL)
   {
     /* Send TE_ENTER to current tile. */
@@ -115,6 +131,15 @@ void ui_select_tile(tile_t *p_tile)
     0,
     0
   );
+}
+
+void ui_default_tile()
+{
+  if (g_ui.p_default_tile == NULL)
+    return;
+
+  /* Select our default tile. */
+  ui_select_tile(g_ui.p_default_tile);
 }
 
 
@@ -346,6 +371,17 @@ void IRAM_ATTR ui_process_events(void)
   /* Has lateral button been short-pressed ? */
   if (twatch_pmu_is_userbtn_pressed())
   {
+    if (g_ui.p_current_tile == g_ui.p_default_tile)
+    {
+      printf("[userbtn] Sleep mode enabled\r\n");
+      twatch_pmu_deepsleep();
+    }
+    else
+    {
+      printf("[userbtn] Return to our default tile\r\n");
+      ui_default_tile();
+    }
+ 
     /* Forward event to the current tile. */
     tile_send_event(
       g_ui.p_current_tile,
@@ -355,7 +391,6 @@ void IRAM_ATTR ui_process_events(void)
       0
     );
   }
-
 
   /* Refresh screen. */
   st7789_blank();
