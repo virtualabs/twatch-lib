@@ -39,8 +39,8 @@ ledc_channel_config_t backlight_config = {
   .timer_sel  = LEDC_TIMER_0
 };
 
-DRAM_ATTR static bool g_inv_x = true;
-DRAM_ATTR static bool g_inv_y = true;
+RTC_DATA_ATTR static bool g_inv_x = true;
+RTC_DATA_ATTR static bool g_inv_y = true;
 
 /* Drawing window. */
 DRAM_ATTR static int g_dw_x0 = 0;
