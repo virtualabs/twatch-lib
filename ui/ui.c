@@ -1,5 +1,9 @@
 #include "ui/ui.h"
 #include "ui/widget.h"
+#include "hal/vibrate.h"
+
+#define TIMER_DIVIDER         (16)  //  Hardware timer clock divider
+#define TIMER_SCALE           (TIMER_BASE_CLK / TIMER_DIVIDER)  // convert counter value to seconds
 
 int ui_forward_event_to_widget(touch_event_type_t state, int x, int y, int velocity);
 
@@ -8,6 +12,30 @@ int ui_forward_event_to_widget(touch_event_type_t state, int x, int y, int veloc
  **/
 
 ui_t g_ui;
+
+
+/**
+ * ui_inactivity_timer_cb()
+ * 
+ * @brief: This callback is called after X seconds of inactivity.
+ * @param args: callback argument, shall be NULL.
+ * @return: true if we need to yield at the end of ISR, false otherwise.
+ **/
+
+static bool IRAM_ATTR ui_inactivity_timer_cb(void *args)
+{
+    BaseType_t high_task_awoken = pdFALSE;
+ 
+    uint64_t timer_counter_value = timer_group_get_counter_value_in_isr(TIMER_GROUP_1, TIMER_1);
+
+    /* Inactivity detected. */
+    g_ui.b_inactivity_detected = true;
+
+    timer_counter_value += 5 * TIMER_SCALE;
+    timer_group_set_alarm_value_in_isr(TIMER_GROUP_1, TIMER_1, timer_counter_value);
+
+    return high_task_awoken == pdTRUE; // return whether we need to yield at the end of ISR
+}
 
 /**
  * @brief: Initialize main UI
@@ -18,8 +46,9 @@ void ui_init(void)
   /* Initialize the touch screen. */
   twatch_touch_init();
 
-  /* Set current tile as none. */
+  /* Set current and default tiles as none. */
   g_ui.p_current_tile = NULL;
+  g_ui.p_default_tile = NULL;
 
   /* Set animation state and parameters. */
   g_ui.state = UI_STATE_IDLE;
@@ -28,6 +57,40 @@ void ui_init(void)
 
   /* Initialize our modal box. */
   g_ui.p_modal = NULL;
+
+  /* Initialize screen mode. */
+  g_ui.screen_mode = SCREEN_MODE_NORMAL;
+
+  /* Initialize our eco timer. */
+  g_ui.b_eco_mode_enabled = false;
+  g_ui.b_inactivity_detected = false;
+  g_ui.eco_max_inactivity = 15; /* Inactivity set to 15 sec by default. */
+  g_ui.eco_timer.divider = TIMER_DIVIDER;
+  g_ui.eco_timer.counter_dir = TIMER_COUNT_UP;
+  g_ui.eco_timer.counter_en = TIMER_PAUSE;
+  g_ui.eco_timer.alarm_en = TIMER_ALARM_EN;
+  g_ui.eco_timer.auto_reload = false;
+  timer_init(TIMER_GROUP_1, TIMER_1, &g_ui.eco_timer);
+
+  /* Timer's counter will initially start from value below.
+      Also, if auto_reload is set, this value will be automatically reload on alarm */
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+
+  /* Configure the alarm value and the interrupt on alarm. */
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_enable_intr(TIMER_GROUP_1, TIMER_1);
+  timer_isr_callback_add(TIMER_GROUP_1, TIMER_1, ui_inactivity_timer_cb, NULL, ESP_INTR_FLAG_IRAM);
+}
+
+
+void ui_set_default_tile(tile_t *p_tile)
+{
+  /* Set default tile. */
+  g_ui.p_default_tile = p_tile;
+
+  /* Reset offsets in order to display this tile. */
+  g_ui.p_default_tile->offset_x = 0;
+  g_ui.p_default_tile->offset_y = 0;
 }
 
 
@@ -38,6 +101,10 @@ void ui_init(void)
 
 void ui_select_tile(tile_t *p_tile)
 {
+  /* Set default tile as p_tile. */
+  if (g_ui.p_default_tile == NULL)
+    ui_set_default_tile(p_tile);
+
   if (g_ui.p_current_tile != NULL)
   {
     /* Send TE_ENTER to current tile. */
@@ -65,6 +132,15 @@ void ui_select_tile(tile_t *p_tile)
     0,
     0
   );
+}
+
+void ui_default_tile()
+{
+  if (g_ui.p_default_tile == NULL)
+    return;
+
+  /* Select our default tile. */
+  ui_select_tile(g_ui.p_default_tile);
 }
 
 
@@ -186,13 +262,27 @@ void ui_go_down(void)
 void IRAM_ATTR ui_process_events(void)
 {
   touch_event_t touch;
-  tile_t *p_main_tile;
+  // unused variable
+  // tile_t *p_main_tile;
 
   /* Process touch events if we are not in an animation. */
   if (g_ui.state == UI_STATE_IDLE)
   {
     if (twatch_get_touch_event(&touch, 1) == ESP_OK)
     {
+      if (g_ui.b_eco_mode_enabled)
+      {
+        /* Reset inactivity timer. */
+        g_ui.b_inactivity_detected = false;
+        g_ui.screen_mode = SCREEN_MODE_NORMAL;
+        timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+        timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+        timer_start(TIMER_GROUP_1, TIMER_1);
+
+        /* Make sure backlight is correctly set. */
+        twatch_screen_set_backlight(SCREEN_DEFAULT_BACKLIGHT);
+      }
+
       switch(touch.type)
       {
         case TOUCH_EVENT_SWIPE_RIGHT:
@@ -254,6 +344,9 @@ void IRAM_ATTR ui_process_events(void)
         case TOUCH_EVENT_TAP:
           {
             ui_forward_event_to_widget(TOUCH_EVENT_TAP, touch.coords.x, touch.coords.y, 0);
+            
+            /* Haptic feedback. */
+            twatch_vibrate_vibrate(5);
           }
           break;
 
@@ -262,11 +355,40 @@ void IRAM_ATTR ui_process_events(void)
 
       }
     }
+    else
+    {
+      /* Handle inactivity. */
+      if (g_ui.b_inactivity_detected && g_ui.b_eco_mode_enabled)
+      {
+        printf("[eco] inactivity period detected\r\n");
+        if (g_ui.screen_mode == SCREEN_MODE_NORMAL)
+        {
+          /* Switch screen to dimmed mode. */
+          twatch_screen_set_backlight(100);
+          g_ui.screen_mode = SCREEN_MODE_DIMMED;
+        }
+        timer_pause(TIMER_GROUP_1, TIMER_1);
+        g_ui.b_inactivity_detected = false;
+      }
+    }
   }
 
   /* Has lateral button been short-pressed ? */
   if (twatch_pmu_is_userbtn_pressed())
   {
+    if (g_ui.p_current_tile == g_ui.p_default_tile)
+    {
+      printf("[userbtn] Sleep mode enabled\r\n");
+      st7789_blank();
+      st7789_commit_fb();
+      twatch_pmu_deepsleep();
+    }
+    else
+    {
+      printf("[userbtn] Return to our default tile\r\n");
+      ui_default_tile();
+    }
+ 
     /* Forward event to the current tile. */
     tile_send_event(
       g_ui.p_current_tile,
@@ -276,7 +398,6 @@ void IRAM_ATTR ui_process_events(void)
       0
     );
   }
-
 
   /* Refresh screen. */
   st7789_blank();
@@ -583,6 +704,53 @@ int tile_send_event(tile_t *p_tile, tile_event_t tile_event, int x, int y, int v
   );
 }
 
+/**********************************************************************
+ * Eco mode management (screen dimming and deep sleep)
+ **********************************************************************/
+
+/**
+ * is_ecomode_set()
+ * 
+ * @brief: determine if eco mode is enabled.
+ * @return: true if eco mode enabled, false otherwise.
+ **/
+
+bool is_ecomode_enabled(void)
+{
+  return g_ui.b_eco_mode_enabled;
+}
+
+
+/**
+ * enable_ecomode()
+ * 
+ * @brief: enable eco mode.
+ **/
+
+void enable_ecomode(void)
+{
+  /* Start our timer. */
+  g_ui.b_eco_mode_enabled = true;
+
+  /* Reset counter value and alarm value. */
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_start(TIMER_GROUP_1, TIMER_1);
+}
+
+/**
+ * disable_ecomode()
+ * 
+ * @brief: disable eco mode.
+ **/
+
+void disable_ecomode(void)
+{
+  /* Stop our timer. */
+  g_ui.b_eco_mode_enabled = false;
+  timer_pause(TIMER_GROUP_1, TIMER_1);
+}
+
 
 /**********************************************************************
  * Drawing primitives for tiles.
@@ -822,7 +990,7 @@ int _tile_default_draw(tile_t *p_tile)
 }
 
 
-int _tile_default_event_handler(struct tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity)
+int _tile_default_event_handler(tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity)
 {
   /* Event not processed. */
   return TE_ERROR;

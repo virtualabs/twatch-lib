@@ -249,10 +249,10 @@ esp_err_t twatch_get_touch_event(touch_event_t *event, TickType_t ticks_to_wait)
   /* Handle IRQ if any. */
   if (b_touched)
   {
-    /* Read touch data. */
-    ft6x36_read(&touch_data);
+    /* Read touch data. */    
+    ft6x36_read((ft6236_touch_t *)&touch_data); // discard volatile
 
-    _process_touch_data(&touch_data);
+    _process_touch_data((ft6236_touch_t *)&touch_data); // discard volatile
 
     /* Reset b_touched. */
     b_touched = false;

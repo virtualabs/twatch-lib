@@ -23,6 +23,7 @@ esp_err_t twatch_screen_init(void)
   {
     /* Blank screen. */
     st7789_blank();
+    st7789_commit_fb();
 
     /* Power on backlight with default setting. */
     st7789_backlight_set(SCREEN_DEFAULT_BACKLIGHT);
@@ -32,6 +33,27 @@ esp_err_t twatch_screen_init(void)
   return result;
 }
 
+/**
+ * twatch_screen_set_backlight()
+ *
+ * @brief: Set the screen backlight level.
+ * @param: level of the backlight.
+ **/
+void twatch_screen_set_backlight(int level)
+{
+  st7789_backlight_set(level);
+}
+
+/**
+ * twatch_screen_get_backlight()
+ *
+ * @brief: Get the screen backlight level.
+ * @return: level of the backlight.
+ **/
+int twatch_screen_get_backlight()
+{
+  return st7789_backlight_get();
+}
 
 /**
  * screen_set_drawing_window()

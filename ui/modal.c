@@ -11,7 +11,7 @@
  * @return TE_PROCESSED if event has been processed, TE_ERROR otherwise
  **/
 
-int _modal_event_handler(struct tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity)
+int _modal_event_handler(tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity)
 {
   switch(p_event)
   {
@@ -36,7 +36,7 @@ int _modal_event_handler(struct tile_t *p_tile, tile_event_t p_event, int x, int
  * @param p_tile: pointer to a `tile_t` structure.
  **/
 
-void _modal_drawfunc(tile_t *p_tile)
+int _modal_drawfunc(tile_t *p_tile)
 {
   if (p_tile != NULL)
   {
@@ -95,6 +95,8 @@ void _modal_drawfunc(tile_t *p_tile)
 
   /* Draw widgets. */
   tile_draw_widgets(p_tile);
+
+  return 0;
 }
 
 /**
@@ -118,6 +120,6 @@ void modal_init(modal_t *p_modal, int x, int y, int width, int height)
   p_modal->tile.height = height;
 
   /* Set drawing function. */
-  tile_set_drawfunc(&p_modal->tile, _modal_drawfunc);
+  tile_set_drawfunc(&p_modal->tile, (FDrawTile)_modal_drawfunc);
   tile_set_event_handler(&p_modal->tile, _modal_event_handler);
 }

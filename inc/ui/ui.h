@@ -2,10 +2,12 @@
 #define __INC_TWATCH_UI_H
 
 #include <stdint.h>
+#include "driver/timer.h"
 #include "drivers/st7789.h"
 
 #include "hal/touch.h"
 #include "hal/pmu.h"
+#include "hal/screen.h"
 
 #include "img.h"
 #include "font/font16.h"
@@ -25,7 +27,10 @@ typedef enum {
   TE_MODAL_CLOSE
 } tile_event_t;
 
-typedef int (*FTileEventHandler)(struct tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity);
+/* Forward definition */
+typedef struct tTile tile_t;
+
+typedef int (*FTileEventHandler)(tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity);
 
 typedef enum {
   UI_STATE_IDLE,
@@ -40,10 +45,12 @@ typedef enum {
   TILE_SECONDARY
 } ui_tile_type_t;
 
+typedef enum {
+  SCREEN_MODE_NORMAL,
+  SCREEN_MODE_DIMMED
+} screen_mode_t;
 
-struct tile_t;
-
-typedef int (*FDrawTile)(struct tile_t *p_tile);
+typedef int (*FDrawTile)(tile_t *p_tile);
 
 /**
  * Tile base structure
@@ -106,8 +113,18 @@ typedef struct {
   /* Pointer to current tile. */
   tile_t *p_current_tile;
 
+  /* Pointer to default tile. */
+  tile_t *p_default_tile;
+
   /* Pointer to a modal box. */
   modal_t *p_modal;
+
+  /* Eco mode timer. */
+  bool b_eco_mode_enabled;
+  screen_mode_t screen_mode;
+  timer_config_t eco_timer;
+  int eco_max_inactivity;
+  bool b_inactivity_detected;
 
 } ui_t;
 
@@ -119,7 +136,9 @@ typedef struct {
 
 /* Main UI */
 void ui_init(void);
+void ui_set_default_tile(tile_t *p_tile);
 void ui_select_tile(tile_t *p_tile);
+void ui_default_tile();
 void ui_process_events(void);
 void ui_set_modal(modal_t *p_modal);
 void ui_unset_modal(void);
@@ -135,6 +154,10 @@ void ui_go_left(void);
 void ui_go_up(void);
 void ui_go_down(void);
 
+/* Eco mode management. */
+bool is_ecomode_set(void);
+void enable_ecomode(void);
+void disable_ecomode(void);
 
 /* Tiles */
 void tile_init(tile_t *p_tile, void *p_user_data);

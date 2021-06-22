@@ -8,9 +8,10 @@
  * @param p_widget: pointer to a `widget_t` structure.
  **/
 
-void widget_frame_drawfunc(widget_t *p_widget)
+int widget_frame_drawfunc(widget_t *p_widget)
 {
-  int text_width, dx, dy;
+  // unused variables
+  // int text_width, dx, dy;
   widget_frame_t *p_frame = (widget_frame_t *)p_widget->p_user_data;
 
   if (p_frame != NULL)
@@ -49,6 +50,7 @@ void widget_frame_drawfunc(widget_t *p_widget)
       p_widget->style.border
     );
   }
+  return 0;
 }
 
 

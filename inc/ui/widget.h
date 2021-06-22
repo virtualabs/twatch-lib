@@ -28,10 +28,13 @@ typedef enum {
   LB_ITEM_DESELECTED
 } widget_event_t;
 
+/* Forward declaration */
+typedef struct tWidget widget_t;
+
 /* Callback definition. */
-typedef int (*FDrawWidget)(struct widget_t *p_widget);
-typedef int (*FEventHandler)(struct widget_t *p_widget, widget_event_t p_event, int x, int y, int velocity);
-typedef void (*FTapHandler)(struct widget_t *p_widget);
+typedef int (*FDrawWidget)(widget_t *p_widget);
+typedef int (*FEventHandler)(widget_t *p_widget, widget_event_t p_event, int x, int y, int velocity);
+typedef void (*FTapHandler)(widget_t *p_widget);
 
 typedef struct {
   int x;

@@ -155,13 +155,16 @@ esp_err_t pcf8563_set_date_time(pcf8563_datetime_t *p_datetime)
 esp_err_t pcf8563_get_date_time(pcf8563_datetime_t *p_datetime)
 {
   uint8_t data[16];
-  uint16_t year;
+  // unused variable
+  // uint16_t year;
   uint8_t century = 0;
-  bool b_voltage_low;
+  // unused variable
+  // bool b_voltage_low;
 
   pcf8563_read_bytes(PCF8563_SEC_REG, 7, data);
 
-  b_voltage_low = (data[0] & PCF8563_VOL_LOW_MASK);
+  // unused assignment
+  // b_voltage_low = (data[0] & PCF8563_VOL_LOW_MASK);
   data[0] = bcd_to_dec(data[0] & (~PCF8563_VOL_LOW_MASK));
   data[1] = bcd_to_dec(data[1] & PCF8563_minuteS_MASK);
   data[2] = bcd_to_dec(data[2] & PCF8563_HOUR_MASK);
