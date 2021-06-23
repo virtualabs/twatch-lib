@@ -124,6 +124,7 @@ typedef struct {
   screen_mode_t screen_mode;
   timer_config_t eco_timer;
   int eco_max_inactivity;
+  int eco_max_inactivity_to_deepsleep;
   bool b_inactivity_detected;
 
 } ui_t;
