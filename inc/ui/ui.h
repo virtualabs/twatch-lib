@@ -49,10 +49,6 @@ typedef enum {
   SCREEN_MODE_NORMAL,
   SCREEN_MODE_DIMMED
 } screen_mode_t;
-<<<<<<< HEAD
-=======
-
->>>>>>> 1b35b5f752324f3f80e8b05cb4eac709b09949db
 
 typedef int (*FDrawTile)(tile_t *p_tile);
 
@@ -128,10 +124,7 @@ typedef struct {
   screen_mode_t screen_mode;
   timer_config_t eco_timer;
   int eco_max_inactivity;
-<<<<<<< HEAD
-=======
   int eco_max_inactivity_to_deepsleep;
->>>>>>> 1b35b5f752324f3f80e8b05cb4eac709b09949db
   bool b_inactivity_detected;
 
 } ui_t;

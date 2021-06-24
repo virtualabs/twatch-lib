@@ -64,11 +64,7 @@ void ui_init(void)
   /* Initialize our eco timer. */
   g_ui.b_eco_mode_enabled = false;
   g_ui.b_inactivity_detected = false;
-  g_ui.eco_max_inactivity = 15; /* Inactivity set to 15 sec by default. */
-<<<<<<< HEAD
-=======
   g_ui.eco_max_inactivity_to_deepsleep = 60; /* Second inactivity set to 60 by default */ 
->>>>>>> 1b35b5f752324f3f80e8b05cb4eac709b09949db
   g_ui.eco_timer.divider = TIMER_DIVIDER;
   g_ui.eco_timer.counter_dir = TIMER_COUNT_UP;
   g_ui.eco_timer.counter_en = TIMER_PAUSE;
@@ -375,7 +371,6 @@ void IRAM_ATTR ui_process_events(void)
       if (g_ui.b_inactivity_detected && g_ui.b_eco_mode_enabled)
       {
         printf("[eco] inactivity period detected\r\n");
-<<<<<<< HEAD
         if (g_ui.screen_mode == SCREEN_MODE_NORMAL)
         {
           /* Switch screen to dimmed mode. */
@@ -383,9 +378,6 @@ void IRAM_ATTR ui_process_events(void)
           g_ui.screen_mode = SCREEN_MODE_DIMMED;
         }
         timer_pause(TIMER_GROUP_1, TIMER_1);
-        g_ui.b_inactivity_detected = false;
-=======
-        
         g_ui.b_inactivity_detected = false;
 
         switch (g_ui.screen_mode)
@@ -414,7 +406,6 @@ void IRAM_ATTR ui_process_events(void)
             __ui_deepsleep_activate();
             break;
         }
->>>>>>> 1b35b5f752324f3f80e8b05cb4eac709b09949db
       }
     }
   }
@@ -424,15 +415,12 @@ void IRAM_ATTR ui_process_events(void)
   {
     if (g_ui.p_current_tile == g_ui.p_default_tile)
     {
-<<<<<<< HEAD
       printf("[userbtn] Sleep mode enabled\r\n");
       st7789_blank();
       st7789_commit_fb();
       twatch_pmu_deepsleep();
-=======
       /* Activate deepsleep */
       __ui_deepsleep_activate();
->>>>>>> 1b35b5f752324f3f80e8b05cb4eac709b09949db
     }
     else
     {

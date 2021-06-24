@@ -7,7 +7,7 @@
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-void widget_slider_drawfunc(widget_t *p_widget)
+int widget_slider_drawfunc(widget_t *p_widget)
 {
   int x, y;
   widget_slider_t *p_slider = (widget_slider_t *)p_widget->p_user_data;
@@ -45,6 +45,7 @@ void widget_slider_drawfunc(widget_t *p_widget)
     /* Draw cursor. */
     widget_draw_disc(p_widget, x, y, SLIDER_CURSOR_RADIUS, SLIDER_STYLE_CURSOR);
   }
+  return 0;
 }
 
 /**
@@ -71,7 +72,6 @@ int widget_slider_event_handler(widget_t *p_widget, widget_event_t event, int x,
       case WE_PRESS:
         {
           /* Compute value from x position */
-          int old = p_slider->value;
           int new = x * (p_slider->max - p_slider->min) / (p_widget->box.width-2*SLIDER_CURSOR_RADIUS) + p_slider->min;
           p_slider->value = new;
           p_slider->pfn_tap_handler(&p_slider->widget /*, new, old */);
@@ -126,7 +126,7 @@ void widget_slider_init(widget_slider_t *p_widget_slider, tile_t *p_tile, int x,
   widget_set_eventhandler(&p_widget_slider->widget, widget_slider_event_handler);
 
   /* Set drawing function. */
-  widget_set_drawfunc(&p_widget_slider->widget, widget_slider_drawfunc);
+  widget_set_drawfunc((widget_t *)&p_widget_slider->widget, widget_slider_drawfunc);
 
 }
 
