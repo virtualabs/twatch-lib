@@ -65,6 +65,10 @@ void ui_init(void)
   g_ui.b_eco_mode_enabled = false;
   g_ui.b_inactivity_detected = false;
   g_ui.eco_max_inactivity = 15; /* Inactivity set to 15 sec by default. */
+<<<<<<< HEAD
+=======
+  g_ui.eco_max_inactivity_to_deepsleep = 60; /* Second inactivity set to 60 by default */ 
+>>>>>>> 1b35b5f752324f3f80e8b05cb4eac709b09949db
   g_ui.eco_timer.divider = TIMER_DIVIDER;
   g_ui.eco_timer.counter_dir = TIMER_COUNT_UP;
   g_ui.eco_timer.counter_en = TIMER_PAUSE;
@@ -252,6 +256,18 @@ void ui_go_down(void)
   ui_swipe_up();
 }
 
+/**
+ * __ui_deepsleep_activate()
+ * 
+ * @brief: Activate the deepsleep mode
+ **/
+void __ui_deepsleep_activate()
+{
+  printf("[userbtn] Sleep mode enabled\r\n");
+  st7789_blank();
+  st7789_commit_fb();
+  twatch_pmu_deepsleep();
+}
 
 /**
  * ui_process_events()
@@ -262,8 +278,6 @@ void ui_go_down(void)
 void IRAM_ATTR ui_process_events(void)
 {
   touch_event_t touch;
-  // unused variable
-  // tile_t *p_main_tile;
 
   /* Process touch events if we are not in an animation. */
   if (g_ui.state == UI_STATE_IDLE)
@@ -361,6 +375,7 @@ void IRAM_ATTR ui_process_events(void)
       if (g_ui.b_inactivity_detected && g_ui.b_eco_mode_enabled)
       {
         printf("[eco] inactivity period detected\r\n");
+<<<<<<< HEAD
         if (g_ui.screen_mode == SCREEN_MODE_NORMAL)
         {
           /* Switch screen to dimmed mode. */
@@ -369,6 +384,37 @@ void IRAM_ATTR ui_process_events(void)
         }
         timer_pause(TIMER_GROUP_1, TIMER_1);
         g_ui.b_inactivity_detected = false;
+=======
+        
+        g_ui.b_inactivity_detected = false;
+
+        switch (g_ui.screen_mode)
+        {
+          /* Switch screen to dimmed mode. */
+          case SCREEN_MODE_NORMAL:
+            twatch_screen_set_backlight(100);
+            g_ui.screen_mode = SCREEN_MODE_DIMMED;
+
+            /* Activate second alarm for switch in deepsleep mode if necessary */
+            if (g_ui.eco_max_inactivity_to_deepsleep != 0)
+            {
+              timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+              timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity_to_deepsleep * TIMER_SCALE);
+              timer_start(TIMER_GROUP_1, TIMER_1);
+            }
+            else
+            {
+              timer_pause(TIMER_GROUP_1, TIMER_1);
+            }
+            break;
+
+          /* Switch screen to deepsleep */  
+          case SCREEN_MODE_DIMMED:
+            timer_pause(TIMER_GROUP_1, TIMER_1);
+            __ui_deepsleep_activate();
+            break;
+        }
+>>>>>>> 1b35b5f752324f3f80e8b05cb4eac709b09949db
       }
     }
   }
@@ -378,10 +424,15 @@ void IRAM_ATTR ui_process_events(void)
   {
     if (g_ui.p_current_tile == g_ui.p_default_tile)
     {
+<<<<<<< HEAD
       printf("[userbtn] Sleep mode enabled\r\n");
       st7789_blank();
       st7789_commit_fb();
       twatch_pmu_deepsleep();
+=======
+      /* Activate deepsleep */
+      __ui_deepsleep_activate();
+>>>>>>> 1b35b5f752324f3f80e8b05cb4eac709b09949db
     }
     else
     {

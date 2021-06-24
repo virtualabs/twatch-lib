@@ -8,8 +8,6 @@
 
 int widget_label_drawfunc(widget_t *p_widget)
 {
-  // unused variables
-  // int text_width, dx, dy;
   widget_label_t *p_label = (widget_label_t *)p_widget->p_user_data;
 
   if (p_label->psz_label != NULL)

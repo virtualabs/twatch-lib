@@ -12,9 +12,6 @@ int widget_scrollbar_drawfunc(widget_t *p_widget)
 {
   int cursor_size;
   int cursor_offset;
-  // unused variables
-  // int value;
-  // int text_width, dx, dy;
   widget_scrollbar_t *p_scrollbar = (widget_scrollbar_t *)p_widget->p_user_data;
 
   if (p_scrollbar != NULL)

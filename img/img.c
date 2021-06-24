@@ -48,8 +48,6 @@ void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width
 /* Optimized version of _screen_bitblt_12bpp */
 void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
 {
-  // unused variables
-  // int x, y;
   uint16_t *p_pixels = (uint16_t *)((uint8_t *)source + sizeof(image_t));
 
   /* Adjust image if destination y-coordinate is below 0. */
