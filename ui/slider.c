@@ -16,7 +16,7 @@ void widget_slider_drawfunc(widget_t *p_widget)
   {
     /* Put the bar in the middle */
     x = SLIDER_CURSOR_RADIUS + (p_slider->value - p_slider->min) * (p_widget->box.width - 2*SLIDER_CURSOR_RADIUS) / (p_slider->max - p_slider->min - SLIDER_CURSOR_RADIUS*2);
-    y = SLIDER_CURSOR_RADIUS;
+    y = p_widget->box.height/2;
 
     /* Draw the slider bar. */
     widget_draw_line(
