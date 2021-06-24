@@ -65,6 +65,9 @@ esp_err_t twatch_pmu_init(void)
     axpxx_enableIRQ((1 << AXP202_IRQ_POKSH) | (1 << AXP202_IRQ_USBIN) | (1 << AXP202_IRQ_USBRE), true);
     axpxx_clearIRQ();
 
+    /* Determine if USB is connected. */
+    b_usb_plugged = axpxx_isVBUSPlug();
+
     /* Success. */
     return ESP_OK;
   }

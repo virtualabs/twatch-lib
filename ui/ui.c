@@ -62,6 +62,7 @@ void ui_init(void)
   g_ui.screen_mode = SCREEN_MODE_NORMAL;
 
   /* Initialize our eco timer. */
+  g_ui.b_usb_plugged = twatch_pmu_is_usb_plugged(true);
   g_ui.b_eco_mode_enabled = false;
   g_ui.b_inactivity_detected = false;
   g_ui.eco_max_inactivity = 15; /* Inactivity set to 15 sec by default. */
@@ -428,6 +429,15 @@ void IRAM_ATTR ui_process_events(void)
     );
   }
 
+  /* Check if usb has been plugged in. */
+  if (twatch_pmu_is_usb_plugged(false) && !g_ui.b_usb_plugged)
+  {
+    g_ui.b_usb_plugged = true;
+    ui_wakeup();
+  }
+  else
+    g_ui.b_usb_plugged = false;
+
   /* Refresh screen. */
   st7789_blank();
   switch(g_ui.state)
@@ -778,6 +788,24 @@ void disable_ecomode(void)
   /* Stop our timer. */
   g_ui.b_eco_mode_enabled = false;
   timer_pause(TIMER_GROUP_1, TIMER_1);
+}
+
+
+/**
+ * ui_wakeup()
+ * 
+ * @brief: Wake-up screen: sets default backlight and reset inactivity timer
+ **/
+
+void ui_wakeup(void)
+{
+  /* Set default backlight. */
+  twatch_screen_set_backlight(twatch_screen_get_default_backlight());
+
+  /* Reset counter value and alarm value. */
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_start(TIMER_GROUP_1, TIMER_1);
 }
 
 
