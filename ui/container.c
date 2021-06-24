@@ -14,9 +14,6 @@
 
 int widget_container_drawfunc(widget_t *p_widget)
 {
-  // unused variables
-  // int x0,y0,x1,y1;
-  // int y=5;
   widget_container_item_t *p_widget_item;
 
   /* Retrieve our container structure. */
