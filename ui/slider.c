@@ -71,10 +71,21 @@ int widget_slider_event_handler(widget_t *p_widget, widget_event_t event, int x,
       case WE_PRESS:
         {
           /* Compute value from x position */
-          int old = p_slider->value;
-          int new = x * (p_slider->max - p_slider->min) / (p_widget->box.width-2*SLIDER_CURSOR_RADIUS) + p_slider->min;
-          p_slider->value = new;
-          p_slider->pfn_tap_handler(&p_slider->widget /*, new, old */);
+          if ((x >= SLIDER_CURSOR_RADIUS) && (x<=(p_widget->box.width - SLIDER_CURSOR_RADIUS)))
+          {
+            int old = p_slider->value;
+            int new = x * (p_slider->max - p_slider->min) / (p_widget->box.width-2*SLIDER_CURSOR_RADIUS) + p_slider->min;
+            p_slider->value = new;
+            p_slider->pfn_tap_handler(&p_slider->widget /*, new, old */);
+          }
+          else if (x<SLIDER_CURSOR_RADIUS)
+          {
+            p_slider->value = p_slider->min;
+          }
+          else if (x > (p_widget->box.width - SLIDER_CURSOR_RADIUS))
+          {
+            p_slider->value = p_slider->max;
+          }
           b_processed = true;
         }
         break;
