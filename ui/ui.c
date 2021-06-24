@@ -292,7 +292,7 @@ void IRAM_ATTR ui_process_events(void)
         timer_start(TIMER_GROUP_1, TIMER_1);
 
         /* Make sure backlight is correctly set. */
-        twatch_screen_set_backlight(SCREEN_DEFAULT_BACKLIGHT);
+        twatch_screen_set_backlight(twatch_screen_get_default_backlight());
       }
 
       switch(touch.type)
