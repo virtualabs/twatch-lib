@@ -371,9 +371,7 @@ void IRAM_ATTR ui_process_events(void)
     {
       /* Handle inactivity. */
       if (g_ui.b_inactivity_detected && g_ui.b_eco_mode_enabled)
-      {
-        printf("[eco] inactivity period detected\r\n");
-        
+      {     
         g_ui.b_inactivity_detected = false;
 
         switch (g_ui.screen_mode)
