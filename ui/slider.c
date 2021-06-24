@@ -74,7 +74,16 @@ int widget_slider_event_handler(widget_t *p_widget, widget_event_t event, int x,
           if ((x >= SLIDER_CURSOR_RADIUS) && (x<=(p_widget->box.width - SLIDER_CURSOR_RADIUS)))
           {
             int old = p_slider->value;
+
+            /* Compute new value based on press event. */
             int new = x * (p_slider->max - p_slider->min) / (p_widget->box.width-2*SLIDER_CURSOR_RADIUS) + p_slider->min;
+
+            /* Check boundaries. */
+            if (new > p_slider->max)
+              new = p_slider->max;
+            if (new < p_slider->min)
+              new = p_slider->min;
+            
             p_slider->value = new;
             p_slider->pfn_tap_handler(&p_slider->widget /*, new, old */);
           }
