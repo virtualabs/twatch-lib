@@ -260,5 +260,26 @@ void twatch_pmu_deepsleep(void)
 
 int twatch_pmu_get_battery_level(void)
 {
-  return axpxx_getBattPercentage();
+  float voltage;
+  int level=-1;
+
+  if (axpxx_isChargeing())
+  {
+    /* Read level, if level == 0x7f then percentage cannot be trusted. */
+    level = axpxx_getBattPercentage();
+    if (level == 0x7F)
+      level = -1;
+  }
+
+  if (level < 0)
+  {
+    voltage = axpxx_getBattVoltage();
+    if (voltage < 3000.0)
+      level = 0;
+    if (voltage > 4250.0)
+      level = 100;
+    level = ((voltage - 3000)*100)/1280;
+  }
+  
+  return level;
 }
