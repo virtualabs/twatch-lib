@@ -10,6 +10,8 @@ idf_component_register(
   "drivers/bma423/bma423.c"
   "drivers/st7789.c"
   "drivers/pcf8563.c"
+  "drivers/ir/esp32_rmt_common.c"
+  "drivers/ir/rmtlib_raw.c"
   "hal/audio.c"
   "hal/pmu.c"
   "hal/touch.c"
