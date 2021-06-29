@@ -62,9 +62,11 @@ void ui_init(void)
   g_ui.screen_mode = SCREEN_MODE_NORMAL;
 
   /* Initialize our eco timer. */
+  g_ui.b_usb_plugged = twatch_pmu_is_usb_plugged(true);
   g_ui.b_eco_mode_enabled = false;
   g_ui.b_inactivity_detected = false;
   g_ui.eco_max_inactivity = 15; /* Inactivity set to 15 sec by default. */
+  g_ui.eco_max_inactivity_to_deepsleep = 60; /* Second inactivity set to 60 by default */ 
   g_ui.eco_timer.divider = TIMER_DIVIDER;
   g_ui.eco_timer.counter_dir = TIMER_COUNT_UP;
   g_ui.eco_timer.counter_en = TIMER_PAUSE;
@@ -252,6 +254,18 @@ void ui_go_down(void)
   ui_swipe_up();
 }
 
+/**
+ * __ui_deepsleep_activate()
+ * 
+ * @brief: Activate the deepsleep mode
+ **/
+void __ui_deepsleep_activate()
+{
+  printf("[userbtn] Sleep mode enabled\r\n");
+  st7789_blank();
+  st7789_commit_fb();
+  twatch_pmu_deepsleep();
+}
 
 /**
  * ui_process_events()
@@ -279,7 +293,7 @@ void IRAM_ATTR ui_process_events(void)
         timer_start(TIMER_GROUP_1, TIMER_1);
 
         /* Make sure backlight is correctly set. */
-        twatch_screen_set_backlight(SCREEN_DEFAULT_BACKLIGHT);
+        twatch_screen_set_backlight(twatch_screen_get_default_backlight());
       }
 
       switch(touch.type)
@@ -358,16 +372,35 @@ void IRAM_ATTR ui_process_events(void)
     {
       /* Handle inactivity. */
       if (g_ui.b_inactivity_detected && g_ui.b_eco_mode_enabled)
-      {
-        printf("[eco] inactivity period detected\r\n");
-        if (g_ui.screen_mode == SCREEN_MODE_NORMAL)
+      {     
+        g_ui.b_inactivity_detected = false;
+
+        switch (g_ui.screen_mode)
         {
           /* Switch screen to dimmed mode. */
-          twatch_screen_set_backlight(100);
-          g_ui.screen_mode = SCREEN_MODE_DIMMED;
+          case SCREEN_MODE_NORMAL:
+            twatch_screen_set_backlight(100);
+            g_ui.screen_mode = SCREEN_MODE_DIMMED;
+
+            /* Activate second alarm for switch in deepsleep mode if necessary */
+            if (g_ui.eco_max_inactivity_to_deepsleep != 0)
+            {
+              timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+              timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity_to_deepsleep * TIMER_SCALE);
+              timer_start(TIMER_GROUP_1, TIMER_1);
+            }
+            else
+            {
+              timer_pause(TIMER_GROUP_1, TIMER_1);
+            }
+            break;
+
+          /* Switch screen to deepsleep */  
+          case SCREEN_MODE_DIMMED:
+            timer_pause(TIMER_GROUP_1, TIMER_1);
+            __ui_deepsleep_activate();
+            break;
         }
-        timer_pause(TIMER_GROUP_1, TIMER_1);
-        g_ui.b_inactivity_detected = false;
       }
     }
   }
@@ -377,10 +410,8 @@ void IRAM_ATTR ui_process_events(void)
   {
     if (g_ui.p_current_tile == g_ui.p_default_tile)
     {
-      printf("[userbtn] Sleep mode enabled\r\n");
-      st7789_blank();
-      st7789_commit_fb();
-      twatch_pmu_deepsleep();
+      /* Activate deepsleep */
+      __ui_deepsleep_activate();
     }
     else
     {
@@ -397,6 +428,15 @@ void IRAM_ATTR ui_process_events(void)
       0
     );
   }
+
+  /* Check if usb has been plugged in. */
+  if (twatch_pmu_is_usb_plugged(false) && !g_ui.b_usb_plugged)
+  {
+    g_ui.b_usb_plugged = true;
+    ui_wakeup();
+  }
+  else
+    g_ui.b_usb_plugged = false;
 
   /* Refresh screen. */
   st7789_blank();
@@ -748,6 +788,24 @@ void disable_ecomode(void)
   /* Stop our timer. */
   g_ui.b_eco_mode_enabled = false;
   timer_pause(TIMER_GROUP_1, TIMER_1);
+}
+
+
+/**
+ * ui_wakeup()
+ * 
+ * @brief: Wake-up screen: sets default backlight and reset inactivity timer
+ **/
+
+void ui_wakeup(void)
+{
+  /* Set default backlight. */
+  twatch_screen_set_backlight(twatch_screen_get_default_backlight());
+
+  /* Reset counter value and alarm value. */
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_start(TIMER_GROUP_1, TIMER_1);
 }
 
 

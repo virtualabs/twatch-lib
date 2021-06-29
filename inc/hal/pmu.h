@@ -19,4 +19,8 @@ bool twatch_pmu_is_userbtn_pressed(void);
 /* Deep sleep */
 void twatch_pmu_deepsleep(void);
 
+/* Battery. */
+int twatch_pmu_get_battery_level(void);
+bool twatch_pmu_is_usb_plugged(bool b_query_irq);
+
 #endif /* __INC_TWATCH_PMU_H */

@@ -10,7 +10,7 @@ float velocity;
 int16_t dx,dy;
 double distance;
 int duration, touch_start_ms, touch_stop_ms;
-bool b_inverted=false;
+RTC_DATA_ATTR static bool b_inverted=false;
 
 /* b_touched: used by ISR to notify touch HAL some touch data need to be retrieved. */
 volatile bool b_touched = false;

@@ -16,7 +16,7 @@ void widget_slider_drawfunc(widget_t *p_widget)
   {
     /* Put the bar in the middle */
     x = SLIDER_CURSOR_RADIUS + (p_slider->value - p_slider->min) * (p_widget->box.width - 2*SLIDER_CURSOR_RADIUS) / (p_slider->max - p_slider->min - SLIDER_CURSOR_RADIUS*2);
-    y = SLIDER_CURSOR_RADIUS;
+    y = p_widget->box.height/2;
 
     /* Draw the slider bar. */
     widget_draw_line(
@@ -71,10 +71,30 @@ int widget_slider_event_handler(widget_t *p_widget, widget_event_t event, int x,
       case WE_PRESS:
         {
           /* Compute value from x position */
-          int old = p_slider->value;
-          int new = x * (p_slider->max - p_slider->min) / (p_widget->box.width-2*SLIDER_CURSOR_RADIUS) + p_slider->min;
-          p_slider->value = new;
-          p_slider->pfn_tap_handler(&p_slider->widget /*, new, old */);
+          if ((x >= SLIDER_CURSOR_RADIUS) && (x<=(p_widget->box.width - SLIDER_CURSOR_RADIUS)))
+          {
+            int old = p_slider->value;
+
+            /* Compute new value based on press event. */
+            int new = x * (p_slider->max - p_slider->min) / (p_widget->box.width-2*SLIDER_CURSOR_RADIUS) + p_slider->min;
+
+            /* Check boundaries. */
+            if (new > p_slider->max)
+              new = p_slider->max;
+            if (new < p_slider->min)
+              new = p_slider->min;
+            
+            p_slider->value = new;
+            p_slider->pfn_tap_handler(&p_slider->widget /*, new, old */);
+          }
+          else if (x<SLIDER_CURSOR_RADIUS)
+          {
+            p_slider->value = p_slider->min;
+          }
+          else if (x > (p_widget->box.width - SLIDER_CURSOR_RADIUS))
+          {
+            p_slider->value = p_slider->max;
+          }
           b_processed = true;
         }
         break;

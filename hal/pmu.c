@@ -5,6 +5,7 @@
 #include "esp_sleep.h"
 #include "esp_err.h"
 #include "hal/pmu.h"
+#include "hal/screen.h" // DEBUG ONLY
 
 #define AXP_CHECK(x) if(x != AXP_PASS) return ESP_FAIL
 
@@ -13,6 +14,8 @@ volatile bool b_axpxx_irq_triggered = false;
 volatile int userbtn_int_count = 0;
 portMUX_TYPE userbtn_mux = portMUX_INITIALIZER_UNLOCKED;
 
+/* USB charge monitoring. */
+volatile bool b_usb_plugged = false;
 
 /**
  * _axpxx_interrupt_handler()
@@ -59,8 +62,11 @@ esp_err_t twatch_pmu_init(void)
   if (axpxx_probe_chip() == AXP_PASS)
   {
     /* Enable PEK short press IRQ. */
-    axpxx_enableIRQ((1 << AXP202_IRQ_POKSH), true);
+    axpxx_enableIRQ((1 << AXP202_IRQ_POKSH) | (1 << AXP202_IRQ_USBIN) | (1 << AXP202_IRQ_USBRE), true);
     axpxx_clearIRQ();
+
+    /* Determine if USB is connected. */
+    b_usb_plugged = axpxx_isVBUSPlug();
 
     /* Success. */
     return ESP_OK;
@@ -162,6 +168,14 @@ void twatch_pmu_read_irq(void)
       {
         userbtn_int_count = 1;
       }
+      if (axpxx_isVbusPlugInIRQ())
+      {
+        b_usb_plugged = true;
+      }
+      if (axpxx_isVbusRemoveIRQ())
+      {
+        b_usb_plugged = false;
+      }
     }
 
     /* Clear IRQ. */
@@ -197,6 +211,24 @@ bool twatch_pmu_is_userbtn_pressed(void)
   return result;
 }
 
+/**
+ * twatch_pmu_is_usb_plugged()
+ * 
+ * Determines if a USB connector is plugged in and charging.
+ * 
+ * @return: true if usb connector is plugged in, false otherwise.
+ **/
+
+bool twatch_pmu_is_usb_plugged(bool b_query_irq)
+{
+  /* Read IRQ if required. */
+  if (b_query_irq)
+    twatch_pmu_read_irq();
+
+  /* Return usb state. */
+  return b_usb_plugged;
+}
+
 
 /**
  * twatch_pmu_deepsleep()
@@ -207,9 +239,47 @@ bool twatch_pmu_is_userbtn_pressed(void)
 
 void twatch_pmu_deepsleep(void)
 {
+  /* Shutdown screen. */
+  twatch_pmu_screen_power(false);
+  twatch_pmu_audio_power(false);
+
   /* Set GPIO 35 as wakeup signal. */
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);
 
   /* Go into deep sleep mode. */
   esp_deep_sleep_start();
+}
+
+
+/**
+ * twatch_pmu_get_battery_level()
+ * 
+ * Get battery percentage from AXP202.
+ * @return: percentage (0-100)
+ **/
+
+int twatch_pmu_get_battery_level(void)
+{
+  float voltage;
+  int level=-1;
+
+  if (axpxx_isChargeing())
+  {
+    /* Read level, if level == 0x7f then percentage cannot be trusted. */
+    level = axpxx_getBattPercentage();
+    if (level == 0x7F)
+      level = -1;
+  }
+
+  if (level < 0)
+  {
+    voltage = axpxx_getBattVoltage();
+    if (voltage < 3000.0)
+      level = 0;
+    if (voltage > 4250.0)
+      level = 100;
+    level = ((voltage - 3000)*100)/1280;
+  }
+  
+  return level;
 }

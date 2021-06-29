@@ -1,5 +1,7 @@
 #include "hal/screen.h"
 
+RTC_DATA_ATTR static int g_default_backlight = SCREEN_DEFAULT_BACKLIGHT;
+
 /**
  * screen_init()
  * 
@@ -54,6 +56,30 @@ int twatch_screen_get_backlight()
 {
   return st7789_backlight_get();
 }
+
+/**
+ * twatch_screen_set_default_backlight()
+ *
+ * @brief: Set the screen default backlight level.
+ * @param: level of the backlight.
+ **/
+void twatch_screen_set_default_backlight(int level)
+{
+  g_default_backlight = level;
+}
+
+/**
+ * twatch_screen_get_backlight()
+ *
+ * @brief: Get the screen backlight level.
+ * @return: level of the backlight.
+ **/
+int twatch_screen_get_default_backlight()
+{
+  return g_default_backlight;
+}
+
+
 
 /**
  * screen_set_drawing_window()

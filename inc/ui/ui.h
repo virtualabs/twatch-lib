@@ -124,7 +124,9 @@ typedef struct {
   screen_mode_t screen_mode;
   timer_config_t eco_timer;
   int eco_max_inactivity;
+  int eco_max_inactivity_to_deepsleep;
   bool b_inactivity_detected;
+  bool b_usb_plugged;
 
 } ui_t;
 
@@ -158,6 +160,7 @@ void ui_go_down(void);
 bool is_ecomode_set(void);
 void enable_ecomode(void);
 void disable_ecomode(void);
+void ui_wakeup(void);
 
 /* Tiles */
 void tile_init(tile_t *p_tile, void *p_user_data);
