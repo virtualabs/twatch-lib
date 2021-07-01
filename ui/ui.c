@@ -145,6 +145,46 @@ void ui_default_tile()
   ui_select_tile(g_ui.p_default_tile);
 }
 
+void ui_move_to_tile(ui_move_dir direction, tile_t *p_from_tile, tile_t *p_to_tile)
+{
+  g_ui.p_from_tile = p_from_tile;
+  g_ui.p_to_tile = p_to_tile;
+
+  switch(direction)
+  {
+    case MOVE_LEFT:
+      {
+        g_ui.state = UI_STATE_MOVE_LEFT;
+        g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
+        g_ui.p_to_tile->offset_y = 0;
+      }
+      break;
+
+    case MOVE_RIGHT:
+      {
+        g_ui.state = UI_STATE_MOVE_RIGHT;
+        g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
+        g_ui.p_to_tile->offset_y = 0;
+      }
+      break;
+
+    case MOVE_UP:
+      {
+        g_ui.state = UI_STATE_MOVE_UP;
+        g_ui.p_to_tile->offset_x = 0;
+        g_ui.p_to_tile->offset_y = -SCREEN_HEIGHT;
+      }
+      break;
+
+    case MOVE_DOWN:
+      {
+        g_ui.state = UI_STATE_MOVE_DOWN;
+        g_ui.p_to_tile->offset_x = 0;
+        g_ui.p_to_tile->offset_y = SCREEN_HEIGHT;
+      }
+      break;
+  }
+}
 
 void ui_swipe_right(void)
 {
@@ -362,6 +402,12 @@ void IRAM_ATTR ui_process_events(void)
             twatch_screen_set_backlight(100);
             g_ui.screen_mode = SCREEN_MODE_DIMMED;
 
+            /* If not on a secondary tile, move to default tile. */
+            if (g_ui.p_current_tile->t_type != TILE_SECONDARY)
+            {
+              ui_move_to_tile(MOVE_LEFT, g_ui.p_current_tile, g_ui.p_default_tile);
+            }
+
             /* Activate second alarm for switch in deepsleep mode if necessary */
             if (g_ui.eco_max_inactivity_to_deepsleep != 0)
             {
@@ -416,11 +462,7 @@ void IRAM_ATTR ui_process_events(void)
         else
         {
           /* Animate return to main tile (move to left). */
-          g_ui.state = UI_STATE_MOVE_LEFT;
-          g_ui.p_from_tile = g_ui.p_current_tile;
-          g_ui.p_to_tile = g_ui.p_default_tile;
-          g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
-          g_ui.p_to_tile->offset_y = 0;
+          ui_move_to_tile(MOVE_LEFT, g_ui.p_current_tile, g_ui.p_default_tile);
         }
       }
   

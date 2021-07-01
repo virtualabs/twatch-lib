@@ -32,6 +32,13 @@ typedef struct tTile tile_t;
 typedef int (*FTileEventHandler)(tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity);
 
 typedef enum {
+  MOVE_LEFT,
+  MOVE_RIGHT,
+  MOVE_UP,
+  MOVE_DOWN
+} ui_move_dir;
+
+typedef enum {
   UI_STATE_IDLE,
   UI_STATE_MOVE_LEFT,
   UI_STATE_MOVE_RIGHT,
