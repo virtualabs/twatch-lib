@@ -27,7 +27,9 @@ typedef enum {
   TE_MODAL_CLOSE
 } tile_event_t;
 
-typedef int (*FTileEventHandler)(struct tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity);
+typedef struct tTile tile_t;
+
+typedef int (*FTileEventHandler)(tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity);
 
 typedef enum {
   UI_STATE_IDLE,
@@ -48,9 +50,7 @@ typedef enum {
 } screen_mode_t;
 
 
-struct tile_t;
-
-typedef int (*FDrawTile)(struct tile_t *p_tile);
+typedef int (*FDrawTile)(tile_t *p_tile);
 
 /**
  * Tile base structure

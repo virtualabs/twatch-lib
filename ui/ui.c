@@ -276,7 +276,6 @@ void __ui_deepsleep_activate()
 void IRAM_ATTR ui_process_events(void)
 {
   touch_event_t touch;
-  tile_t *p_main_tile;
 
   /* Process touch events if we are not in an animation. */
   if (g_ui.state == UI_STATE_IDLE)
@@ -1047,7 +1046,7 @@ int _tile_default_draw(tile_t *p_tile)
 }
 
 
-int _tile_default_event_handler(struct tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity)
+int _tile_default_event_handler(tile_t *p_tile, tile_event_t p_event, int x, int y, int velocity)
 {
   /* Event not processed. */
   return TE_ERROR;

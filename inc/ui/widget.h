@@ -11,7 +11,7 @@
 #define WE_ERROR      (1)
 #define WE_PROCESSED  (0)
 
-struct widget_t;
+typedef struct tWidget widget_t;
 
 typedef enum {
   /* Default events. */
@@ -29,9 +29,9 @@ typedef enum {
 } widget_event_t;
 
 /* Callback definition. */
-typedef int (*FDrawWidget)(struct widget_t *p_widget);
-typedef int (*FEventHandler)(struct widget_t *p_widget, widget_event_t p_event, int x, int y, int velocity);
-typedef void (*FTapHandler)(struct widget_t *p_widget);
+typedef int (*FDrawWidget)(widget_t *p_widget);
+typedef int (*FEventHandler)(widget_t *p_widget, widget_event_t p_event, int x, int y, int velocity);
+typedef int (*FTapHandler)(widget_t *p_widget);
 
 typedef struct {
   int x;

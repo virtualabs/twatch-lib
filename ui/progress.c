@@ -8,7 +8,7 @@
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-void widget_progress_drawfunc(widget_t *p_widget)
+int widget_progress_drawfunc(widget_t *p_widget)
 {
   widget_progress_t *p_progress = (widget_progress_t *)p_widget->p_user_data;
 
@@ -68,6 +68,8 @@ void widget_progress_drawfunc(widget_t *p_widget)
       RGB(0xe,0xe,0xe)
     );
   }
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 

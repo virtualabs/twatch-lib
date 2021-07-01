@@ -642,7 +642,7 @@ PROGMEM const unsigned char* const chrtbl_f16[96] =       // character pointer t
 int font_draw_char(int x, int y, char c, uint16_t color)
 {
     int i,j,k,w;
-    unsigned char *glyph;
+    const unsigned char *glyph;
 
     /* Check if character is printable. */
     if (c<0x20 || c>0x7F)
@@ -673,7 +673,7 @@ int font_draw_char(int x, int y, char c, uint16_t color)
 int font_draw_char_x2(int x, int y, char c, uint16_t color)
 {
   int i,j,k,w;
-  unsigned char *glyph;
+  const unsigned char *glyph;
 
   /* Check if character is printable. */
   if (c<0x20 || c>0x7F)

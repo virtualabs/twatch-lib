@@ -62,9 +62,8 @@ void widget_listbox_animate(widget_listbox_t *p_listbox)
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-void widget_listbox_drawfunc(widget_t *p_widget)
+int widget_listbox_drawfunc(widget_t *p_widget)
 {
-  int text_width, dx, dy;
   widget_listbox_t *p_listbox = (widget_listbox_t *)p_widget->p_user_data;
 
   if (p_listbox != NULL)
@@ -130,6 +129,8 @@ void widget_listbox_drawfunc(widget_t *p_widget)
       LISTBOX_STYLE_BORDER
     );
   }
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 

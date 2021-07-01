@@ -6,9 +6,8 @@
  * @param p_widget: pointer to a  `widget_label_t` structure
  **/
 
-void widget_label_drawfunc(widget_t *p_widget)
+int widget_label_drawfunc(widget_t *p_widget)
 {
-  int text_width, dx, dy;
   widget_label_t *p_label = (widget_label_t *)p_widget->p_user_data;
 
   if (p_label->psz_label != NULL)
@@ -45,6 +44,8 @@ void widget_label_drawfunc(widget_t *p_widget)
         );
       }
     }
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 

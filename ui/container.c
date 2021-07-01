@@ -12,10 +12,8 @@
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-void widget_container_drawfunc(widget_t *p_widget)
+int widget_container_drawfunc(widget_t *p_widget)
 {
-  int x0,y0,x1,y1;
-  int y=5;
   widget_container_item_t *p_widget_item;
 
   /* Retrieve our container structure. */
@@ -64,6 +62,8 @@ void widget_container_drawfunc(widget_t *p_widget)
       SCREEN_HEIGHT - 1
     );
   }
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 
