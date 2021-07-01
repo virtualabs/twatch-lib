@@ -191,11 +191,7 @@ void ui_swipe_right(void)
   if (g_ui.p_current_tile->p_left != NULL)
   {
     /* Yes, setup animation. */
-    g_ui.state = UI_STATE_MOVE_LEFT;
-    g_ui.p_from_tile = g_ui.p_current_tile;
-    g_ui.p_to_tile = g_ui.p_current_tile->p_left;
-    g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
-    g_ui.p_to_tile->offset_y = 0;
+    ui_move_to_tile(MOVE_LEFT, g_ui.p_current_tile, g_ui.p_current_tile->p_left);
   }
 }
 
@@ -206,11 +202,7 @@ void ui_swipe_left(void)
   if (g_ui.p_current_tile->p_right != NULL)
   {
     /* Yes, setup animation. */
-    g_ui.state = UI_STATE_MOVE_RIGHT;
-    g_ui.p_from_tile = g_ui.p_current_tile;
-    g_ui.p_to_tile = g_ui.p_current_tile->p_right;
-    g_ui.p_to_tile->offset_x = SCREEN_WIDTH;
-    g_ui.p_to_tile->offset_y = 0;
+    ui_move_to_tile(MOVE_RIGHT, g_ui.p_current_tile, g_ui.p_current_tile->p_right);
   }
 }
 
@@ -220,11 +212,7 @@ void ui_swipe_up(void)
   if (g_ui.p_current_tile->p_bottom != NULL)
   {
     /* Yes, setup animation. */
-    g_ui.state = UI_STATE_MOVE_DOWN;
-    g_ui.p_from_tile = g_ui.p_current_tile;
-    g_ui.p_to_tile = g_ui.p_current_tile->p_bottom;
-    g_ui.p_to_tile->offset_x = 0;
-    g_ui.p_to_tile->offset_y = SCREEN_HEIGHT;
+    ui_move_to_tile(MOVE_DOWN, g_ui.p_current_tile, g_ui.p_current_tile->p_bottom);
   }
 }
 
@@ -234,11 +222,7 @@ void ui_swipe_down(void)
   if (g_ui.p_current_tile->p_top != NULL)
   {
     /* Yes, setup animation. */
-    g_ui.state = UI_STATE_MOVE_UP;
-    g_ui.p_from_tile = g_ui.p_current_tile;
-    g_ui.p_to_tile = g_ui.p_current_tile->p_top;
-    g_ui.p_to_tile->offset_x = 0;
-    g_ui.p_to_tile->offset_y = -SCREEN_HEIGHT;
+    ui_move_to_tile(MOVE_UP, g_ui.p_current_tile, g_ui.p_current_tile->p_top);
   }
 }
 
