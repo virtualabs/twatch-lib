@@ -148,32 +148,12 @@ void ui_default_tile()
 
 void ui_swipe_right(void)
 {
-  tile_t *p_main_tile;
-  
-  #if 0
-  /* Can we move to the left tile ? */
-  if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
-  {
-    /* Get the main tile. */
-    p_main_tile = g_ui.p_current_tile;
-    while (p_main_tile->p_top != NULL)
-      p_main_tile = p_main_tile->p_top;
-  }
-  else
-  {
-    /* The current tile is a main tile, nothing to do. */
-    p_main_tile = g_ui.p_current_tile;
-  }
-  #endif
-  
-  p_main_tile = g_ui.p_current_tile;
-
-  if (p_main_tile->p_left != NULL)
+  if (g_ui.p_current_tile->p_left != NULL)
   {
     /* Yes, setup animation. */
     g_ui.state = UI_STATE_MOVE_LEFT;
     g_ui.p_from_tile = g_ui.p_current_tile;
-    g_ui.p_to_tile = p_main_tile->p_left;
+    g_ui.p_to_tile = g_ui.p_current_tile->p_left;
     g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
     g_ui.p_to_tile->offset_y = 0;
   }
@@ -182,33 +162,13 @@ void ui_swipe_right(void)
 
 void ui_swipe_left(void)
 {
-  tile_t *p_main_tile;
-
-  #if 0
   /* Can we move to the left tile ? */
-  if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
-  {
-    /* Get the main tile. */
-    p_main_tile = g_ui.p_current_tile;
-    while (p_main_tile->p_top != NULL)
-      p_main_tile = p_main_tile->p_top;
-  }
-  else
-  {
-    /* The current tile is a main tile, nothing to do. */
-    p_main_tile = g_ui.p_current_tile;
-  }
-  #endif
-
-  p_main_tile = g_ui.p_current_tile;
-
-  /* Can we move to the left tile ? */
-  if (p_main_tile->p_right != NULL)
+  if (g_ui.p_current_tile->p_right != NULL)
   {
     /* Yes, setup animation. */
     g_ui.state = UI_STATE_MOVE_RIGHT;
     g_ui.p_from_tile = g_ui.p_current_tile;
-    g_ui.p_to_tile = p_main_tile->p_right;
+    g_ui.p_to_tile = g_ui.p_current_tile->p_right;
     g_ui.p_to_tile->offset_x = SCREEN_WIDTH;
     g_ui.p_to_tile->offset_y = 0;
   }
@@ -275,6 +235,27 @@ void __ui_deepsleep_activate()
   twatch_pmu_deepsleep();
 }
 
+
+/**
+ * reset_inactivity_timer()
+ * 
+ * @brief: Reset inactivity timer.
+ **/
+
+void reset_inactivity_timer(void)
+{
+  /* Reset inactivity timer. */
+  g_ui.b_inactivity_detected = false;
+  g_ui.screen_mode = SCREEN_MODE_NORMAL;
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_start(TIMER_GROUP_1, TIMER_1);
+
+  /* Make sure backlight is correctly set. */
+  twatch_screen_set_backlight(twatch_screen_get_default_backlight());
+}
+
+
 /**
  * ui_process_events()
  * 
@@ -292,15 +273,7 @@ void IRAM_ATTR ui_process_events(void)
     {
       if (g_ui.b_eco_mode_enabled)
       {
-        /* Reset inactivity timer. */
-        g_ui.b_inactivity_detected = false;
-        g_ui.screen_mode = SCREEN_MODE_NORMAL;
-        timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
-        timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
-        timer_start(TIMER_GROUP_1, TIMER_1);
-
-        /* Make sure backlight is correctly set. */
-        twatch_screen_set_backlight(twatch_screen_get_default_backlight());
+        reset_inactivity_timer();
       }
 
       switch(touch.type)
@@ -415,6 +388,9 @@ void IRAM_ATTR ui_process_events(void)
   /* Has lateral button been short-pressed ? */
   if (twatch_pmu_is_userbtn_pressed())
   {
+    /* Reset inactivity timer as user pressed the button. */
+    reset_inactivity_timer();
+
     /* Do we have a modal tile displayed ? */
     if (g_ui.p_modal != NULL)
     {
@@ -440,7 +416,6 @@ void IRAM_ATTR ui_process_events(void)
         else
         {
           /* Animate return to main tile (move to left). */
-          //ui_default_tile();
           g_ui.state = UI_STATE_MOVE_LEFT;
           g_ui.p_from_tile = g_ui.p_current_tile;
           g_ui.p_to_tile = g_ui.p_default_tile;
