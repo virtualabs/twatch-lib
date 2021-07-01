@@ -163,7 +163,7 @@ void ui_move_to_tile(ui_move_dir direction, tile_t *p_from_tile, tile_t *p_to_ti
     case MOVE_RIGHT:
       {
         g_ui.state = UI_STATE_MOVE_RIGHT;
-        g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
+        g_ui.p_to_tile->offset_x = SCREEN_WIDTH;
         g_ui.p_to_tile->offset_y = 0;
       }
       break;
