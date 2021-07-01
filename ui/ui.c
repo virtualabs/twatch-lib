@@ -423,6 +423,7 @@ void IRAM_ATTR ui_process_events(void)
     }
     else
     {
+      /* Are we already on the default tile ? */
       if (g_ui.p_current_tile == g_ui.p_default_tile)
       {
         /* Activate deepsleep */
@@ -430,8 +431,22 @@ void IRAM_ATTR ui_process_events(void)
       }
       else
       {
-        printf("[userbtn] Return to our default tile\r\n");
-        ui_default_tile();
+        /* Are we on a secondary tile ? */
+        if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
+        {
+          /* Animate return to main tile (top). */
+          ui_swipe_down();
+        }
+        else
+        {
+          /* Animate return to main tile (move to left). */
+          //ui_default_tile();
+          g_ui.state = UI_STATE_MOVE_LEFT;
+          g_ui.p_from_tile = g_ui.p_current_tile;
+          g_ui.p_to_tile = g_ui.p_default_tile;
+          g_ui.p_to_tile->offset_x = -SCREEN_WIDTH;
+          g_ui.p_to_tile->offset_y = 0;
+        }
       }
   
       /* Forward event to the current tile. */
