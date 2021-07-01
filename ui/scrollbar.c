@@ -23,7 +23,7 @@ int widget_scrollbar_drawfunc(widget_t *p_widget)
       0,
       p_widget->box.width - 2,
       0,
-      SCROLLBAR_STYLE_BORDER
+      p_widget->style.border
     );
     widget_draw_line(
       p_widget,
@@ -31,7 +31,7 @@ int widget_scrollbar_drawfunc(widget_t *p_widget)
       p_widget->box.height - 1,
       p_widget->box.width - 2,
       p_widget->box.height - 1,
-      SCROLLBAR_STYLE_BORDER
+      p_widget->style.border
     );
     widget_draw_line(
       p_widget,
@@ -39,7 +39,7 @@ int widget_scrollbar_drawfunc(widget_t *p_widget)
       1,
       0,
       p_widget->box.height - 2,
-      SCROLLBAR_STYLE_BORDER
+      p_widget->style.border
     );
     widget_draw_line(
       p_widget,
@@ -47,7 +47,7 @@ int widget_scrollbar_drawfunc(widget_t *p_widget)
       1,
       p_widget->box.width - 1,
       p_widget->box.height - 2,
-      SCROLLBAR_STYLE_BORDER
+      p_widget->style.border
     );
 
     /* Draw cursor, only vertical at the moment (TODO !). */
@@ -63,7 +63,14 @@ int widget_scrollbar_drawfunc(widget_t *p_widget)
       cursor_size = 10;
     
     cursor_offset = (p_scrollbar->value * (p_scrollbar->widget.box.height - cursor_size)) / (p_scrollbar->max - p_scrollbar->min);
-    widget_fill_region(&p_scrollbar->widget, 1, 1 + cursor_offset, p_scrollbar->widget.box.width-2, cursor_size, RGB(0xf, 0xf,0xf));
+    widget_fill_region(
+      &p_scrollbar->widget,
+      1,
+      1 + cursor_offset,
+      p_scrollbar->widget.box.width-2,
+      cursor_size,
+      p_widget->style.front
+    );
   }
   /* Success. */
   return TE_PROCESSED;
