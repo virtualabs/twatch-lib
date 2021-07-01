@@ -274,11 +274,11 @@ int twatch_pmu_get_battery_level(void)
   if (level < 0)
   {
     voltage = axpxx_getBattVoltage();
-    if (voltage < 3000.0)
+    level = ((voltage - 3200)*100)/1000;
+    if (level < 0)
       level = 0;
-    if (voltage > 4250.0)
+    if (level > 100)
       level = 100;
-    level = ((voltage - 3000)*100)/1280;
   }
   
   return level;
