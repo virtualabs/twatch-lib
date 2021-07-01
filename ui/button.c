@@ -8,7 +8,7 @@
  * @param p_widget: pointer to a `widget_t` structure.
  **/
 
-void widget_button_drawfunc(widget_t *p_widget)
+int widget_button_drawfunc(widget_t *p_widget)
 {
   int text_width, dx, dy;
   widget_button_t *p_button = (widget_button_t *)p_widget->p_user_data;
@@ -91,6 +91,7 @@ void widget_button_drawfunc(widget_t *p_widget)
       );
     }
   }
+  return 0;
 }
 
 

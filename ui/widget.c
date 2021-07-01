@@ -267,7 +267,7 @@ void widget_set_front_color(widget_t *p_widget, uint16_t color)
 
 int widget_draw(widget_t *p_widget)
 {
-  int x0,y0,x1,y1,result;
+  int x0,y0,x1,y1;
 
   if (p_widget != NULL)
   {
@@ -296,7 +296,7 @@ int widget_draw(widget_t *p_widget)
         );
       }
       
-      result = p_widget->pfn_drawfunc(p_widget);
+      p_widget->pfn_drawfunc(p_widget);
       
       /* Restore drawing window to its previous state. */
       st7789_set_drawing_window(

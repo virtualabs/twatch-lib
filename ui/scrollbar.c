@@ -8,12 +8,10 @@
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-void widget_scrollbar_drawfunc(widget_t *p_widget)
+int widget_scrollbar_drawfunc(widget_t *p_widget)
 {
   int cursor_size;
   int cursor_offset;
-  int value;
-  int text_width, dx, dy;
   widget_scrollbar_t *p_scrollbar = (widget_scrollbar_t *)p_widget->p_user_data;
 
   if (p_scrollbar != NULL)
@@ -67,6 +65,7 @@ void widget_scrollbar_drawfunc(widget_t *p_widget)
     cursor_offset = (p_scrollbar->value * (p_scrollbar->widget.box.height - cursor_size)) / (p_scrollbar->max - p_scrollbar->min);
     widget_fill_region(&p_scrollbar->widget, 1, 1 + cursor_offset, p_scrollbar->widget.box.width-2, cursor_size, RGB(0xf, 0xf,0xf));
   }
+  return 0;
 }
 
 /**

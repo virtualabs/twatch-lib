@@ -18,8 +18,6 @@ FT6X36_IRQ_HANDLER ft6236_irq_handler = NULL;
 
 void IRAM_ATTR _touch_interrupt_handler(void *parameter)
 {
-  ft6236_touch_t touch_data;
-
   /* Forward to our IRQ Handler. */
   if (ft6236_irq_handler != NULL)
   {

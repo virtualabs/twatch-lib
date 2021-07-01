@@ -408,7 +408,6 @@ uint16_t IRAM_ATTR _st7789_get_pixel(int x, int y)
 
 uint16_t IRAM_ATTR st7789_get_pixel(int x, int y)
 {
-  int fb_blk, fb_blk_off;
   uint16_t pix = 0;
 
   /* Sanity checks. */

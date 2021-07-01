@@ -10,7 +10,7 @@
  * @param p_widget: pointer to a `widget_t` structure
  **/
 
-void widget_image_drawfunc(widget_t *p_widget)
+int widget_image_drawfunc(widget_t *p_widget)
 {
   /* Retrieve the image widget structure. */
   widget_image_t *p_widget_img = (widget_image_t *)p_widget->p_user_data;
@@ -26,6 +26,8 @@ void widget_image_drawfunc(widget_t *p_widget)
     0,
     0
   );
+
+  return 0;
 }
 
 
