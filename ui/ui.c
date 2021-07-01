@@ -407,25 +407,34 @@ void IRAM_ATTR ui_process_events(void)
   /* Has lateral button been short-pressed ? */
   if (twatch_pmu_is_userbtn_pressed())
   {
-    if (g_ui.p_current_tile == g_ui.p_default_tile)
+    /* Do we have a modal tile displayed ? */
+    if (g_ui.p_modal != NULL)
     {
-      /* Activate deepsleep */
-      __ui_deepsleep_activate();
+      /* Yes, close modal =) */
+      g_ui.p_modal = NULL;
     }
     else
     {
-      printf("[userbtn] Return to our default tile\r\n");
-      ui_default_tile();
+      if (g_ui.p_current_tile == g_ui.p_default_tile)
+      {
+        /* Activate deepsleep */
+        __ui_deepsleep_activate();
+      }
+      else
+      {
+        printf("[userbtn] Return to our default tile\r\n");
+        ui_default_tile();
+      }
+  
+      /* Forward event to the current tile. */
+      tile_send_event(
+        g_ui.p_current_tile,
+        TE_USERBTN,
+        0,
+        0,
+        0
+      );
     }
- 
-    /* Forward event to the current tile. */
-    tile_send_event(
-      g_ui.p_current_tile,
-      TE_USERBTN,
-      0,
-      0,
-      0
-    );
   }
 
   /* Check if usb has been plugged in. */
