@@ -129,7 +129,8 @@ int widget_listbox_drawfunc(widget_t *p_widget)
       LISTBOX_STYLE_BORDER
     );
   }
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 

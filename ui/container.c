@@ -62,7 +62,8 @@ int widget_container_drawfunc(widget_t *p_widget)
       SCREEN_HEIGHT - 1
     );
   }
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 

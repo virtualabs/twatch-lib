@@ -65,7 +65,8 @@ int widget_scrollbar_drawfunc(widget_t *p_widget)
     cursor_offset = (p_scrollbar->value * (p_scrollbar->widget.box.height - cursor_size)) / (p_scrollbar->max - p_scrollbar->min);
     widget_fill_region(&p_scrollbar->widget, 1, 1 + cursor_offset, p_scrollbar->widget.box.width-2, cursor_size, RGB(0xf, 0xf,0xf));
   }
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 /**

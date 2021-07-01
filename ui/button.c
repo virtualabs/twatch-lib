@@ -91,7 +91,8 @@ int widget_button_drawfunc(widget_t *p_widget)
       );
     }
   }
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 

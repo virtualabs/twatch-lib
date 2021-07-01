@@ -45,7 +45,8 @@ int widget_slider_drawfunc(widget_t *p_widget)
     /* Draw cursor. */
     widget_draw_disc(p_widget, x, y, SLIDER_CURSOR_RADIUS, SLIDER_STYLE_CURSOR);
   }
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 /**

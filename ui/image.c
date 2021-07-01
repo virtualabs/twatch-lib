@@ -27,7 +27,8 @@ int widget_image_drawfunc(widget_t *p_widget)
     0
   );
 
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 

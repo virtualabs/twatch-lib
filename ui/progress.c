@@ -68,7 +68,8 @@ int widget_progress_drawfunc(widget_t *p_widget)
       RGB(0xe,0xe,0xe)
     );
   }
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 

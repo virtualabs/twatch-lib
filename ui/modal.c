@@ -96,7 +96,8 @@ int _modal_drawfunc(tile_t *p_tile)
   /* Draw widgets. */
   tile_draw_widgets(p_tile);
 
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 /**

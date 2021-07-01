@@ -48,7 +48,8 @@ int widget_frame_drawfunc(widget_t *p_widget)
       p_widget->style.border
     );
   }
-  return 0;
+  /* Success. */
+  return TE_PROCESSED;
 }
 
 
