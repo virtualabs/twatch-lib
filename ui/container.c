@@ -28,7 +28,7 @@ int widget_container_drawfunc(widget_t *p_widget)
       1,
       p_widget->box.width-2,
       p_widget->box.height-2,
-      RGB(0,0,0)
+      p_widget->style.background
     );
     
     /* Restrict our drawing window to our box. */

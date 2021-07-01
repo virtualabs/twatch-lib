@@ -102,7 +102,7 @@ int widget_listbox_drawfunc(widget_t *p_widget)
       0,
       p_widget->box.width - 2,
       0,
-      LISTBOX_STYLE_BORDER
+      p_widget->style.border
     );
     widget_draw_line(
       p_widget,
@@ -110,7 +110,7 @@ int widget_listbox_drawfunc(widget_t *p_widget)
       p_widget->box.height - 1, 
       p_widget->box.width - 2,
       p_widget->box.height - 1,
-      LISTBOX_STYLE_BORDER
+      p_widget->style.border
     );
     widget_draw_line(
       p_widget,
@@ -118,7 +118,7 @@ int widget_listbox_drawfunc(widget_t *p_widget)
       1,
       0,
       p_widget->box.height - 2,
-      LISTBOX_STYLE_BORDER
+      p_widget->style.border
     );
     widget_draw_line(
       p_widget,
@@ -126,7 +126,7 @@ int widget_listbox_drawfunc(widget_t *p_widget)
       1,
       p_widget->box.width - 1,
       p_widget->box.height - 2,
-      LISTBOX_STYLE_BORDER
+      p_widget->style.border
     );
   }
   /* Success. */
