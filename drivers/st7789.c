@@ -794,6 +794,7 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
   /* copy pixels by 2 pixels. */
   n = (nb_pixels - d)/2;
   s = ((_x*3)/2 + ((_y*WIDTH*3)/2));
+  s = (s/3)*3;
 
   /* Fill line with the corresponding pixels. */
   if (g_inv_x)
@@ -815,7 +816,6 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
      * I spent way too much time to figure this out, so I thought it would worth it to explain
      * this a bit in here (hello, future me o/). 
      **/
-    s = (s/3)*3;
 
     /* Draw pixels in reverse order. */
     _p += d;
@@ -834,8 +834,6 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
      * Remark: everything works fine if X is not inverted, nothing special here.
      **/
 
-    s = (s/3)*3;
-    
     /* Draw pixels in normal order. */
     for (int x=0; x<n; x++)
     {
