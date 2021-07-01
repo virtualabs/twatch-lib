@@ -833,6 +833,8 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
     /**
      * Remark: everything works fine if X is not inverted, nothing special here.
      **/
+
+    s = (s/3)*3;
     
     /* Draw pixels in normal order. */
     for (int x=0; x<n; x++)
