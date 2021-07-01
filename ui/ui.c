@@ -150,6 +150,7 @@ void ui_swipe_right(void)
 {
   tile_t *p_main_tile;
   
+  #if 0
   /* Can we move to the left tile ? */
   if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
   {
@@ -163,6 +164,9 @@ void ui_swipe_right(void)
     /* The current tile is a main tile, nothing to do. */
     p_main_tile = g_ui.p_current_tile;
   }
+  #endif
+  
+  p_main_tile = g_ui.p_current_tile;
 
   if (p_main_tile->p_left != NULL)
   {
@@ -180,6 +184,7 @@ void ui_swipe_left(void)
 {
   tile_t *p_main_tile;
 
+  #if 0
   /* Can we move to the left tile ? */
   if (g_ui.p_current_tile->t_type == TILE_SECONDARY)
   {
@@ -193,6 +198,9 @@ void ui_swipe_left(void)
     /* The current tile is a main tile, nothing to do. */
     p_main_tile = g_ui.p_current_tile;
   }
+  #endif
+
+  p_main_tile = g_ui.p_current_tile;
 
   /* Can we move to the left tile ? */
   if (p_main_tile->p_right != NULL)
