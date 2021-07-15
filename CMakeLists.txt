@@ -32,6 +32,7 @@ idf_component_register(
   "ui/listbox.c"
   "ui/frame.c"
   "ui/slider.c"
+  "ui/switch.c"
   "font/font16.c"
 
   INCLUDE_DIRS "inc"
