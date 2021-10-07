@@ -107,10 +107,42 @@ esp_err_t twatch_pmu_audio_power(bool enable)
 
 esp_err_t twatch_pmu_screen_power(bool enable)
 {
-  if (axpxx_setPowerOutPut(AXP202_LDO2, (enable?1:0)) == AXP_PASS)
+  /* Set LDO2 to 3.3V */
+  if (axpxx_setLDO2Voltage(3300) == AXP_PASS)
     return ESP_OK;
   else
     return ESP_FAIL;
+
+  #ifdef CONFIG_TWATCH_V1
+    /* Enable LDO2 */
+    if (axpxx_setPowerOutPut(AXP202_LDO2, (enable?1:0)) == AXP_PASS)
+      return ESP_OK;
+    else
+      return ESP_FAIL;
+  #elif CONFIG_TWATCH_V2
+
+    if (enable)
+    {
+      /* Enable LDO3 */
+      if (axpxx_setPowerOutPut(AXP202_LDO3, 0) == AXP_PASS)
+        return ESP_OK;
+      else
+        return ESP_FAIL;
+
+      /* Set LDO3 voltage */
+      if (axpxx_setLDO3Voltage(3300) == AXP_PASS)
+        return ESP_OK;
+      else
+        return ESP_FAIL;
+    }
+
+    /* Enable LDO3 */
+    if (axpxx_setPowerOutPut(AXP202_LDO3, (enable?1:0)) == AXP_PASS)
+      return ESP_OK;
+    else
+      return ESP_FAIL;
+
+  #endif
 }
 
 
