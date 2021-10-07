@@ -1,0 +1,11 @@
+menu "T-Watch Lib"
+    choice TWATCH_VERSION
+        prompt "Target T-Watch version"
+        default TWATCH_V1
+        config TWATCH_V1
+            bool "T-Watch 2020 v1"
+        config TWATCH_V2
+            bool "T-Watch 2020 v2"
+    endchoice
+
+endmenu

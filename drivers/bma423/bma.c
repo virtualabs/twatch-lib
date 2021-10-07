@@ -97,6 +97,12 @@ esp_err_t bma_init(void)
   if (BMA4_OK == bma4_set_int_pin_config(&config, BMA4_INTR1_MAP, &_dev))
     return ESP_OK;
 
+  /* Write device feature config file. */
+  if (bma423_write_config_file(&_dev) != BMA4_OK)
+  {
+    ESP_LOGI(TAG, "bma423_init FAIL: cannot write config file");
+  }
+
   /* Failure. */
   return ESP_FAIL;
 }
@@ -260,7 +266,7 @@ void bma_attachInterrupt()
     rslt |= bma423_map_interrupt(BMA4_INTR1_MAP,  BMA423_STEP_CNTR_INT, BMA4_ENABLE, &_dev);
     rslt |= bma423_map_interrupt(BMA4_INTR1_MAP, BMA423_TILT_INT, BMA4_ENABLE, &_dev);
 
-    bma423_anymotion_enable_axis(BMA423_ALL_AXIS_DIS, &_dev);
+    bma423_anymotion_enable_axis(BMA423_ALL_AXIS_EN, &_dev);
 }
 
 bool bma_set_remap_axes(struct bma423_axes_remap *remap_data)
