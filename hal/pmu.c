@@ -152,6 +152,8 @@ esp_err_t twatch_pmu_screen_power(bool enable)
         ESP_LOGE("[pmu::screen]", "Cannot enable LDO3");
         return ESP_FAIL;
       }
+
+      twatch_pmu_reset_touchscreen();
     #endif
   #endif
 
@@ -305,7 +307,10 @@ void twatch_pmu_deepsleep(void)
 {
   /* Shutdown screen. */
   twatch_pmu_screen_power(false);
+  
+  #ifdef CONFIG_TWATCH_V1
   twatch_pmu_audio_power(false);
+  #endif
 
   /* Set GPIO 35 as wakeup signal. */
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_35, 0);

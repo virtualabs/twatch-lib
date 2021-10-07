@@ -230,8 +230,6 @@ esp_err_t twatch_touch_init(void)
   /* Initialize touch state. */
   touch_state = TOUCH_STATE_CLEAR;
 
-  twatch_pmu_reset_touchscreen();
-
   /* Initialize our FT6236. */
   ft6x36_init(FT6236_I2C_SLAVE_ADDR, (FT6X36_IRQ_HANDLER)_touch_irq_handler);
 
