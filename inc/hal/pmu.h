@@ -7,6 +7,9 @@
 esp_err_t twatch_pmu_init(void);
 esp_err_t twatch_pmu_power(bool enable);
 
+/* Touchscreen. */
+void twatch_pmu_reset_touchscreen(void);
+
 /* Peripheral power management functions. */
 esp_err_t twatch_pmu_audio_power(bool enable);
 esp_err_t twatch_pmu_screen_power(bool enable);

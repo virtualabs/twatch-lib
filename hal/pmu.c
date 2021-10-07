@@ -4,6 +4,7 @@
 #include "driver/rtc_io.h"
 #include "esp_sleep.h"
 #include "esp_err.h"
+#include "esp_log.h"
 #include "hal/pmu.h"
 #include "hal/screen.h" // DEBUG ONLY
 
@@ -52,7 +53,7 @@ esp_err_t twatch_pmu_init(void)
 
   /* Install our user button interrupt handler. */
   if (gpio_install_isr_service(0) != ESP_OK)
-    printf("[isr] Error while installing service\r\n");
+    printf("[pmu::isr] Error while installing service\r\n");
   gpio_isr_handler_add(GPIO_NUM_35, _axpxx_interrupt_handler, NULL);
 
   /* Initialize I2C master communication. */
@@ -108,10 +109,17 @@ esp_err_t twatch_pmu_audio_power(bool enable)
 esp_err_t twatch_pmu_screen_power(bool enable)
 {
   /* Set LDO2 to 3.3V */
-  if (axpxx_setLDO2Voltage(3300) == AXP_PASS)
-    return ESP_OK;
-  else
+  ESP_LOGI("[pmu]","Set LDO2 voltage");
+  if (axpxx_setLDO2Voltage(3300) != AXP_PASS)
+  {
     return ESP_FAIL;
+  }
+
+  /* Enable LDO2 */
+  if (axpxx_setPowerOutPut(AXP202_LDO2, (enable?1:0)) != AXP_PASS)
+  {
+    return ESP_FAIL;
+  }
 
   #ifdef CONFIG_TWATCH_V1
     /* Enable LDO2 */
@@ -119,30 +127,54 @@ esp_err_t twatch_pmu_screen_power(bool enable)
       return ESP_OK;
     else
       return ESP_FAIL;
-  #elif CONFIG_TWATCH_V2
+  #elif
+    #ifdef CONFIG_TWATCH_V2
+      if (enable)
+      {
+        /* Enable LDO3 */
+        if (axpxx_setPowerOutPut(AXP202_LDO3, 0) != AXP_PASS)
+        {
+          ESP_LOGE("[pmu::screen]", "Cannot disable LDO3");
+          return ESP_FAIL;
+        }
 
-    if (enable)
-    {
+        /* Set LDO3 voltage */
+        if (axpxx_setLDO3Voltage(3300) != AXP_PASS)
+        {
+          ESP_LOGE("[pmu::screen]", "Cannot set LDO3 voltage to 3.3V");
+          return ESP_FAIL;
+        }
+      }
+
       /* Enable LDO3 */
-      if (axpxx_setPowerOutPut(AXP202_LDO3, 0) == AXP_PASS)
-        return ESP_OK;
-      else
+      if (axpxx_setPowerOutPut(AXP202_LDO3, (enable?1:0)) != AXP_PASS)
+      {
+        ESP_LOGE("[pmu::screen]", "Cannot enable LDO3");
         return ESP_FAIL;
-
-      /* Set LDO3 voltage */
-      if (axpxx_setLDO3Voltage(3300) == AXP_PASS)
-        return ESP_OK;
-      else
-        return ESP_FAIL;
-    }
-
-    /* Enable LDO3 */
-    if (axpxx_setPowerOutPut(AXP202_LDO3, (enable?1:0)) == AXP_PASS)
-      return ESP_OK;
-    else
-      return ESP_FAIL;
-
+      }
+    #endif
   #endif
+
+  return ESP_OK;
+}
+
+
+/**
+ * twatch_pmu_reset()
+ * 
+ * @brief Perform an hardware reset on the capacitive touch controller
+ **/
+
+void twatch_pmu_reset_touchscreen(void)
+{
+#ifdef CONFIG_TWATCH_V2
+  /* Hardware reset on FT6236. */
+  axpxx_setPowerOutPut(AXP202_EXTEN, true);
+  vTaskDelay(10 / portTICK_PERIOD_MS);
+  axpxx_setPowerOutPut(AXP202_EXTEN, false);
+  vTaskDelay(8 / portTICK_PERIOD_MS);
+  axpxx_setPowerOutPut(AXP202_EXTEN, true);
+#endif
 }
 
 
