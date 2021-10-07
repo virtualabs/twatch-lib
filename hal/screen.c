@@ -12,6 +12,9 @@ esp_err_t twatch_screen_init(void)
 {
   esp_err_t result;
 
+  /* Init backlight. */
+  st7789_init_backlight();
+
   /* Disable backlight during screen bootup. */
   st7789_backlight_set(0);
 
@@ -30,6 +33,8 @@ esp_err_t twatch_screen_init(void)
     /* Power on backlight with default setting. */
     st7789_backlight_set(SCREEN_DEFAULT_BACKLIGHT);
   }
+  else
+    ESP_LOGE("[screen]", "Cannot initialize screen");
 
   /* Return result. */
   return result;
