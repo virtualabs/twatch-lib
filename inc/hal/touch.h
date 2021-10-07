@@ -21,6 +21,7 @@
 #define TOUCH_MAX_Y 240
 
 #include "drivers/ft6236.h"
+#include "hal/pmu.h"
 #include "freertos/queue.h"
 
 typedef enum {
