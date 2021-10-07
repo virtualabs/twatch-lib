@@ -12,6 +12,8 @@ idf_component_register(
   "drivers/pcf8563.c"
   "drivers/ir/esp32_rmt_common.c"
   "drivers/ir/rmtlib_raw.c"
+  
+  "hal/hal.c"
   "hal/audio.c"
   "hal/pmu.c"
   "hal/touch.c"

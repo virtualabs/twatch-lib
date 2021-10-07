@@ -127,7 +127,7 @@ esp_err_t twatch_pmu_screen_power(bool enable)
       return ESP_OK;
     else
       return ESP_FAIL;
-  #elif
+  #else
     #ifdef CONFIG_TWATCH_V2
       if (enable)
       {
