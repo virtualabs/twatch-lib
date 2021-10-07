@@ -18,11 +18,11 @@
 #define ST7789_SPI_CS_IO      GPIO_NUM_5
 #define ST7789_SPI_DC_IO      GPIO_NUM_27
 
-#ifdef CONFIG_TWATCH_V1
-  #define ST7789_BL_IO          GPIO_NUM_12
-#elif CONFIG_TWATCH_V2
+//#ifdef CONFIG_TWATCH_V1
+//  #define ST7789_BL_IO          GPIO_NUM_12
+//#elif CONFIG_TWATCH_V2
   #define ST7789_BL_IO          GPIO_NUM_25
-#endif
+//#endif
 
 #define ST7789_SPI_SPEED      /*80000000L*/SPI_MASTER_FREQ_80M
 #define ST779_PARALLEL_LINES  80
@@ -76,6 +76,7 @@
 #define RGB(r,g,b) ((g&0xf) | ((r&0xf)<<4) | ((b&0x0f)<<8))
 #define RGBA(r,g,b,a) ((g&0xf) | ((r&0xf)<<4) | ((b&0x0f)<<8) | ((a<16)?(15-a)<<12:0))
 
+esp_err_t st7789_init_backlight(void);
 esp_err_t st7789_init(void);
 void st7789_backlight_on(void);
 void st7789_backlight_set(int backlight_level);
