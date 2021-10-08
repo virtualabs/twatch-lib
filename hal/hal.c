@@ -37,7 +37,7 @@ bool twatch_hal_init(void)
     }
 
     /* Initialize audio. */
-    if (twatch_audio_init() != ESP_OK)
+    if (twatch_audio_init(SOUND_DEFAULT_SAMPLE_RATE) != ESP_OK)
     {
       return false;
     }
