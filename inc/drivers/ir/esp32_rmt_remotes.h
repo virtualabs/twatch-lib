@@ -6,6 +6,12 @@
 #ifndef ESP32_RMT_REMOTES_H
 #define ESP32_RMT_REMOTES_H
 
+#ifdef CONFIG_TWATCH_V1
+  #define TX_PIN_SSSS GPIO_NUM_13
+#elif CONFIG_TWATCH_V2
+  #define TX_PIN_SSSS GPIO_NUM_2
+#endif
+
 /* Available remote protocols */
 #define SEND_NEC			1
 #define RECEIVE_NEC			0

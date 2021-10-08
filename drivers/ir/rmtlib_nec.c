@@ -31,7 +31,6 @@ The recommended carrier duty-cycle is 1/4 or 1/3.
 #include "freertos/ringbuf.h"
 
 const char* NEC_TAG = "NEC";
-#define TX_PIN_SSSS 13
 /* NEC Protocol */
 #define NEC_BITS              	32
 #define NEC_HEADER_HIGH_US    	9000		/*!< header: positive 9ms */

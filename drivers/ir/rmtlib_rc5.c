@@ -32,7 +32,6 @@ const char* RC5_TAG = "RC5";
 
 #define RC5_BIT_US    			1778
 #define RC5_BIT_HALF_US    		889
-#define TX_PIN_SSSS 13
 #define RC5_BIT_ONE_HIGH_US    	889
 #define RC5_BIT_ONE_LOW_US    	889
 #define RC5_BIT_ZERO_HIGH_US   	889 

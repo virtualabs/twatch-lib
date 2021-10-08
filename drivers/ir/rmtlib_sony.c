@@ -17,7 +17,6 @@
 
 #include "freertos/ringbuf.h"
 
-#define TX_PIN_SSSS 13
 #define SONY_BITS              	12
 #define SONY_HEADER_HIGH_US    	2400
 #define SONY_HEADER_LOW_US     	600

@@ -20,7 +20,6 @@ Like NEC but a wee bit different header timings (5000 + 5000)
 
 #include "freertos/ringbuf.h"
 
-#define TX_PIN_SSSS 13
 #define SAMSUNG_BITS              	32
 #define SAMSUNG_HEADER_HIGH_US    	4500
 #define SAMSUNG_HEADER_LOW_US     	4500
