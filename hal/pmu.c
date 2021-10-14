@@ -352,3 +352,23 @@ int twatch_pmu_get_battery_level(void)
   
   return level;
 }
+
+
+/**
+ * twatch_pmu_vibration()
+ * 
+ * @brief Set DRV2605L EN pin to high (enabled) or low (disabled)
+ * @param enable: enable DRV2605L
+ * @return: ESP_OK on success, ESP_FAIL otherwise
+ **/
+
+esp_err_t twatch_pmu_vibration(bool enable)
+{
+  /* Only for T-Watch 2020 v2. */
+  #ifdef CONFIG_TWATCH_V2
+    return (axpxx_setGPIOMode(
+      AXP_GPIO_0,
+      enable ? AXP_IO_OUTPUT_HIGH_MODE : AXP_IO_OUTPUT_LOW_MODE
+    ) == AXP_PASS);
+  #endif
+}
