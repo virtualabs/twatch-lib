@@ -17,7 +17,6 @@
 
 #include "freertos/ringbuf.h"
 
-#define TX_PIN_SSSS 13
 const char* RAW_TAG = "RAW";
 
 /*
