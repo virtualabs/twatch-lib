@@ -1472,7 +1472,7 @@ int axpxx__axp192_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
   uint8_t val;
   switch (gpio) {
     case AXP_GPIO_0: {
-      rslt = _axp192_gpio_0_select(mode);
+      rslt = axpxx__axp192_gpio_0_select(mode);
       if (rslt < 0)return rslt;
       axpxx_readByte(AXP192_GPIO0_CTL, 1, &val);
       val &= 0xF8;
@@ -1481,7 +1481,7 @@ int axpxx__axp192_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
       return AXP_PASS;
     }
     case AXP_GPIO_1: {
-      rslt = _axp192_gpio_1_select(mode);
+      rslt = axpxx__axp192_gpio_1_select(mode);
       if (rslt < 0)return rslt;
       axpxx_readByte(AXP192_GPIO1_CTL, 1, &val);
       val &= 0xF8;
@@ -1490,7 +1490,7 @@ int axpxx__axp192_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
       return AXP_PASS;
     }
     case AXP_GPIO_2: {
-      rslt = _axp192_gpio_1_select(mode);
+      rslt = axpxx__axp192_gpio_1_select(mode);
       if (rslt < 0)return rslt;
       axpxx_readByte(AXP192_GPIO2_CTL, 1, &val);
       val &= 0xF8;
@@ -1499,7 +1499,7 @@ int axpxx__axp192_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
       return AXP_PASS;
     }
     case AXP_GPIO_3: {
-      rslt = _axp192_gpio_3_select(mode);
+      rslt = axpxx__axp192_gpio_3_select(mode);
       if (rslt < 0)return rslt;
       axpxx_readByte(AXP192_GPIO34_CTL, 1, &val);
       val &= 0xFC;
@@ -1508,7 +1508,7 @@ int axpxx__axp192_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
       return AXP_PASS;
     }
     case AXP_GPIO_4: {
-      rslt = _axp192_gpio_4_select(mode);
+      rslt = axpxx__axp192_gpio_4_select(mode);
       if (rslt < 0)return rslt;
       axpxx_readByte(AXP192_GPIO34_CTL, 1, &val);
       val &= 0xF3;
@@ -1593,7 +1593,7 @@ int axpxx__axp202_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
   int rslt;
   switch (gpio) {
     case AXP_GPIO_0: {
-      rslt = _axp202_gpio_0_select(mode);
+      rslt = axpxx__axp202_gpio_0_select(mode);
       if (rslt < 0)return rslt;
       axpxx_readByte(AXP202_GPIO0_CTL, 1, &val);
       val &= 0b11111000;
@@ -1602,7 +1602,7 @@ int axpxx__axp202_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
       return AXP_PASS;
     }
     case AXP_GPIO_1: {
-      rslt = _axp202_gpio_1_select(mode);
+      rslt = axpxx__axp202_gpio_1_select(mode);
       if (rslt < 0)return rslt;
       axpxx_readByte(AXP202_GPIO1_CTL, 1, &val);
       val &= 0b11111000;
@@ -1611,7 +1611,7 @@ int axpxx__axp202_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
       return AXP_PASS;
     }
     case AXP_GPIO_2: {
-      rslt = _axp202_gpio_2_select(mode);
+      rslt = axpxx__axp202_gpio_2_select(mode);
       if (rslt < 0)return rslt;
       axpxx_readByte(AXP202_GPIO2_CTL, 1, &val);
       val &= 0b11111000;
@@ -1620,7 +1620,7 @@ int axpxx__axp202_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
       return AXP_PASS;
     }
     case AXP_GPIO_3: {
-      rslt = _axp202_gpio_3_select(mode);
+      rslt = axpxx__axp202_gpio_3_select(mode);
       if (rslt < 0)return rslt;
       axpxx_readByte(AXP202_GPIO3_CTL, 1, &val);
       val = rslt ? (val | BIT_MASK(2)) : (val & (~BIT_MASK(2)));
@@ -1640,10 +1640,10 @@ int axpxx_setGPIOMode(axp_gpio_t gpio, axp_gpio_mode_t mode)
   return AXP_NOT_INIT;
   switch (axpxx_chip_id) {
     case AXP202_CHIP_ID:
-    return _axp202_gpio_set(gpio, mode);
+    return axpxx__axp202_gpio_set(gpio, mode);
     break;
     case AXP192_CHIP_ID:
-    return _axp192_gpio_set(gpio, mode);
+    return axpxx__axp192_gpio_set(gpio, mode);
     break;
     default:
     break;
