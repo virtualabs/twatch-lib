@@ -11,6 +11,8 @@
 #include "esp_log.h"
 #include <inttypes.h>
 #include <stdbool.h>
+#include "drivers/drv2605.h"
+#include "hal/pmu.h"
 
 #define VIBRATE_ON  1
 #define VIBRATE_OFF 0

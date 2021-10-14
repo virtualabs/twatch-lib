@@ -29,13 +29,13 @@ bool twatch_hal_init(void)
     return false;
   }
 
+  /* Initialize vibrate */
+  if (twatch_vibrate_init() != ESP_OK)
+  {
+    return false;
+  }
+    
   #ifdef CONFIG_TWATCH_V1
-    /* Initialize vibrate */
-    if (twatch_vibrate_init() != ESP_OK)
-    {
-      return false;
-    }
-
     /* Initialize audio. */
     if (twatch_audio_init(SOUND_DEFAULT_SAMPLE_RATE) != ESP_OK)
     {

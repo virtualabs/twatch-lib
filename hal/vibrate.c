@@ -68,15 +68,35 @@ void _twatch_vibration_task(void *parameter)
 
 esp_err_t twatch_vibrate_init(void)
 {
-  gpio_config_t motor;
+  #ifdef CONFIG_TWATCH_V1
+    gpio_config_t motor;
 
-  /* Configure GPIO. */
-  motor.mode = GPIO_MODE_OUTPUT;
-  motor.pin_bit_mask = (1ULL << GPIO_NUM_4);
-  gpio_config(&motor);
+    /* Configure GPIO. */
+    motor.mode = GPIO_MODE_OUTPUT;
+    motor.pin_bit_mask = (1ULL << GPIO_NUM_4);
+    gpio_config(&motor);
 
-  /* Initialized. */
-  return ESP_OK;
+    /* Initialized. */
+    return ESP_OK;
+  #endif
+
+  #ifdef CONFIG_TWATCH_V2
+    /* Make sure to enable DRV2605L. */
+    twatch_pmu_vibration(true);
+
+    /* Initialize our DRV2605L peripheral. */
+    if (drv2605_init() == ESP_FAIL)
+      return ESP_FAIL;
+    
+    /* Set our vibration pattern. */
+    drv2605_select_library(1);
+    drv2605_set_mode(DRV2605_MODE_INTTRIG);
+    drv2605_set_waveform(0, 1);
+    drv2605_set_waveform(1, 0);
+
+    /* Success. */
+    return ESP_OK;
+  #endif
 }
 
 
@@ -88,21 +108,28 @@ esp_err_t twatch_vibrate_init(void)
 
 esp_err_t twatch_vibrate_vibrate(int duration)
 {
-  vibrate_parameter_t *parameter = (vibrate_parameter_t *)malloc(sizeof(vibrate_parameter_t));
-  if (parameter != NULL)
-  {
-    parameter->mode = VIBRATE_DURATION;
-    parameter->duration = duration;
+  #ifdef CONFIG_TWATCH_V1
+    vibrate_parameter_t *parameter = (vibrate_parameter_t *)malloc(sizeof(vibrate_parameter_t));
+    if (parameter != NULL)
+    {
+      parameter->mode = VIBRATE_DURATION;
+      parameter->duration = duration;
 
-    /* Start a vibration task. */
-    xTaskCreate(_twatch_vibration_task, "_vib_task", 10000, parameter, 1, NULL);
+      /* Start a vibration task. */
+      xTaskCreate(_twatch_vibration_task, "_vib_task", 10000, parameter, 1, NULL);
 
-    /* Success. */
+      /* Success. */
+      return ESP_OK;
+    }
+    else
+      /* Cannot allocate memory. */
+      return ESP_FAIL;
+  #endif
+
+  #ifdef CONFIG_TWATCH_V2
+    drv2605_go();
     return ESP_OK;
-  }
-  else
-    /* Cannot allocate memory. */
-    return ESP_FAIL;
+  #endif
 }
 
 
@@ -115,20 +142,26 @@ esp_err_t twatch_vibrate_vibrate(int duration)
 
 esp_err_t twatch_vibrate_pattern(vibrate_pattern_t *pattern, int length)
 {
-  vibrate_parameter_t *parameter = (vibrate_parameter_t *)malloc(sizeof(vibrate_parameter_t));
-  if (parameter != NULL)
-  {
-    parameter->mode = VIBRATE_PATTERN;
-    parameter->pattern = pattern;
-    parameter->pattern_length = length;
+  #ifdef CONFIG_TWATCH_V1
+    vibrate_parameter_t *parameter = (vibrate_parameter_t *)malloc(sizeof(vibrate_parameter_t));
+    if (parameter != NULL)
+    {
+      parameter->mode = VIBRATE_PATTERN;
+      parameter->pattern = pattern;
+      parameter->pattern_length = length;
 
-    /* Start a vibration task. */
-    xTaskCreate(_twatch_vibration_task, "_vib_task", 10000, parameter, 1, NULL);
+      /* Start a vibration task. */
+      xTaskCreate(_twatch_vibration_task, "_vib_task", 10000, parameter, 1, NULL);
 
-    /* Success. */
+      /* Success. */
+      return ESP_OK;
+    }
+    else
+      /* Cannot allocate memory. */
+      return ESP_FAIL;
+  #endif
+
+  #ifdef CONFIG_TWATCH_V2
     return ESP_OK;
-  }
-  else
-    /* Cannot allocate memory. */
-    return ESP_FAIL;
+  #endif
 }
