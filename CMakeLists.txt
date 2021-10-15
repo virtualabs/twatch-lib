@@ -2,9 +2,10 @@ cmake_minimum_required(VERSION 3.13)
 
 idf_component_register(
   SRCS
+  "drivers/i2c.c"
+  "drivers/uart.c"
   "drivers/axp20x.c"
   "drivers/ft6236.c"
-  "drivers/i2c.c"
   "drivers/bma423/bma.c"
   "drivers/bma423/bma4.c"
   "drivers/bma423/bma423.c"
@@ -21,6 +22,7 @@ idf_component_register(
   "hal/vibrate.c"
   "hal/screen.c"
   "hal/rtc.c"
+  "hal/gps.c"
 
   "img/img.c"
   "ui/ui.c"
