@@ -372,3 +372,21 @@ esp_err_t twatch_pmu_vibration(bool enable)
     ) == AXP_PASS);
   #endif
 }
+
+
+esp_err_t twatch_pmu_gps_power(bool enable)
+{
+  #ifdef CONFIG_TWATCH_V2
+    /* Configure LOD4 for GPS power supply (3.3V). */
+    AXP_CHECK(axpxx_setPowerOutPut(AXP202_LDO4, AXP202_OFF));
+    axpxx_setLDO4Voltage(AXP202_LDO4_3300MV);
+    
+    if (enable)
+    {
+      AXP_CHECK(axpxx_setPowerOutPut(AXP202_LDO4, AXP202_ON));
+    }
+  #endif
+
+  /* Success. */
+  return ESP_OK;
+}

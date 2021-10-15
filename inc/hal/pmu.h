@@ -17,6 +17,9 @@ esp_err_t twatch_pmu_screen_power(bool enable);
 /* DRV2605 management. */
 esp_err_t twatch_pmu_vibration(bool enable);
 
+/* GPS */
+esp_err_t twatch_pmu_gps_power(bool enable);
+
 /* User button. */
 void twatch_pmu_read_irq(void);
 bool twatch_pmu_is_userbtn_pressed(void);
