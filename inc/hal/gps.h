@@ -12,6 +12,10 @@
 
 #define TWATCH_GPS_WAKEUP GPIO_NUM_33
 
+#define TWATCH_GPS_ERROR      -1
+#define TWATCH_GPS_RX_FULL    -2
+
+
 esp_err_t twatch_gps_init(void);
 esp_err_t twatch_gps_on(void);
 esp_err_t twatch_gps_off(void);
