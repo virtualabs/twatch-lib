@@ -878,12 +878,12 @@ int gps_get_hours(void)
  * gps_get_speed()
  * 
  * @brief Get the speed from the last retrieved value
- * @return speed in knots
+ * @return speed in km/h
  **/
 
 float gps_get_speed(void)
 {
-  return g_speed/100.0;
+  return (g_speed/100.0)*1.852;
 }
 
 
