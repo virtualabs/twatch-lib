@@ -370,6 +370,8 @@ esp_err_t twatch_pmu_vibration(bool enable)
       AXP_GPIO_0,
       enable ? AXP_IO_OUTPUT_HIGH_MODE : AXP_IO_OUTPUT_LOW_MODE
     ) == AXP_PASS);
+  #else
+    return ESP_OK;
   #endif
 }
 
