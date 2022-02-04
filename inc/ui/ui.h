@@ -135,6 +135,9 @@ typedef struct {
   bool b_inactivity_detected;
   bool b_usb_plugged;
 
+  /* Mutex */
+  SemaphoreHandle_t mutex;
+
 } ui_t;
 
 
@@ -199,5 +202,7 @@ void tile_link_bottom(tile_t *p_tile, tile_t *p_bottom_tile);
 FTileEventHandler tile_set_event_handler(tile_t *p_tile, FTileEventHandler pfn_event_handler);
 int tile_send_event(tile_t *p_tile, tile_event_t tile_event, int x, int y, int velocity);
 
+void ui_enter_critical_section(void);
+void ui_leave_critical_section(void);
 
 #endif /* __INC_TWATCH_UI_H */

@@ -46,6 +46,9 @@ void ui_init(void)
   /* Initialize the touch screen. */
   twatch_touch_init();
 
+  /* Create our mutex. */
+  g_ui.mutex = xSemaphoreCreateMutex();
+
   /* Set current and default tiles as none. */
   g_ui.p_current_tile = NULL;
   g_ui.p_default_tile = NULL;
@@ -289,6 +292,8 @@ void reset_inactivity_timer(void)
 void IRAM_ATTR ui_process_events(void)
 {
   touch_event_t touch;
+
+  ui_enter_critical_section();
 
   /* Process touch events if we are not in an animation. */
   if (g_ui.state == UI_STATE_IDLE)
@@ -640,6 +645,8 @@ void IRAM_ATTR ui_process_events(void)
       break;
   }
   st7789_commit_fb();
+
+  ui_leave_critical_section();
 }
 
 /**
@@ -1297,4 +1304,14 @@ void IRAM_ATTR tile_draw_widgets(tile_t *p_tile)
     /* Go to next widget. */
     p_widget = widget_enum_next(p_widget);
   }
+}
+
+void ui_enter_critical_section(void)
+{
+  xSemaphoreTake(g_ui.mutex, portMAX_DELAY);
+}
+
+void ui_leave_critical_section(void)
+{
+  xSemaphoreGive(g_ui.mutex);
 }
