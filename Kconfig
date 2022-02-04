@@ -7,5 +7,4 @@ menu "T-Watch Lib"
         config TWATCH_V2
             bool "T-Watch 2020 v2"
     endchoice
-
 endmenu
