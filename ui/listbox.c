@@ -174,10 +174,10 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
               {
                 /* Check if tap happened in this widget. */
                 if (
-                  (p_item->p_widget->box.x <= x) &&
-                  ((p_item->p_widget->box.x + p_item->p_widget->box.width) > x) &&
-                  (p_item->p_widget->box.y <= y) &&
-                  ((p_item->p_widget->box.y + p_item->p_widget->box.height) > y)
+                  (p_item->p_widget->box.x <= (x + p_widget->box.x)) &&
+                  ((p_item->p_widget->box.x + p_item->p_widget->box.width) > (x + p_widget->box.x)) &&
+                  (p_item->p_widget->box.y <= (y+p_widget->box.y)) &&
+                  ((p_item->p_widget->box.y + p_item->p_widget->box.height) > (y+p_widget->box.y))
                 )
                 {
                   /* Deselect previous item if any. */
