@@ -185,8 +185,8 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
                     widget_send_event(p_listbox->p_selected_item, LB_ITEM_DESELECTED, 0, 0, 0);
 
                   /* Select this item. */
-                  widget_send_event(p_item->p_widget, LB_ITEM_SELECTED, 0, 0, 0);
                   p_listbox->p_selected_item = p_item->p_widget;
+                  widget_send_event(p_item->p_widget, LB_ITEM_SELECTED, 0, 0, 0);
 
                   /* Notify hooks with specific event. */
                   widget_send_event(p_widget, LB_ITEM_SELECTED, 0, 0, 0);
