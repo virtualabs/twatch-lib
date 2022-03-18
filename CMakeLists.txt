@@ -38,6 +38,7 @@ idf_component_register(
   "ui/frame.c"
   "ui/slider.c"
   "ui/switch.c"
+  "ui/spinner.c"
   "font/font16.c"
 
   INCLUDE_DIRS "inc"
