@@ -86,6 +86,7 @@ void widget_init(widget_t *p_widget, tile_t *p_tile, int x, int y, int width, in
   p_widget->style.background = STYLE_BG_DEFAULT;
   p_widget->style.border = STYLE_BORDER_DEFAULT;
   p_widget->style.front = STYLE_FRONT_DEFAULT;
+  p_widget->style.visible = WIDGET_SHOW;
 
   p_widget->p_next = NULL;
 
@@ -255,6 +256,32 @@ void widget_set_border_color(widget_t *p_widget, uint16_t color)
 void widget_set_front_color(widget_t *p_widget, uint16_t color)
 {
   p_widget->style.front = color;
+}
+
+
+/**
+ * widget_set_visible()
+ * 
+ * @brief: Set widget visibility
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @param visible: WIDGET_HIDDEN to hide a widget, WIDGET_SHOW to show.
+ **/
+void widget_set_visible(widget_t *p_widget, widget_visibility_t visible)
+{
+  p_widget->style.visible = visible;
+}
+
+/**
+ * wiget_is_visible()
+ * 
+ * @brief: Determine if a widget is visible
+ * @param p_widget: pointer to a `widget_t` structure (target widget)
+ * @return true if visible, false otherwise.
+ **/
+
+bool widget_is_visible(widget_t *p_widget)
+{
+  return (p_widget->style.visible == WIDGET_SHOW);
 }
 
 

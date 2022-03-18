@@ -81,7 +81,8 @@ void widget_set_style(widget_t *p_widget, widget_style_t *p_style);
 void widget_set_bg_color(widget_t *p_widget, uint16_t color);
 void widget_set_border_color(widget_t *p_widget, uint16_t color);
 void widget_set_front_color(widget_t *p_widget, uint16_t color);
-
+void widget_set_visible(widget_t *p_widget, widget_visibility_t visible);
+bool widget_is_visible(widget_t *p_widget);
 
 /* Widget position. */
 void widget_get_abs_box(widget_t *p_widget, widget_box_t *p_box);

@@ -1298,7 +1298,7 @@ void IRAM_ATTR tile_draw_widgets(tile_t *p_tile)
   p_widget = widget_enum_first();
   while (p_widget != NULL)
   {
-    if (widget_get_tile(p_widget) == p_tile)
+    if ((widget_get_tile(p_widget) == p_tile) && (widget_is_visible(p_widget)))
       widget_draw(p_widget);
 
     /* Go to next widget. */
