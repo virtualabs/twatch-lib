@@ -782,6 +782,9 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
   int n=0;
   int s = 0;
 
+  /* Sanity checks. */
+  if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
+    return;
 
   /* If X coordinate < 0, apply an offset to the line. */
   if (x<0)
