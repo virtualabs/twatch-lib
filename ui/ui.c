@@ -28,19 +28,11 @@ static bool IRAM_ATTR ui_inactivity_timer_cb(gptimer_handle_t timer, const gptim
 {
     BaseType_t high_task_awoken = pdFALSE;
  
-    ESP_LOGI("[ui]","inactivity timer callback reached");
-    //uint64_t timer_counter_value = timer_group_get_counter_value_in_isr(TIMER_GROUP_1, TIMER_1);
-
     /* Inactivity detected. */
     g_ui.b_inactivity_detected = true;
 
     /* Stop timer. */
     gptimer_stop(g_ui.eco_timer_handle);
-
-    /*
-    timer_counter_value += 5 * TIMER_SCALE;
-    timer_group_set_alarm_value_in_isr(TIMER_GROUP_1, TIMER_1, timer_counter_value);
-    */
 
     return high_task_awoken == pdTRUE; // return whether we need to yield at the end of ISR
 }
@@ -426,19 +418,11 @@ void IRAM_ATTR ui_process_events(void)
             /* Activate second alarm for switch in deepsleep mode if necessary */
             if (g_ui.eco_max_inactivity_to_deepsleep != 0)
             {
-              //gptimer_disable(g_ui.eco_timer_handle);
               gptimer_alarm_config_t alarm_config2 = {
                 .alarm_count = 1000000 * g_ui.eco_max_inactivity_to_deepsleep,
               };
               ESP_ERROR_CHECK(gptimer_set_alarm_action(g_ui.eco_timer_handle, &alarm_config2));
               ESP_ERROR_CHECK(gptimer_start(g_ui.eco_timer_handle));
-
-
-              /*
-              timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
-              timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity_to_deepsleep * TIMER_SCALE);
-              timer_start(TIMER_GROUP_1, TIMER_1);
-              */
             }
             else
             {
@@ -849,15 +833,6 @@ void enable_ecomode(void)
   g_ui.b_eco_mode_enabled = true;
 
   /* Reset counter value and alarm value. */
-  /*
-  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
-  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
-  timer_start(TIMER_GROUP_1, TIMER_1);
-  */
-
-  /* Timer's counter will initially start from value below.
-      Also, if auto_reload is set, this value will be automatically reload on alarm */
-  //timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
   gptimer_set_raw_count(g_ui.eco_timer_handle, 0);
   
   ESP_LOGI(TAG, "Start timer, stop it at alarm event");
@@ -879,7 +854,6 @@ void disable_ecomode(void)
 {
   /* Stop our timer. */
   g_ui.b_eco_mode_enabled = false;
-  //timer_pause(TIMER_GROUP_1, TIMER_1);
   gptimer_stop(g_ui.eco_timer_handle);
   gptimer_set_raw_count(g_ui.eco_timer_handle, 0);
 }
@@ -897,12 +871,6 @@ void ui_wakeup(void)
   twatch_screen_set_backlight(twatch_screen_get_default_backlight());
 
   /* Reset counter value and alarm value. */
-  /*
-  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
-  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
-  timer_start(TIMER_GROUP_1, TIMER_1);
-  */
-
   gptimer_set_raw_count(g_ui.eco_timer_handle, 0);
   gptimer_alarm_config_t alarm_config1 = {
       .alarm_count = 1000000 * g_ui.eco_max_inactivity,
