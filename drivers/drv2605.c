@@ -51,7 +51,7 @@ esp_err_t read_register8(uint8_t reg, uint8_t *p_value)
     reg,
     p_value,
     1,
-    1000/portTICK_RATE_MS
+    1000/portTICK_PERIOD_MS
   );
 }
 
@@ -73,7 +73,7 @@ esp_err_t write_register8(uint8_t reg, uint8_t value)
     reg,
     &value,
     1,
-    1000/portTICK_RATE_MS
+    1000/portTICK_PERIOD_MS
   );
 }
 

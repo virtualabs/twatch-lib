@@ -26,7 +26,7 @@ uint16_t _bma_write(uint8_t addr, uint8_t reg, uint8_t *data, uint16_t len);
 
 uint16_t _bma_read(uint8_t addr, uint8_t reg, uint8_t *data, uint16_t len)
 {
-  if (twatch_i2c_readBytes(I2C_PRI, addr, reg, data, len, 1000/portTICK_RATE_MS) == ESP_OK)
+  if (twatch_i2c_readBytes(I2C_PRI, addr, reg, data, len, 1000/portTICK_PERIOD_MS) == ESP_OK)
     return 0;
   else
     return (1<<13);
@@ -44,7 +44,7 @@ uint16_t _bma_read(uint8_t addr, uint8_t reg, uint8_t *data, uint16_t len)
 
 uint16_t _bma_write(uint8_t addr, uint8_t reg, uint8_t *data, uint16_t len)
 {
-  if (twatch_i2c_writeBytes(I2C_PRI, addr, reg, data, len, 1000/portTICK_RATE_MS) == ESP_OK)
+  if (twatch_i2c_writeBytes(I2C_PRI, addr, reg, data, len, 1000/portTICK_PERIOD_MS) == ESP_OK)
     return 0;
   else
     return (1<<13);
@@ -58,7 +58,7 @@ uint16_t _bma_write(uint8_t addr, uint8_t reg, uint8_t *data, uint16_t len)
 
 void _bma_delay(uint32_t ms)
 {
-  vTaskDelay(ms/portTICK_RATE_MS);
+  vTaskDelay(ms/portTICK_PERIOD_MS);
 }
 
 

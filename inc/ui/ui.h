@@ -2,7 +2,8 @@
 #define __INC_TWATCH_UI_H
 
 #include <stdint.h>
-#include "driver/timer.h"
+//#include "driver/timer.h"
+#include "driver/gptimer.h"
 #include "drivers/st7789.h"
 
 #include "hal/touch.h"
@@ -129,7 +130,11 @@ typedef struct {
   /* Eco mode timer. */
   bool b_eco_mode_enabled;
   screen_mode_t screen_mode;
-  timer_config_t eco_timer;
+  
+  //timer_config_t eco_timer;
+  gptimer_handle_t eco_timer_handle;
+  gptimer_config_t eco_timer_config;
+
   int eco_max_inactivity;
   int eco_max_inactivity_to_deepsleep;
   bool b_inactivity_detected;

@@ -18,18 +18,22 @@ bool twatch_hal_init(void)
   }
 
   /* Initialize screen. */
+  ESP_LOGI("[hal]","init screen");
   if (twatch_screen_init() != ESP_OK)
   {
+    ESP_LOGE("[hal]","falied init screen");
     return false;
   }
 
   /* Initialize touch screen. */
+  ESP_LOGI("[hal]","init touch screen");
   if (twatch_touch_init() != ESP_OK)
   {
     return false;
   }
 
   /* Initialize vibrate */
+  ESP_LOGI("[hal]","init vibrator");
   if (twatch_vibrate_init() != ESP_OK)
   {
     return false;

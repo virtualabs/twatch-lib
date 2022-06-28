@@ -49,7 +49,7 @@ esp_err_t ft6x06_i2c_read8(uint8_t slave_addr, uint8_t register_addr, uint8_t *d
 
     i2c_master_read_byte(i2c_cmd, data_buf, I2C_MASTER_NACK);
     i2c_master_stop(i2c_cmd);
-    esp_err_t ret = twatch_i2c_master_cmd_begin(I2C_SEC, i2c_cmd, 1000 / portTICK_RATE_MS);
+    esp_err_t ret = twatch_i2c_master_cmd_begin(I2C_SEC, i2c_cmd, 1000 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(i2c_cmd);
     return ret;
 }
@@ -70,7 +70,7 @@ esp_err_t ft6x06_i2c_read(uint8_t slave_addr, uint8_t register_addr, uint8_t *da
     }
     i2c_master_read_byte(i2c_cmd, data_buf+length-1, I2C_MASTER_NACK);
     i2c_master_stop(i2c_cmd);
-    esp_err_t ret = twatch_i2c_master_cmd_begin(I2C_SEC, i2c_cmd, 1000 / portTICK_RATE_MS);
+    esp_err_t ret = twatch_i2c_master_cmd_begin(I2C_SEC, i2c_cmd, 1000 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(i2c_cmd);
     return ret;
 }
@@ -84,7 +84,7 @@ esp_err_t ft6x06_i2c_write8(uint8_t slave_addr, uint8_t register_addr, uint8_t d
     i2c_master_write_byte(i2c_cmd, register_addr, I2C_MASTER_ACK);
     i2c_master_write_byte(i2c_cmd, data_buf, I2C_MASTER_ACK);
     i2c_master_stop(i2c_cmd);
-    esp_err_t ret = twatch_i2c_master_cmd_begin(I2C_SEC, i2c_cmd, 1000 / portTICK_RATE_MS);
+    esp_err_t ret = twatch_i2c_master_cmd_begin(I2C_SEC, i2c_cmd, 1000 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(i2c_cmd);
     return ret;
 }

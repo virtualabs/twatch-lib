@@ -41,5 +41,5 @@ esp_err_t twatch_uart_receive(uint8_t *p_buffer, int len)
 
 bool twatch_uart_wait_event(uart_event_t *p_uart_event)
 {
-  return xQueueReceive(g_uart_queue, (void * )p_uart_event, (portTickType)portMAX_DELAY);
+  return xQueueReceive(g_uart_queue, (void * )p_uart_event, (TickType_t)portMAX_DELAY);
 }
