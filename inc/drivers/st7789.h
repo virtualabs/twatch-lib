@@ -87,13 +87,13 @@ void st7789_set_inverted(bool inverted);
 bool st7789_is_inverted(void);
 void st7789_blank(void);
 void st7789_commit_fb(void);
-void st7789_set_pixel(int x, int y, uint16_t pixel);
-uint16_t st7789_get_pixel(int x, int y);
-void st7789_fill_region(int x, int y, int width, int height, uint16_t color);
-void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color);
-void st7789_draw_fastline(int x0, int y, int x1, uint16_t color);
-void st7789_draw_circle(int xc, int yc, int r, uint16_t color);
-void st7789_draw_disc(int xc, int yc, int r, uint16_t color);
-void st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels);
+void st7789_set_pixel(int x, int y, uint8_t pixel);
+uint8_t st7789_get_pixel(int x, int y);
+void st7789_fill_region(int x, int y, int width, int height, uint8_t color);
+void st7789_draw_line(int x0, int y0, int x1, int y1, uint8_t color);
+void st7789_draw_fastline(int x0, int y, int x1, uint8_t color);
+void st7789_draw_circle(int xc, int yc, int r, uint8_t color);
+void st7789_draw_disc(int xc, int yc, int r, uint8_t color);
+void st7789_copy_line(int x, int y, uint8_t *p_line, int nb_pixels);
 
 #endif /* __INC_DRIVER_ST7789_H */

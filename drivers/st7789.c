@@ -8,7 +8,7 @@
 
 #define WIDTH     240
 #define HEIGHT    240
-#define BPP       12
+#define BPP       8
 #define FB_SIZE   ((BPP*WIDTH*HEIGHT)/8)
 #define FB_CHUNK_SIZE (ST779_PARALLEL_LINES * (BPP*WIDTH)/8)
 
@@ -64,6 +64,21 @@ DRAM_ATTR static uint8_t databuf[16];
 __attribute__ ((aligned(4)))
 DRAM_ATTR static uint8_t framebuffer[FB_SIZE];
 
+/* Frame chunk. We need to upscale our 8bpp pixels to 16 bpp before sending them. */
+DRAM_ATTR static uint16_t framechunk[FB_CHUNK_SIZE];
+
+static uint16_t COLOR_LUT[64]={
+  0x0000, 0x000a, 0x0014, 0x001f, 0x0540, 0x054a, 0x0554, 0x055f,
+  0x0a80, 0x0a8a, 0x0a94, 0x0a9f, 0x0fc0, 0x0fca, 0x0fd4, 0x0fdf,
+  0x5000, 0x500a, 0x5014, 0x501f, 0x5540, 0x554a, 0x5554, 0x555f,
+  0x5a80, 0x5a8a, 0x5a94, 0x5a9f, 0x5fc0, 0x5fca, 0x5fd4, 0x5fdf,
+  0xa000, 0xa00a, 0xa014, 0xa01f, 0xa540, 0xa54a, 0xa554, 0xa55f,
+  0xaa80, 0xaa8a, 0xaa94, 0xaa9f, 0xafc0, 0xafca, 0xafd4, 0xafdf,
+  0xf800, 0xf80a, 0xf814, 0xf81f, 0xfd40, 0xfd4a, 0xfd54, 0xfd5f,
+  0xfa80, 0xfa8a, 0xfa94, 0xfa9f, 0xffc0, 0xffca, 0xffd4, 0xffdf
+};
+
+
 typedef struct {
     uint8_t cmd;
     uint8_t data[16];
@@ -73,7 +88,7 @@ typedef struct {
 DRAM_ATTR static const init_cmd_t st_init_cmds[]={
   {ST7789_CMD_SLPOUT, {0}, 0},
   {ST7789_CMD_WAIT, {0}, 50}, // was 250ms
-  {ST7789_CMD_COLMOD, {0x03}, 1}, /* COLMOD: 12 bits per pixel, 4K colors */
+  {ST7789_CMD_COLMOD, {0x05}, 1}, /* COLMOD: 16 bits per pixel, 65K colors */
   {ST7789_CMD_WAIT, {0}, 10},
   {ST7789_CMD_CASET, {0x00, 0x00, 0x00, 0xF0}, 4},
   {ST7789_CMD_RASET, {0x00, 0x00, 0x00, 0xF0}, 4},
@@ -333,11 +348,24 @@ void st7789_set_fb(uint8_t *frame)
 
 void IRAM_ATTR st7789_commit_fb(void)
 {
-  int i;
+  int i, j;
+  uint8_t pix;
   st7789_set_window(0, 0, WIDTH, HEIGHT);
-  for (i=0; i<FB_SIZE/FB_CHUNK_SIZE; i++)
+  for (i=0; i<(FB_SIZE/FB_CHUNK_SIZE); i++)
   {
-    st7789_send_data(&framebuffer[i*FB_CHUNK_SIZE], FB_CHUNK_SIZE);
+    /* 
+      Upscale pixels from 8bpp to 16bpp.
+      RGB 2-2-2 -> RGB 5-6-5
+
+      For each color component, 2 bits to 5 or 6 bits.
+    */
+    for (j=0; j<FB_CHUNK_SIZE; j++)
+    {
+      pix = framebuffer[i*FB_CHUNK_SIZE+j];
+      framechunk[j] = COLOR_LUT[pix & 0x3F];
+    }
+
+    st7789_send_data(&framechunk, FB_CHUNK_SIZE*2);
   }
 }
 
@@ -359,75 +387,16 @@ void IRAM_ATTR st7789_blank(void)
  * @return: pixel color (12 bits)
  **/
 
-uint16_t IRAM_ATTR _st7789_get_pixel(int x, int y)
+uint8_t IRAM_ATTR _st7789_get_pixel(int x, int y)
 {
   int fb_blk, fb_blk_off;
-  uint16_t pix = 0;
 
   /* Sanity checks. */
-
   if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
-    return pix;
-  
-  /* 4-pixel block index */
-  fb_blk = (y*WIDTH+x)/4;
+    return 0;
 
-  /* Compute address of our 4-pixel block (stored on 6 bytes). */
-  fb_blk_off = fb_blk*6;
-
-  /* Modify pixel by 4-byte blocks, as ESP32 does not allow byte-level access. */
-  switch(x%4)
-  {
-    /**
-     * Case 0: pixel is stored in byte 0 and 1 of a 4-byte dword.
-     * pixel is 0B RG
-     * RG BX XX XX
-     **/
-    case 0:
-      {
-        pix = (*FB_PIXCHUNK & 0x000000ff) | ((*FB_PIXCHUNK & 0x0000f000) >> 4);
-      }
-      break;
-
-    /**
-     * Case 1: pixel is stored in byte 1 and 2 of a 4-byte dword.
-     * pixel is 0B RG
-     * XX XR GB XX
-     **/
-
-    case 1:
-      {
-        pix = ((*FB_PIXCHUNK & 0x00000f00) >> 4) | ((*FB_PIXCHUNK & 0x000f0000) >> 8) | ((*FB_PIXCHUNK & 0x00f00000) >> 20);
-      }
-      break;
-
-    /**
-     * Case 2: pixel is stored in byte 3 and 4 of a double 4-byte dword.
-     * pixel is 0B RG
-     * XX XX XX RG | BX XX XX XX
-     **/
-
-    case 2:
-      {
-        pix = ((*FB_PIXCHUNK & 0xff000000) >> 24) | ((*FB_PIXCHUNK2 & 0x000000f0) << 4);
-      }
-      break;
-
-    /**
-     * Case 3: pixel is stored in byte 4 and 5 of a double 4-byte dword.
-     * pixel is 0B RG
-     * XX XX XX XX | XR GB XX XX
-     **/
-
-    case 3:
-      {
-        pix = ((*FB_PIXCHUNK2 & 0x0000000f) << 4) | (*FB_PIXCHUNK2 & 0x00000f00) | ((*FB_PIXCHUNK2 & 0x0000f000) >> 12);
-      }
-      break;
-  }
-
-  /* Return color. */
-  return pix;
+  /* Return color. */  
+  return framebuffer[y*WIDTH + x];
 }
 
 
@@ -438,12 +407,11 @@ uint16_t IRAM_ATTR _st7789_get_pixel(int x, int y)
  * @return: pixel color (12 bits)
  **/
 
-uint16_t IRAM_ATTR st7789_get_pixel(int x, int y)
+uint8_t IRAM_ATTR st7789_get_pixel(int x, int y)
 {
-  uint16_t pix = 0;
+  uint8_t pix = 0;
 
   /* Sanity checks. */
-
   if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
     return pix;
 
@@ -464,10 +432,10 @@ uint16_t IRAM_ATTR st7789_get_pixel(int x, int y)
  * @param color: pixel color (12 bits)
  **/
 
-void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
+void IRAM_ATTR st7789_set_pixel(int x, int y, uint8_t color)
 {
   int fb_blk, fb_blk_off;
-  uint16_t orig_color;
+  uint8_t orig_color;
   int r,g,b;
   int a;
 
@@ -481,75 +449,8 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
   if (g_inv_y)
     y = HEIGHT - y - 1;
 
-  /* 4-pixel block index */
-  fb_blk = (y*WIDTH+x)/4;
-
-  /* Compute address of our 4-pixel block (stored on 6 bytes). */
-  fb_blk_off = fb_blk*6;
-
-  /* Handle alpha if required. */
-  if (color & 0xf000)
-  {
-    /* Mix original pixel color with our color. */
-    a = (color & 0xf000)>>12;
-    orig_color = _st7789_get_pixel(x, y);
-    b = MIX_ALPHA( ((color & 0xf00)>>8), ((orig_color & 0xf00)>>8), a);
-    r = MIX_ALPHA( ((color & 0x0f0)>>4), ((orig_color & 0x0f0)>>4), a);
-    g = MIX_ALPHA( (color & 0x00f), (orig_color & 0x00f), a);
-    color = RGB(r,g,b);
-  }
-
-  /* Modify pixel by 4-byte blocks, as ESP32 does not allow byte-level access. */
-  switch(x%4)
-  {
-    /**
-     * Case 0: pixel is stored in byte 0 and 1 of a 4-byte dword.
-     * pixel is 0B RG
-     * RG BX XX XX
-     **/
-    case 0:
-      {
-        *FB_PIXCHUNK = (*FB_PIXCHUNK & 0xffff0f00) | (color & 0x00ff) | ((color&0xf00)<<4);
-      }
-      break;
-
-    /**
-     * Case 1: pixel is stored in byte 1 and 2 of a 4-byte dword.
-     * pixel is 0B RG
-     * XX XR GB XX
-     **/
-
-    case 1:
-      {
-        *FB_PIXCHUNK = (*FB_PIXCHUNK & 0xfff00f0ff) | ((color&0xf0)<<4) | ((color&0xf)<<20) | ((color&0xf00)<<8);
-      }
-      break;
-
-    /**
-     * Case 2: pixel is stored in byte 3 and 4 of a double 4-byte dword.
-     * pixel is 0B RG
-     * XX XX XX RG | BX XX XX XX
-     **/
-
-    case 2:
-      {
-        *FB_PIXCHUNK = (*FB_PIXCHUNK & 0x00ffffff) | (color&0xff)<<24;
-        *FB_PIXCHUNK2 = (*FB_PIXCHUNK2 & 0xffffff0f) | (color&0xf00)>>4;
-      }
-      break;
-
-    /**
-     * Case 3: pixel is stored in byte 4 and 5 of a double 4-byte dword.
-     * pixel is 0B RG
-     * XX XX XX XX | XR GB XX XX
-     **/
-
-    case 3:
-      {
-        *FB_PIXCHUNK2 = (*FB_PIXCHUNK2 & 0xffff00f0) | (color&0xf0)>>4 | (color&0xf)<<12 | (color&0xf00);
-      }
-      break;
-  }
+  /* Set pixel color. */
+  framebuffer[y*WIDTH + x] = color;
 }
 
 /**
@@ -559,7 +460,7 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint16_t color)
  * @param color: pixel color (12 bits)
  **/
 
-void IRAM_ATTR _st7789_set_pixel(int x, int y, uint16_t color)
+void IRAM_ATTR _st7789_set_pixel(int x, int y, uint8_t color)
 {
   int fb_blk, fb_blk_off;
   uint32_t *ppixel;
@@ -571,80 +472,8 @@ void IRAM_ATTR _st7789_set_pixel(int x, int y, uint16_t color)
   if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
     return;
 
-  /* 4-pixel block index */
-  fb_blk = (y*WIDTH+x)/4;
-
-  /* Compute address of our 4-pixel block (stored on 6 bytes). */
-  fb_blk_off = fb_blk*6;
-
- /* Handle alpha if required. */
-  if (color & 0xf000)
-  {
-    /* Mix original pixel color with our color. */
-    a = (color & 0xf000)>>12;
-    orig_color = _st7789_get_pixel(x, y);
-    b = MIX_ALPHA( ((color & 0xf00)>>8), ((orig_color & 0xf00)>>8), a);
-    r = MIX_ALPHA( ((color & 0x0f0)>>4), ((orig_color & 0x0f0)>>4), a);
-    g = MIX_ALPHA( (color & 0x00f), (orig_color & 0x00f), a);
-    color = RGB(r,g,b);
-  }
-
-  /* Modify pixel by 4-byte blocks, as ESP32 does not allow byte-level access. */
-  switch(x%4)
-  {
-    /**
-     * Case 0: pixel is stored in byte 0 and 1 of a 4-byte dword.
-     * pixel is 0B RG
-     * RG BX XX XX
-     **/
-    case 0:
-      {
-        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
-        *ppixel = (*ppixel & 0xffff0f00) | (color & 0x00ff) | ((color&0xf00)<<4);
-      }
-      break;
-
-    /**
-     * Case 1: pixel is stored in byte 1 and 2 of a 4-byte dword.
-     * pixel is 0B RG
-     * XX XR GB XX
-     **/
-
-    case 1:
-      {
-        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
-        *ppixel = (*ppixel & 0xfff00f0ff) | ((color&0xf0)<<4) | ((color&0xf)<<20) | ((color&0xf00)<<8);
-      }
-      break;
-
-    /**
-     * Case 2: pixel is stored in byte 3 and 4 of a double 4-byte dword.
-     * pixel is 0B RG
-     * XX XX XX RG | BX XX XX XX
-     **/
-
-    case 2:
-      {
-        ppixel = (uint32_t *)(&framebuffer[fb_blk_off]);
-        ppixel2 = (uint32_t *)(&framebuffer[fb_blk_off+4]);
-        *ppixel = (*ppixel & 0x00ffffff) | (color&0xff)<<24;
-        *ppixel2 = (*ppixel2 & 0xffffff0f) | (color&0xf00)>>4;
-      }
-      break;
-
-    /**
-     * Case 3: pixel is stored in byte 4 and 5 of a double 4-byte dword.
-     * pixel is 0B RG
-     * XX XX XX XX | XR GB XX XX
-     **/
-
-    case 3:
-      {
-        ppixel = (uint32_t *)(&framebuffer[fb_blk_off+4]);
-        *ppixel = (*ppixel & 0xffff00f0) | (color&0xf0)>>4 | (color&0xf)<<12 | (color&0xf00);
-      }
-      break;
-  }
+  /* Set pixel color. */
+  framebuffer[y*WIDTH + x] = color;
 }
 
 
@@ -654,10 +483,10 @@ void IRAM_ATTR _st7789_set_pixel(int x, int y, uint16_t color)
  * @param y: top-left Y coordinate
  * @param width: region width
  * @param height: region height
- * @parma color: 12 bpp color
+ * @param color: 8 bpp color
  **/
 
-void st7789_fill_region(int x, int y, int width, int height, uint16_t color)
+void st7789_fill_region(int x, int y, int width, int height, uint8_t color)
 {
   int _y;
 
@@ -690,12 +519,8 @@ void st7789_fill_region(int x, int y, int width, int height, uint16_t color)
   {
     for (_y=y; _y<(y+height); _y++)
     {
-      /* If alpha channel set, use classic draw line function to blend pixels. */
-      if (color&0xf000)
-        st7789_draw_line(x, _y, x+width-1, _y, color);
-      else
-        /* Otherwise use fast line drawing routine. */
-        st7789_draw_fastline(x, _y, x+width-1, color);
+      /* Otherwise use fast line drawing routine. */
+      st7789_draw_fastline(x, _y, x+width-1, color);
     }
   }
 }
@@ -709,7 +534,7 @@ void st7789_fill_region(int x, int y, int width, int height, uint16_t color)
  * @param color: line color.
  **/
 
-void IRAM_ATTR st7789_draw_fastline(int x0, int y, int x1, uint16_t color)
+void IRAM_ATTR st7789_draw_fastline(int x0, int y, int x1, uint8_t color)
 {
   int _x0,_x1,_y;
   int d=0;
@@ -743,63 +568,41 @@ void IRAM_ATTR st7789_draw_fastline(int x0, int y, int x1, uint16_t color)
   else
     _y = y;
 
-
-  temp[0] = (color & 0x00ff);
-  temp[1] = color>>4;
-  temp[2] = ((color&0xf00) >> 8) | ((color&0xf)<<4);
-
-  /* Draw first pixel if line start in the middle of a nibble. */
-  if (_x0%2 != 0)
-  {
-    _st7789_set_pixel(_x0, _y, color);
-    d++;
-  }
-
-  /* copy pixels by 2 pixels. */
-  n = ((_x1 - _x0 + 1) - d)/2;
-  s = ((_x0 + d)*3)/2 + ((_y*WIDTH*3)/2);
-  for (int x=0; x<n; x++)
-  {
-    framebuffer[s + x*3] = temp[0];
-    framebuffer[s + x*3 + 1] = temp[1];
-    framebuffer[s + x*3 + 2] = temp[2];
-  }
-
-  /* Do we need to set the last pixel ? */
-  if ((n*2) < ((_x1-_x0 + 1)-d))
-    _st7789_set_pixel(_x1, _y, color);
+  /* Fill line of pixels. */
+  memset(&framebuffer[y*WIDTH+x0], color, x1-x0);
 }
 
 
 /**
  * @brief Copy line p_line to the output position
  * @param x: X coordinate of the start of the line
- * @param y: Y cooordinate of the start of the line
+ * @param y: Y coordinate of the start of the line
  * @param p_line: pointer to an array of colors (uint16_t)
  * @param nb_pixels: number of pixels to copy
  **/
 
-void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
+void IRAM_ATTR st7789_copy_line(int x, int y, uint8_t *p_line, int nb_pixels)
 {
-  int _x,_y,_p=0;
-  int d=0;
-  int n=0;
-  int s = 0;
+  int _x,_y;
+  uint8_t *p_dst,*p_src;
+  int offset=0, i;
 
-  /* Sanity checks. */
-  if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
-    return;
-
-  /* If X coordinate < 0, apply an offset to the line. */
-  if (x<0)
+  /* Apply our drawing window */
+  if (x < g_dw_x0)
   {
-    nb_pixels += x;
-    _p=-x;
-    x=0;
+    offset = (g_dw_x0 - x);
+    nb_pixels -= offset;
+    x = g_dw_x0;
   }
 
-  /* If Y coordinate < 0, no need to draw. */
-  if (y<0)
+  /* Fix number of pixels to draw if line goes beyond our drawing window. */
+  if ((x + nb_pixels) > (g_dw_x1 - g_dw_x0))
+  {
+    nb_pixels = (g_dw_x1 - g_dw_x0);
+  }
+
+  /* If Y coordinate does not belong to our drawing window, no need to draw. */
+  if ((y < g_dw_y0) || (y > g_dw_y1) )
     return;
 
   /* Invert X coordinate if required. */
@@ -814,73 +617,27 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
   else
     _y=y;
 
-  /* Adjust number of pixels if image goes out of screen. */
-  if ((x + nb_pixels) >= WIDTH)
-    nb_pixels = WIDTH - x;
-
-
-  /* Draw first pixel if line start in the middle of a nibble. */
-  if ((x%2) != 0)
-  {
-    _st7789_set_pixel(_x, _y, p_line[d]);
-    d++;
-  }
-
-  /* copy pixels by 2 pixels. */
-  n = (nb_pixels - d)/2;
-  s = ((_x*3)/2 + ((_y*WIDTH*3)/2));
-  s = (s/3)*3;
-
-  /* Fill line with the corresponding pixels. */
+  /* Copy line. */
   if (g_inv_x)
   {
-    /**
-     * If X is inverted, it makes things difficult to handle. We are drawing the line
-     * backwards, but still the starting point in the framebuffer points to the second
-     * pixel rather onto the first of a 2-pixel block (stored on 3 bytes). We need to
-     * compute the address in the framebuffer of the previous pixel, by using the
-     * following trick:
-     * 
-     * s = (s/3)*3
-     * 
-     * Say we want to start the line at x=0. If screen is inversed, then _x = 240 - 0 - 1 = 239.
-     * 239*3/2 = 358, which is not a multiple of 3 (since it does not correspond to the first pixel
-     * of a 2-pixel block). Dividing by 3 and then multiplying by 3 ensures `s` is multiple of 3,
-     * and therefore points to the first pixel of the corresponding 2-pixel block.
-     * 
-     * I spent way too much time to figure this out, so I thought it would worth it to explain
-     * this a bit in here (hello, future me o/). 
-     **/
+    p_dst = &framebuffer[_y*WIDTH + _x];
+    p_src = p_line + offset;
 
-    /* Draw pixels in reverse order. */
-    _p += d;
-    for (int x=0;x<n;x++)
+    for (i=0; i<nb_pixels; i++)
     {
-      framebuffer[s] = (p_line[_p+1] & 0x00ff);
-      framebuffer[s+1] = ((p_line[_p+1] >> 4)&0xf0) | ((p_line[_p]>>4)&0x0f);
-      framebuffer[s+2] = ((p_line[_p]&0xf00) >> 8) | ((p_line[_p]&0xf)<<4);
-      _p += 2;
-      s -= 3;
+      *(p_dst--) = *p_src++;
     }
   }
   else
   {
-    /**
-     * Remark: everything works fine if X is not inverted, nothing special here.
-     **/
+    p_dst = &framebuffer[_y*WIDTH + _x];
+    p_src = p_line + offset;
 
-    /* Draw pixels in normal order. */
-    for (int x=0; x<n; x++)
+    for (i=0; i<nb_pixels; i++)
     {
-      framebuffer[s + x*3] = (p_line[2*x+d+_p] & 0x00ff);
-      framebuffer[s + x*3 + 1] = ((p_line[2*x+d+_p] >> 4)&0xf0) | ((p_line[2*x+d+_p+1]>>4)&0x0f);
-      framebuffer[s + x*3 + 2] = ((p_line[2*x+d+_p+1]&0xf00) >> 8) | ((p_line[2*x+d+_p+1]&0xf)<<4);
+      *(p_dst++) = *p_src++;
     }
   }
-
-  /* Do we need to set the last pixel ? */
-  if (2*n < (nb_pixels-d))
-    _st7789_set_pixel(_x, _y, p_line[nb_pixels-1]);
 }
 
 /**
@@ -890,7 +647,7 @@ void IRAM_ATTR st7789_copy_line(int x, int y, uint16_t *p_line, int nb_pixels)
  * @param x1: X coordinate of the end of the line
  * @param y1: y coordinate of the end of the line
  **/
-void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
+void st7789_draw_line(int x0, int y0, int x1, int y1, uint8_t color)
 {
   int x, y, dx, dy;
   float e;
@@ -1042,7 +799,7 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint16_t color)
  * @param color: circle color
  **/
 
-void st7789_draw_circle(int xc, int yc, int r, uint16_t color)
+void st7789_draw_circle(int xc, int yc, int r, uint8_t color)
 {
   int x = 0;
   int y = r;
@@ -1092,7 +849,7 @@ void st7789_draw_circle(int xc, int yc, int r, uint16_t color)
  * @param color: disc color
  **/
 
-void st7789_draw_disc(int xc, int yc, int r, uint16_t color)
+void st7789_draw_disc(int xc, int yc, int r, uint8_t color)
 {
   int i;
 

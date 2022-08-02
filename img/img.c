@@ -4,7 +4,7 @@
 #define SCREEN_HEIGHT 240
 #define IMG_DATA(x) ((uint8_t *)((uint8_t *)(x) + 4))
 
-image_t *load_image(const uint16_t *bitmap_data)
+image_t *load_image(const uint8_t *bitmap_data)
 {
   return (image_t *)bitmap_data;
 }
@@ -16,10 +16,10 @@ uint16_t _get_pixel_1bpp(image_t *source, int x, int y)
   return (((uint8_t *)source)[pos+6] & mask)?0xfff:0;
 }
 
-uint16_t _get_pixel_12bpp(image_t *source, int x, int y)
+uint16_t _get_pixel_8bpp(image_t *source, int x, int y)
 {
   uint16_t *p_img_raw = (uint16_t *)source;
-  return (p_img_raw[y*source->width + x + 3]) & 0xfff;
+  return (p_img_raw[y*source->width + x + 4]) & 0xfff;
 }
 
 void _screen_bitblt_1bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
@@ -46,9 +46,9 @@ void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width
 }*/
 
 /* Optimized version of _screen_bitblt_12bpp */
-void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
+void _screen_bitblt_8bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
 {
-  uint16_t *p_pixels = (uint16_t *)((uint8_t *)source + sizeof(image_t));
+  uint8_t *p_pixels = ((uint8_t *)source + sizeof(image_t));
 
   /* Adjust image if destination y-coordinate is below 0. */
   if (dest_y < 0)
@@ -92,8 +92,8 @@ void screen_bitblt(image_t *source, int source_x, int source_y, int width, int h
 
 
           /* Unsupported yet. */
-          case DEPTH_12BPP:
-            _screen_bitblt_12bpp(source, source_x, source_y, width, height, dest_x, dest_y);
+          case DEPTH_8BPP:
+            _screen_bitblt_8bpp(source, source_x, source_y, width, height, dest_x, dest_y);
             break;
 
           default:
