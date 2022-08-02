@@ -73,8 +73,7 @@
 #define ST7789_CMD_PWCTR6     0xFC
 #define ST7789_CMD_WAIT       0xFF
 
-#define RGB(r,g,b) ((g&0xf) | ((r&0xf)<<4) | ((b&0x0f)<<8))
-#define RGBA(r,g,b,a) ((g&0xf) | ((r&0xf)<<4) | ((b&0x0f)<<8) | ((a<16)?(15-a)<<12:0))
+#define RGB(r,g,b) ((g&0x03) | ((r&0x03)<<2) | ((b&0x03)<<4))
 
 esp_err_t st7789_init_backlight(void);
 esp_err_t st7789_init(void);
