@@ -569,7 +569,7 @@ void IRAM_ATTR st7789_draw_fastline(int x0, int y, int x1, uint8_t color)
     _y = y;
 
   /* Fill line of pixels. */
-  memset(&framebuffer[y*WIDTH+x0], color, x1-x0);
+  memset(&framebuffer[_y*WIDTH+_x0], color, _x1-_x0);
 }
 
 
@@ -691,13 +691,7 @@ void st7789_draw_line(int x0, int y0, int x1, int y1, uint8_t color)
        * set pixels. We cannot use the fast way as we need to blend
        * pixels.
        */
-      if (color & 0xf000)
-      {
-        for (x=x0; x<=x1; x++)
-          st7789_set_pixel(x, y0, color);
-      }
-      else
-        st7789_fill_region(x0, y0, x1 - x0 + 1, 1, color);
+      st7789_fill_region(x0, y0, x1 - x0 + 1, 1, color);
     }
     else
     {
