@@ -2,6 +2,7 @@
 #include "drivers/st7789.h"
 
 #define SCREEN_HEIGHT 240
+#define SCREEN_WIDTH 240
 #define IMG_DATA(x) ((uint8_t *)((uint8_t *)(x) + 4))
 
 image_t *load_image(const uint8_t *bitmap_data)
@@ -62,6 +63,20 @@ void _screen_bitblt_8bpp(image_t *source, int source_x, int source_y, int width,
   if ((height + dest_y) >= SCREEN_HEIGHT)
   {
     height = SCREEN_HEIGHT - dest_y;
+  }
+
+  /* Adjust image if destination x-coordinate is below 0. */
+  if (dest_x < 0)
+  {
+    source_x -= dest_x;
+    width += dest_x;
+    dest_x = 0;
+  }
+
+  /* Don't write past screen width. */
+  if ((width + dest_x) >= SCREEN_WIDTH)
+  {
+    width = SCREEN_WIDTH - dest_x;
   }
 
   /* Copy lines. */
