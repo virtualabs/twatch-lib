@@ -306,7 +306,7 @@ void reset_inactivity_timer(void)
  * @brief: Process UI events (user interaction and animation/rendering)
  **/
 
-void IRAM_ATTR ui_process_events(void)
+void ui_process_events(void)
 {
   touch_event_t touch;
 
@@ -1209,7 +1209,7 @@ void *tile_get_user_data(tile_t *p_tile)
  * @param p_tile: pointer to a `tile_t` structure
  **/
 
-int IRAM_ATTR tile_draw(tile_t *p_tile)
+int tile_draw(tile_t *p_tile)
 {
   if (p_tile != NULL)
   {
@@ -1319,7 +1319,7 @@ void tile_link_bottom(tile_t *p_tile, tile_t *p_bottom_tile)
  * @param p_tile: pointer to a `tile_t` structure
  **/
 
-void IRAM_ATTR tile_draw_widgets(tile_t *p_tile)
+void tile_draw_widgets(tile_t *p_tile)
 {
   widget_t *p_widget;
 

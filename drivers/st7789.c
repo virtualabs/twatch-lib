@@ -106,12 +106,12 @@ DRAM_ATTR static const init_cmd_t st_init_cmds[]={
  * @param milliseconds: nimber of milliseconds to wait
  **/
 
-void IRAM_ATTR st7789_wait(int milliseconds)
+void st7789_wait(int milliseconds)
 {
   vTaskDelay(milliseconds/portTICK_PERIOD_MS);
 }
 
-void IRAM_ATTR st7789_pre_transfer_callback(spi_transaction_t *t)
+void st7789_pre_transfer_callback(spi_transaction_t *t)
 {
     int dc=(int)t->user;
     gpio_set_level(ST7789_SPI_DC_IO, dc);
@@ -319,7 +319,7 @@ void st7789_get_drawing_window(int *x0, int *y0, int *x1, int *y1)
   *y1 = g_dw_y1;
 }
 
-void IRAM_ATTR st7789_set_window(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
+void st7789_set_window(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1)
 {
   databuf[0] = x0 >> 8;
   databuf[1] = x0 & 0xFF;
@@ -346,7 +346,7 @@ void st7789_set_fb(uint8_t *frame)
  * @brief Send framebuffer to screen.
  **/
 
-void IRAM_ATTR st7789_commit_fb(void)
+void st7789_commit_fb(void)
 {
   int i, j;
   uint8_t pix;
@@ -374,7 +374,7 @@ void IRAM_ATTR st7789_commit_fb(void)
  * @brief Fill screen with default color (black)
  **/
 
-void IRAM_ATTR st7789_blank(void)
+void st7789_blank(void)
 {
   memset(framebuffer, 0, FB_SIZE);
 }
@@ -387,7 +387,7 @@ void IRAM_ATTR st7789_blank(void)
  * @return: pixel color (12 bits)
  **/
 
-uint8_t IRAM_ATTR _st7789_get_pixel(int x, int y)
+uint8_t _st7789_get_pixel(int x, int y)
 {
   int fb_blk, fb_blk_off;
 
@@ -407,7 +407,7 @@ uint8_t IRAM_ATTR _st7789_get_pixel(int x, int y)
  * @return: pixel color (12 bits)
  **/
 
-uint8_t IRAM_ATTR st7789_get_pixel(int x, int y)
+uint8_t st7789_get_pixel(int x, int y)
 {
   uint8_t pix = 0;
 
@@ -432,7 +432,7 @@ uint8_t IRAM_ATTR st7789_get_pixel(int x, int y)
  * @param color: pixel color (12 bits)
  **/
 
-void IRAM_ATTR st7789_set_pixel(int x, int y, uint8_t color)
+void st7789_set_pixel(int x, int y, uint8_t color)
 {
   int fb_blk, fb_blk_off;
   uint8_t orig_color;
@@ -460,7 +460,7 @@ void IRAM_ATTR st7789_set_pixel(int x, int y, uint8_t color)
  * @param color: pixel color (12 bits)
  **/
 
-void IRAM_ATTR _st7789_set_pixel(int x, int y, uint8_t color)
+void _st7789_set_pixel(int x, int y, uint8_t color)
 {
   int fb_blk, fb_blk_off;
   uint32_t *ppixel;
@@ -534,7 +534,7 @@ void st7789_fill_region(int x, int y, int width, int height, uint8_t color)
  * @param color: line color.
  **/
 
-void IRAM_ATTR st7789_draw_fastline(int x0, int y, int x1, uint8_t color)
+void st7789_draw_fastline(int x0, int y, int x1, uint8_t color)
 {
   int _x0,_x1,_y;
   int d=0;
@@ -581,7 +581,7 @@ void IRAM_ATTR st7789_draw_fastline(int x0, int y, int x1, uint8_t color)
  * @param nb_pixels: number of pixels to copy
  **/
 
-void IRAM_ATTR st7789_copy_line(int x, int y, uint8_t *p_line, int nb_pixels)
+void st7789_copy_line(int x, int y, uint8_t *p_line, int nb_pixels)
 {
   int _x,_y;
   uint8_t *p_dst,*p_src;
