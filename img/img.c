@@ -17,10 +17,10 @@ uint16_t _get_pixel_1bpp(image_t *source, int x, int y)
   return (((uint8_t *)source)[pos+6] & mask)?0xfff:0;
 }
 
-uint16_t _get_pixel_8bpp(image_t *source, int x, int y)
+uint8_t _get_pixel_8bpp(image_t *source, int x, int y)
 {
-  uint16_t *p_img_raw = (uint16_t *)source;
-  return (p_img_raw[y*source->width + x + 4]) & 0xfff;
+  uint8_t *p_img_raw = (uint8_t *)source;
+  return (p_img_raw[y*source->width + x + 6]) & 0xfff;
 }
 
 void _screen_bitblt_1bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
@@ -34,60 +34,14 @@ void _screen_bitblt_1bpp(image_t *source, int source_x, int source_y, int width,
   }
 }
 
-/* -- Old version of _screen_bitblt_12bpp -- 
-void _screen_bitblt_12bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
+void _screen_bitblt_8bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
 {
   int x, y;
 
   for (x=0;x<width;x++)
   {
     for (y=0;y<height;y++)
-      st7789_set_pixel(dest_x+x, dest_y+y, _get_pixel_12bpp(source, source_x+x, source_y+y));
-  }
-}*/
-
-/* Optimized version of _screen_bitblt_12bpp */
-void _screen_bitblt_8bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
-{
-  uint8_t *p_pixels = ((uint8_t *)source + sizeof(image_t));
-
-  /* Adjust image if destination y-coordinate is below 0. */
-  if (dest_y < 0)
-  {
-    source_y -= dest_y;
-    height += dest_y;
-    dest_y = 0;
-  }
-
-  /* Don't write past screen height. */
-  if ((height + dest_y) >= SCREEN_HEIGHT)
-  {
-    height = SCREEN_HEIGHT - dest_y;
-  }
-
-  /* Adjust image if destination x-coordinate is below 0. */
-  if (dest_x < 0)
-  {
-    source_x -= dest_x;
-    width += dest_x;
-    dest_x = 0;
-  }
-
-  /* Don't write past screen width. */
-  if ((width + dest_x) >= SCREEN_WIDTH)
-  {
-    width = SCREEN_WIDTH - dest_x;
-  }
-
-  /* Copy lines. */
-  for (int y=0;y<height;y++)
-  {
-    st7789_copy_line(
-      dest_x,
-      dest_y+y,
-      &p_pixels[(source_y+y)*source->width + source_x],
-      width
-    );
+      st7789_set_pixel(dest_x+x, dest_y+y, _get_pixel_8bpp(source, source_x+x, source_y+y));
   }
 }
 
