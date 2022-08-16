@@ -1,5 +1,4 @@
 #include "esp_log.h"
-#include "esp_timer.h"
 #include "hal/touch.h"
 #include "math.h"
 

@@ -12,8 +12,6 @@ esp_err_t twatch_screen_init(void)
 {
   esp_err_t result;
 
-  ESP_LOGI("[screen]", "init backlight");
-
   /* Init backlight. */
   st7789_init_backlight();
 
@@ -21,11 +19,9 @@ esp_err_t twatch_screen_init(void)
   st7789_backlight_set(0);
 
   /* Power-on screen through PMU. */
-  ESP_LOGI("[screen]", "init pmu screen power");
   twatch_pmu_screen_power(true);
 
   /* Initialize screen. */
-  ESP_LOGI("[screen]", "init st7789");
   result = st7789_init();
 
   if (result == ESP_OK)

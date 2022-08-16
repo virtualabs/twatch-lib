@@ -20,7 +20,7 @@ void _twatch_vibration_task(void *parameter)
         gpio_set_level(GPIO_NUM_4, 1);
 
         /* Wait for duration. */
-        vTaskDelay(vibration_config->duration/portTICK_PERIOD_MS);
+        vTaskDelay(vibration_config->duration/portTICK_RATE_MS);
 
         /* Stop motor. */
         gpio_set_level(GPIO_NUM_4, 0);
@@ -38,7 +38,7 @@ void _twatch_vibration_task(void *parameter)
             gpio_set_level(GPIO_NUM_4, 1);
 
             /* Wait for duration. */
-            vTaskDelay(vibration_config->pattern[i].duration/portTICK_PERIOD_MS);
+            vTaskDelay(vibration_config->pattern[i].duration/portTICK_RATE_MS);
           }
           else
           {
@@ -46,7 +46,7 @@ void _twatch_vibration_task(void *parameter)
             gpio_set_level(GPIO_NUM_4, 0);
 
             /* Wait for duration. */
-            vTaskDelay(vibration_config->pattern[i].duration/portTICK_PERIOD_MS);
+            vTaskDelay(vibration_config->pattern[i].duration/portTICK_RATE_MS);
           }
         }
       }

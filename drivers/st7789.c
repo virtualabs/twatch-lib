@@ -158,7 +158,7 @@ void st7789_init_display(void)
   while (st_init_cmds[cmd].databytes!=0xff) {
     if (st_init_cmds[cmd].cmd == ST7789_CMD_WAIT)
     {
-      vTaskDelay(st_init_cmds[cmd].databytes / portTICK_PERIOD_MS);
+      vTaskDelay(st_init_cmds[cmd].databytes / portTICK_RATE_MS);
     }
     else
     {
@@ -172,13 +172,8 @@ void st7789_init_display(void)
 
 esp_err_t st7789_init_backlight(void)
 {
-  gpio_config_t backlight_io;
-  backlight_io.intr_type = GPIO_INTR_DISABLE;
-  backlight_io.mode = GPIO_MODE_OUTPUT;
-  backlight_io.pin_bit_mask = ST7789_BL_IO;
-  backlight_io.pull_down_en = 0;
-  backlight_io.pull_up_en = 0;
-  gpio_config(&backlight_io);
+  gpio_pad_select_gpio(ST7789_BL_IO);
+  gpio_set_direction(ST7789_BL_IO, GPIO_MODE_OUTPUT);
   
   /* Configure backlight for PWM (light control) */
   if (ledc_timer_config(&backlight_timer) != ESP_OK)
@@ -199,8 +194,6 @@ esp_err_t st7789_init_backlight(void)
 
 esp_err_t st7789_init(void)
 {
-  gpio_config_t dc_io, cs_io;
-  
   spi_bus_config_t bus_config = {
         .miso_io_num=-1,
         .mosi_io_num=ST7789_SPI_MOSI_IO,
@@ -226,20 +219,23 @@ esp_err_t st7789_init(void)
       if (spi_bus_add_device(HSPI_HOST, &devcfg, &spi) == ESP_OK)
       {
         /* Initialize GPIOs */
-        dc_io.intr_type = GPIO_INTR_DISABLE;
-        dc_io.mode = GPIO_MODE_OUTPUT;
-        dc_io.pin_bit_mask = (1 << ST7789_SPI_DC_IO);
-        dc_io.pull_down_en = 0;
-        dc_io.pull_up_en = 0;
-        gpio_config(&dc_io);
+        //gpio_pad_select_gpio(ST7789_BL_IO);
+        gpio_pad_select_gpio(ST7789_SPI_DC_IO);
+        gpio_pad_select_gpio(ST7789_SPI_CS_IO);
+        //gpio_set_direction(ST7789_BL_IO, GPIO_MODE_OUTPUT);
+        gpio_set_direction(ST7789_SPI_DC_IO, GPIO_MODE_OUTPUT);
+        gpio_set_direction(ST7789_SPI_CS_IO, GPIO_MODE_OUTPUT);
 
-        cs_io.intr_type = GPIO_INTR_DISABLE;
-        cs_io.mode = GPIO_MODE_OUTPUT;
-        cs_io.pin_bit_mask = (1 << ST7789_SPI_CS_IO);
-        cs_io.pull_down_en = 0;
-        cs_io.pull_up_en = 0;
-        gpio_config(&cs_io);
+#if 0
+        /* Configure backlight for PWM (light control) */
+        if (ledc_timer_config(&backlight_timer) != ESP_OK)
+          ESP_LOGE("st7789", "oops, timer error");
+        ledc_channel_config(&backlight_config);
 
+        /* Set default duty cycle (0, backlight is off). */
+        ledc_set_duty(backlight_config.speed_mode, backlight_config.channel, 0);
+        ledc_update_duty(backlight_config.speed_mode, backlight_config.channel);
+#endif
         /* Send init commands. */
         st7789_init_display();
 

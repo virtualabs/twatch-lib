@@ -2,10 +2,8 @@
 #include "ui/widget.h"
 #include "hal/vibrate.h"
 
-//#define TIMER_DIVIDER         (16)  //  Hardware timer clock divider
-//#define TIMER_SCALE           (TIMER_BASE_CLK / TIMER_DIVIDER)  // convert counter value to seconds
-
-#define TAG "ui"
+#define TIMER_DIVIDER         (16)  //  Hardware timer clock divider
+#define TIMER_SCALE           (TIMER_BASE_CLK / TIMER_DIVIDER)  // convert counter value to seconds
 
 int ui_forward_event_to_widget(touch_event_type_t state, int x, int y, int velocity);
 
@@ -24,15 +22,17 @@ ui_t g_ui;
  * @return: true if we need to yield at the end of ISR, false otherwise.
  **/
 
-static bool IRAM_ATTR ui_inactivity_timer_cb(gptimer_handle_t timer, const gptimer_alarm_event_data_t *edata, void *user_data)
+static bool IRAM_ATTR ui_inactivity_timer_cb(void *args)
 {
     BaseType_t high_task_awoken = pdFALSE;
  
+    uint64_t timer_counter_value = timer_group_get_counter_value_in_isr(TIMER_GROUP_1, TIMER_1);
+
     /* Inactivity detected. */
     g_ui.b_inactivity_detected = true;
 
-    /* Stop timer. */
-    gptimer_stop(g_ui.eco_timer_handle);
+    timer_counter_value += 5 * TIMER_SCALE;
+    timer_group_set_alarm_value_in_isr(TIMER_GROUP_1, TIMER_1, timer_counter_value);
 
     return high_task_awoken == pdTRUE; // return whether we need to yield at the end of ISR
 }
@@ -43,8 +43,6 @@ static bool IRAM_ATTR ui_inactivity_timer_cb(gptimer_handle_t timer, const gptim
 
 void ui_init(void)
 {
-  ESP_LOGI("[ui]", "twatch touch init");
-
   /* Initialize the touch screen. */
   twatch_touch_init();
 
@@ -72,29 +70,21 @@ void ui_init(void)
   g_ui.b_inactivity_detected = false;
   g_ui.eco_max_inactivity = 15; /* Inactivity set to 15 sec by default. */
   g_ui.eco_max_inactivity_to_deepsleep = 60; /* Second inactivity set to 60 by default */ 
+  g_ui.eco_timer.divider = TIMER_DIVIDER;
+  g_ui.eco_timer.counter_dir = TIMER_COUNT_UP;
+  g_ui.eco_timer.counter_en = TIMER_PAUSE;
+  g_ui.eco_timer.alarm_en = TIMER_ALARM_EN;
+  g_ui.eco_timer.auto_reload = false;
+  timer_init(TIMER_GROUP_1, TIMER_1, &g_ui.eco_timer);
 
-  ESP_LOGI("[ui]", "eco timer init");
-  g_ui.eco_timer_handle = NULL;
-  g_ui.eco_timer_config.clk_src = GPTIMER_CLK_SRC_DEFAULT;
-  g_ui.eco_timer_config.direction = GPTIMER_COUNT_UP;
-  g_ui.eco_timer_config.resolution_hz = 1000000;
-  ESP_ERROR_CHECK(gptimer_new_timer(&g_ui.eco_timer_config, &g_ui.eco_timer_handle));
+  /* Timer's counter will initially start from value below.
+      Also, if auto_reload is set, this value will be automatically reload on alarm */
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
 
   /* Configure the alarm value and the interrupt on alarm. */
-  gptimer_event_callbacks_t cbs = {
-    .on_alarm = ui_inactivity_timer_cb,
-  };
-  ESP_ERROR_CHECK(gptimer_register_event_callbacks(g_ui.eco_timer_handle, &cbs, NULL));
-  ESP_ERROR_CHECK(gptimer_enable(g_ui.eco_timer_handle));
-  gptimer_set_raw_count(g_ui.eco_timer_handle, 0);
-
-  /*
-  ESP_LOGI(TAG, "Start timer, stop it at alarm event");
-  gptimer_alarm_config_t alarm_config1 = {
-      .alarm_count = 1000000 * g_ui.eco_max_inactivity,
-  };
-  ESP_ERROR_CHECK(gptimer_set_alarm_action(g_ui.eco_timer_handle, &alarm_config1));
-  */
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_enable_intr(TIMER_GROUP_1, TIMER_1);
+  timer_isr_callback_add(TIMER_GROUP_1, TIMER_1, ui_inactivity_timer_cb, NULL, ESP_INTR_FLAG_IRAM);
 }
 
 
@@ -281,19 +271,12 @@ void __ui_deepsleep_activate()
 
 void reset_inactivity_timer(void)
 {
-  ESP_LOGI("[ui]", "Reset inactivity timer");
   /* Reset inactivity timer. */
   g_ui.b_inactivity_detected = false;
   g_ui.screen_mode = SCREEN_MODE_NORMAL;
-
-
-  gptimer_stop(g_ui.eco_timer_handle);
-  gptimer_set_raw_count(g_ui.eco_timer_handle, 0);
-  gptimer_start(g_ui.eco_timer_handle);
-
-  //timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
-  //timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
-  //timer_start(TIMER_GROUP_1, TIMER_1);
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_start(TIMER_GROUP_1, TIMER_1);
 
   /* Make sure backlight is correctly set. */
   twatch_screen_set_backlight(twatch_screen_get_default_backlight());
@@ -405,7 +388,6 @@ void ui_process_events(void)
         {
           /* Switch screen to dimmed mode. */
           case SCREEN_MODE_NORMAL:
-            ESP_LOGI("[ui]","switch to dimmed mode");
             twatch_screen_set_backlight(100);
             g_ui.screen_mode = SCREEN_MODE_DIMMED;
 
@@ -418,23 +400,19 @@ void ui_process_events(void)
             /* Activate second alarm for switch in deepsleep mode if necessary */
             if (g_ui.eco_max_inactivity_to_deepsleep != 0)
             {
-              gptimer_alarm_config_t alarm_config2 = {
-                .alarm_count = 1000000 * g_ui.eco_max_inactivity_to_deepsleep,
-              };
-              ESP_ERROR_CHECK(gptimer_set_alarm_action(g_ui.eco_timer_handle, &alarm_config2));
-              ESP_ERROR_CHECK(gptimer_start(g_ui.eco_timer_handle));
+              timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+              timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity_to_deepsleep * TIMER_SCALE);
+              timer_start(TIMER_GROUP_1, TIMER_1);
             }
             else
             {
-              //timer_pause(TIMER_GROUP_1, TIMER_1);
+              timer_pause(TIMER_GROUP_1, TIMER_1);
             }
             break;
 
           /* Switch screen to deepsleep */  
           case SCREEN_MODE_DIMMED:
-            //timer_pause(TIMER_GROUP_1, TIMER_1);
-            gptimer_stop(g_ui.eco_timer_handle);
-            gptimer_disable(g_ui.eco_timer_handle);
+            timer_pause(TIMER_GROUP_1, TIMER_1);
             __ui_deepsleep_activate();
             break;
         }
@@ -833,15 +811,9 @@ void enable_ecomode(void)
   g_ui.b_eco_mode_enabled = true;
 
   /* Reset counter value and alarm value. */
-  gptimer_set_raw_count(g_ui.eco_timer_handle, 0);
-  
-  ESP_LOGI(TAG, "Start timer, stop it at alarm event");
-  gptimer_alarm_config_t alarm_config1 = {
-      .alarm_count = 1000000 * g_ui.eco_max_inactivity,
-  };
-  ESP_ERROR_CHECK(gptimer_set_alarm_action(g_ui.eco_timer_handle, &alarm_config1));
-  ESP_ERROR_CHECK(gptimer_start(g_ui.eco_timer_handle));
-
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_start(TIMER_GROUP_1, TIMER_1);
 }
 
 /**
@@ -854,8 +826,7 @@ void disable_ecomode(void)
 {
   /* Stop our timer. */
   g_ui.b_eco_mode_enabled = false;
-  gptimer_stop(g_ui.eco_timer_handle);
-  gptimer_set_raw_count(g_ui.eco_timer_handle, 0);
+  timer_pause(TIMER_GROUP_1, TIMER_1);
 }
 
 
@@ -871,12 +842,9 @@ void ui_wakeup(void)
   twatch_screen_set_backlight(twatch_screen_get_default_backlight());
 
   /* Reset counter value and alarm value. */
-  gptimer_set_raw_count(g_ui.eco_timer_handle, 0);
-  gptimer_alarm_config_t alarm_config1 = {
-      .alarm_count = 1000000 * g_ui.eco_max_inactivity,
-  };
-  ESP_ERROR_CHECK(gptimer_set_alarm_action(g_ui.eco_timer_handle, &alarm_config1));
-  ESP_ERROR_CHECK(gptimer_start(g_ui.eco_timer_handle));
+  timer_set_counter_value(TIMER_GROUP_1, TIMER_1, 0);
+  timer_set_alarm_value(TIMER_GROUP_1, TIMER_1, g_ui.eco_max_inactivity * TIMER_SCALE);
+  timer_start(TIMER_GROUP_1, TIMER_1);
 }
 
 

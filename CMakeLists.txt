@@ -12,8 +12,8 @@ idf_component_register(
   "drivers/st7789.c"
   "drivers/pcf8563.c"
   "drivers/drv2605.c"
-  #"drivers/ir/esp32_rmt_common.c"
-  #"drivers/ir/rmtlib_raw.c"
+  "drivers/ir/esp32_rmt_common.c"
+  "drivers/ir/rmtlib_raw.c"
   
   "hal/hal.c"
   "hal/audio.c"
@@ -41,6 +41,6 @@ idf_component_register(
   "ui/spinner.c"
   "font/font16.c"
 
-  INCLUDE_DIRS "inc" "."
-  PRIV_REQUIRES driver esp_timer
+  INCLUDE_DIRS "inc"
+
 )

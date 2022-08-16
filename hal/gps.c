@@ -653,9 +653,9 @@ static void twatch_gps_control(void *pvParameters)
         {
           ESP_LOGI(TAG, "Waking up GPS ...");
           /* Wake-up GPS. */
-          vTaskDelay(60/portTICK_PERIOD_MS);
+          vTaskDelay(60/portTICK_RATE_MS);
           gpio_set_level(TWATCH_GPS_WAKEUP, 0);
-          vTaskDelay(200/portTICK_PERIOD_MS);
+          vTaskDelay(200/portTICK_RATE_MS);
           gpio_set_level(TWATCH_GPS_WAKEUP, 1);
 
           /* GPS should be woken up. */
@@ -740,7 +740,7 @@ esp_err_t twatch_gps_on(void)
 
     /* Power on GPS through LDO4. */
     result = twatch_pmu_gps_power(true);
-    vTaskDelay(200/portTICK_PERIOD_MS);
+    vTaskDelay(200/portTICK_RATE_MS);
 
     /* Change current state. */
     g_gps_state = GPS_ON;
