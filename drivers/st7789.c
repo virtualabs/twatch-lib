@@ -385,8 +385,6 @@ void st7789_blank(void)
 
 uint8_t _st7789_get_pixel(int x, int y)
 {
-  int fb_blk;
-
   /* Sanity checks. */
   if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
     return 0;

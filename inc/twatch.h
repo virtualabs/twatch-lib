@@ -35,5 +35,6 @@
 #include "ui/scrollbar.h"
 #include "ui/style.h"
 #include "ui/spinner.h"
+#include "ui/widget.h"
 
 #endif /* __INC_TWATCH_H */
