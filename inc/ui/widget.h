@@ -11,6 +11,8 @@
 #define WE_ERROR      (1)
 #define WE_PROCESSED  (0)
 
+#define WIDGET(x) (widget_t *)(x)
+
 typedef struct tWidget widget_t;
 
 typedef enum {

@@ -13,7 +13,7 @@
 //static uint8_t g_gga_test_terms[] =  "064036.289,,,00740.9373,E,1,04,3.2,200.2,M,,,,0000";
 //static uint8_t g_rmc_test_terms[] = "053740.000,A,2503.6319,N,12136.0099,E,2.69,79.65,100106,,,A";
 
-volatile uint8_t gps_rx_buffer[GPS_RX_BUFSIZE];
+static uint8_t gps_rx_buffer[GPS_RX_BUFSIZE];
 volatile int gps_rx_buffer_len = 0;
 
 typedef enum {
@@ -231,8 +231,7 @@ void gps_parse_degrees(uint8_t *term, gps_raw_degrees_t *p_degrees)
 
 static void gps_parse_gngga_sentence(uint8_t *nmea_gga_terms)
 {
-  int term_pos, term_length;
-  int32_t i32_time;
+  int term_pos;
   uint8_t *term_start, *term_end;
   
   /* We start with first term. */
@@ -352,8 +351,7 @@ static void gps_parse_gngga_sentence(uint8_t *nmea_gga_terms)
 
 static void gps_parse_gnrmc_sentence(uint8_t *nmea_rmc_terms)
 {
-  int term_pos, term_length;
-  int32_t i32_time;
+  int term_pos;
   uint8_t *term_start, *term_end;
   bool b_valid_data = false;
   
@@ -639,8 +637,6 @@ static void gps_process_rx()
 
 static void twatch_gps_control(void *pvParameters)
 {
-  uart_event_t uart_evt;
-  uint8_t buffer[256];
   for(;;)
   {
 

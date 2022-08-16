@@ -2,8 +2,6 @@
 #include "ui/container.h"
 
 #define TAG "ui::container"
-#define WIDGET(x) (widget_t *)(&x->widget)
-
 
 /**
  * widhget_container_drawfunc()

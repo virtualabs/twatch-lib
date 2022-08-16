@@ -361,7 +361,7 @@ void st7789_commit_fb(void)
       framechunk[j] = COLOR_LUT[pix & 0x3F];
     }
 
-    st7789_send_data(&framechunk, FB_CHUNK_SIZE*2);
+    st7789_send_data((uint8_t *)&framechunk, FB_CHUNK_SIZE*2);
   }
 }
 
@@ -385,7 +385,7 @@ void st7789_blank(void)
 
 uint8_t _st7789_get_pixel(int x, int y)
 {
-  int fb_blk, fb_blk_off;
+  int fb_blk;
 
   /* Sanity checks. */
   if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
@@ -430,11 +430,6 @@ uint8_t st7789_get_pixel(int x, int y)
 
 void st7789_set_pixel(int x, int y, uint8_t color)
 {
-  int fb_blk, fb_blk_off;
-  uint8_t orig_color;
-  int r,g,b;
-  int a;
-
   /* Sanity checks. */
   if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
     return;
@@ -458,12 +453,6 @@ void st7789_set_pixel(int x, int y, uint8_t color)
 
 void _st7789_set_pixel(int x, int y, uint8_t color)
 {
-  int fb_blk, fb_blk_off;
-  uint32_t *ppixel;
-  uint32_t *ppixel2;
-  uint16_t orig_color;
-  uint8_t r,g,b,a;
-
   /* Sanity checks. */
   if ((x < g_dw_x0) || (x > g_dw_x1) || (y<g_dw_y0) || (y>g_dw_y1))
     return;
@@ -533,10 +522,7 @@ void st7789_fill_region(int x, int y, int width, int height, uint8_t color)
 void st7789_draw_fastline(int x0, int y, int x1, uint8_t color)
 {
   int _x0,_x1,_y;
-  int d=0;
   int n=0;
-  int s = 0;
-  uint8_t temp[4];
 
   if (g_inv_x)
   {

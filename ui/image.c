@@ -1,7 +1,5 @@
 #include "ui/image.h"
 
-#define WIDGET(x) (widget_t *)(&x->widget)
-
 
 /**
  * widget_image_drawfunc()
