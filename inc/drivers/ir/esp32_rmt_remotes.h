@@ -6,7 +6,7 @@
 #ifndef ESP32_RMT_REMOTES_H
 #define ESP32_RMT_REMOTES_H
 
-#ifdef CONFIG_TWATCH_V1
+#if defined(CONFIG_TWATCH_V1) || defined(CONFIG_TWATCH_V3)
   #define TX_PIN_SSSS GPIO_NUM_13
 #elif CONFIG_TWATCH_V2
   #define TX_PIN_SSSS GPIO_NUM_2

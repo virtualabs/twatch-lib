@@ -68,7 +68,7 @@ void _twatch_vibration_task(void *parameter)
 
 esp_err_t twatch_vibrate_init(void)
 {
-  #ifdef CONFIG_TWATCH_V1
+  #if defined(CONFIG_TWATCH_V1) || defined(CONFIG_TWATCH_V3)
     gpio_config_t motor;
 
     /* Configure GPIO. */
@@ -108,7 +108,7 @@ esp_err_t twatch_vibrate_init(void)
 
 esp_err_t twatch_vibrate_vibrate(int duration)
 {
-  #ifdef CONFIG_TWATCH_V1
+  #if defined(CONFIG_TWATCH_V1) || defined(CONFIG_TWATCH_V3)
     vibrate_parameter_t *parameter = (vibrate_parameter_t *)malloc(sizeof(vibrate_parameter_t));
     if (parameter != NULL)
     {
@@ -142,7 +142,7 @@ esp_err_t twatch_vibrate_vibrate(int duration)
 
 esp_err_t twatch_vibrate_pattern(vibrate_pattern_t *pattern, int length)
 {
-  #ifdef CONFIG_TWATCH_V1
+  #if defined(CONFIG_TWATCH_V1) || defined(CONFIG_TWATCH_V3)
     vibrate_parameter_t *parameter = (vibrate_parameter_t *)malloc(sizeof(vibrate_parameter_t));
     if (parameter != NULL)
     {
