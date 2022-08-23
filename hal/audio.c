@@ -17,7 +17,7 @@ volatile int sample_rate = SOUND_DEFAULT_SAMPLE_RATE;
 
 esp_err_t twatch_audio_init(int sample_rate)
 {
-  #ifdef CONFIG_TWATCH_V1
+  #if defined(CONFIG_TWATCH_V1) || defined(CONFIG_TWATCH_V3)
     esp_err_t result;
     i2s_config_t      ss_config;
     i2s_pin_config_t  ss_pin_config;
@@ -81,7 +81,7 @@ esp_err_t twatch_audio_init(int sample_rate)
 
 esp_err_t twatch_audio_send_samples(void *samples, size_t samples_size, size_t *p_bytes_written, TickType_t ticks_to_wait)
 {
-  #ifdef CONFIG_TWATCH_V1
+  #if defined(CONFIG_TWATCH_V1) || defined(CONFIG_TWATCH_V3)
     return i2s_write(
       SOUND_DEFAULT_I2S_PORT,
       samples,
@@ -102,7 +102,7 @@ esp_err_t twatch_audio_send_samples(void *samples, size_t samples_size, size_t *
 
 esp_err_t twatch_audio_deinit(void)
 {
-  #ifdef CONFIG_TWATCH_V1
+  #if defined(CONFIG_TWATCH_V1) || defined(CONFIG_TWATCH_V3)
     esp_err_t result;
 
     result = i2s_driver_uninstall(SOUND_DEFAULT_I2S_PORT);

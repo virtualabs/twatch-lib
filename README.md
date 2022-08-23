@@ -1,7 +1,7 @@
-Lilygo T-Watch 2020 v1 library for ESP32
+Lilygo T-Watch 2020 v1/v2/v3 library for ESP32
 ========================================
 
-`Twatch-lib` is an ESP32 compatible library (or component) for Lilygo T-Watch 2020 v1 that
+`Twatch-lib` is an ESP32 compatible library (or component) for Lilygo T-Watch 2020 v1/v2/v3 that
 provides the following:
 
 * An hardware abstraction layer that handles the watch touchscreen, accelerometer, speaker, power management and vibrator

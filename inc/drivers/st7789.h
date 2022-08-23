@@ -22,6 +22,8 @@
   #define ST7789_BL_IO          GPIO_NUM_12
 #elif CONFIG_TWATCH_V2
   #define ST7789_BL_IO          GPIO_NUM_25
+#elif CONFIG_TWATCH_V3
+  #define ST7789_BL_IO          GPIO_NUM_15
 #endif
 
 #define ST7789_SPI_SPEED      /*80000000L*/SPI_MASTER_FREQ_80M
