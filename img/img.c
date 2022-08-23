@@ -39,9 +39,19 @@ void _screen_bitblt_8bpp(image_t *source, int source_x, int source_y, int width,
   int x, y;
   uint8_t *p_img_raw = (uint8_t *)source;
 
+  if ((source_x + width) > source->width)
+  {
+    width = source->width - source_x;
+  }
+
+  if ((source_y + height) > source->height)
+  {
+    height = source->height - source_y;
+  }
+
   for (y=0;y<height;y++)
   {
-    st7789_copy_line(dest_x, dest_y+y, &p_img_raw[y*source->width + 6], width);
+    st7789_copy_line(dest_x, dest_y+y, &p_img_raw[(source_y+y)*source->width + source_x + 6], width);
   }
 
   #if 0
