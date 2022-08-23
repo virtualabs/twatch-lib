@@ -35,7 +35,7 @@ bool twatch_hal_init(void)
     return false;
   }
     
-  #ifdef CONFIG_TWATCH_V1
+  #if defined(CONFIG_TWATCH_V1) || defined(CONFIG_TWATCH_V3)
     /* Initialize audio. */
     if (twatch_audio_init(SOUND_DEFAULT_SAMPLE_RATE) != ESP_OK)
     {

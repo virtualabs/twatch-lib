@@ -121,7 +121,7 @@ esp_err_t twatch_pmu_screen_power(bool enable)
     return ESP_FAIL;
   }
 
-  #ifdef CONFIG_TWATCH_V1
+  #if defined(CONFIG_TWATCH_V1) || defined(CONFIG_TWATCH_V3)
     /* Enable LDO2 */
     if (axpxx_setPowerOutPut(AXP202_LDO2, (enable?1:0)) == AXP_PASS)
       return ESP_OK;
@@ -308,7 +308,7 @@ void twatch_pmu_deepsleep(void)
   /* Shutdown screen. */
   twatch_pmu_screen_power(false);
   
-  #ifdef CONFIG_TWATCH_V1
+  #if defined(CONFIG_TWATCH_V1) || defined(CONFIG_TWATCH_V3)
   twatch_pmu_audio_power(false);
   #endif
 
