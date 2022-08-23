@@ -567,6 +567,14 @@ void st7789_copy_line(int x, int y, uint8_t *p_line, int nb_pixels)
   uint8_t *p_dst,*p_src;
   int offset=0, i;
 
+  /* If Y coordinate does not belong to our drawing window, no need to draw. */
+  if ((y < g_dw_y0) || (y > g_dw_y1) )
+    return;
+
+  /* Don't draw if no pixel falls in the drawing window. */
+  if ( ((x + nb_pixels) < g_dw_x0) || (x > (g_dw_x1)) )
+    return;
+
   /* Apply our drawing window */
   if (x < g_dw_x0)
   {
@@ -576,14 +584,11 @@ void st7789_copy_line(int x, int y, uint8_t *p_line, int nb_pixels)
   }
 
   /* Fix number of pixels to draw if line goes beyond our drawing window. */
-  if ((x + nb_pixels) > (g_dw_x1 - g_dw_x0))
+  if ((x + nb_pixels) > g_dw_x1)
   {
-    nb_pixels = (g_dw_x1 - g_dw_x0);
+    nb_pixels = (g_dw_x1 - x);
   }
-
-  /* If Y coordinate does not belong to our drawing window, no need to draw. */
-  if ((y < g_dw_y0) || (y > g_dw_y1) )
-    return;
+  //printf("nb_pixels: %d\n", nb_pixels);
 
   /* Invert X coordinate if required. */
   if (g_inv_x)

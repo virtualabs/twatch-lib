@@ -37,12 +37,21 @@ void _screen_bitblt_1bpp(image_t *source, int source_x, int source_y, int width,
 void _screen_bitblt_8bpp(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
 {
   int x, y;
+  uint8_t *p_img_raw = (uint8_t *)source;
 
+  for (y=0;y<height;y++)
+  {
+    st7789_copy_line(dest_x, dest_y+y, &p_img_raw[y*source->width + 6], width);
+  }
+
+  #if 0
   for (x=0;x<width;x++)
   {
-    for (y=0;y<height;y++)
-      st7789_set_pixel(dest_x+x, dest_y+y, _get_pixel_8bpp(source, source_x+x, source_y+y));
+    //for (y=0;y<height;y++)
+    //  st7789_set_pixel(dest_x+x, dest_y+y, _get_pixel_8bpp(source, source_x+x, source_y+y));
+    st7789_copy_line(dest_x+x, dest_y+y, &p_img_raw[y*source->width + 6], width);
   }
+  #endif
 }
 
 void screen_bitblt(image_t *source, int source_x, int source_y, int width, int height, int dest_x, int dest_y)
