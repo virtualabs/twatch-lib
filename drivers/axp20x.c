@@ -31,7 +31,7 @@ SOFTWARE.
 
 axp20x.cpp - Arduino library for X-Power AXP202 chip.
 Created by Lewis he on April 1, 2019.
-github:https://github.com/lewisxhe/AXP202X_Libraries
+github:https://github.com/lewisxhe/AXP202X_Library
 */
 /////////////////////////////////////////////////////////////////
 
@@ -284,12 +284,12 @@ int axpxx_setPowerOutPut(uint8_t ch, bool en)
   if (axpxx_chip_id == AXP173_CHIP_ID) {
     axpxx_readByte(AXP173_EXTEN_DC2_CTL, 1, &data);
     if (ch & AXP173_DCDC2) {
-      data = en ? data | BIT_MASK(AXP173_CTL_DC2_BIT) : data & (~BIT_MASK(AXP173_CTL_DC2_BIT));
-      ch &= (~BIT_MASK(AXP173_DCDC2));
+      data = en ? data | _BV(AXP173_CTL_DC2_BIT) : data & (~_BV(AXP173_CTL_DC2_BIT));
+      ch &= (~_BV(AXP173_DCDC2));
       axpxx_writeByte(AXP173_EXTEN_DC2_CTL, 1, &data);
     } else if (ch & AXP173_EXTEN) {
-      data = en ? data | BIT_MASK(AXP173_CTL_EXTEN_BIT) : data & (~BIT_MASK(AXP173_CTL_EXTEN_BIT));
-      ch &= (~BIT_MASK(AXP173_EXTEN));
+      data = en ? data | _BV(AXP173_CTL_EXTEN_BIT) : data & (~_BV(AXP173_CTL_EXTEN_BIT));
+      ch &= (~_BV(AXP173_EXTEN));
       axpxx_writeByte(AXP173_EXTEN_DC2_CTL, 1, &data);
     }
   }
@@ -762,85 +762,85 @@ void axpxx_clearIRQ()
 
 bool axpxx_isAcinOverVoltageIRQ()
 {
-  return (bool)(axpxx_irq[0] & BIT_MASK(7));
+  return (bool)(axpxx_irq[0] & _BV(7));
 }
 
 bool axpxx_isAcinPlugInIRQ()
 {
-  return (bool)(axpxx_irq[0] & BIT_MASK(6));
+  return (bool)(axpxx_irq[0] & _BV(6));
 }
 
 bool axpxx_isAcinRemoveIRQ()
 {
-  return (bool)(axpxx_irq[0] & BIT_MASK(5));
+  return (bool)(axpxx_irq[0] & _BV(5));
 }
 
 bool axpxx_isVbusOverVoltageIRQ()
 {
-  return (bool)(axpxx_irq[0] & BIT_MASK(4));
+  return (bool)(axpxx_irq[0] & _BV(4));
 }
 
 bool axpxx_isVbusPlugInIRQ()
 {
-  return (bool)(axpxx_irq[0] & BIT_MASK(3));
+  return (bool)(axpxx_irq[0] & _BV(3));
 }
 
 bool axpxx_isVbusRemoveIRQ()
 {
-  return (bool)(axpxx_irq[0] & BIT_MASK(2));
+  return (bool)(axpxx_irq[0] & _BV(2));
 }
 
 bool axpxx_isVbusLowVHOLDIRQ()
 {
-  return (bool)(axpxx_irq[0] & BIT_MASK(1));
+  return (bool)(axpxx_irq[0] & _BV(1));
 }
 
 bool axpxx_isBattPlugInIRQ()
 {
-  return (bool)(axpxx_irq[1] & BIT_MASK(7));
+  return (bool)(axpxx_irq[1] & _BV(7));
 }
 bool axpxx_isBattRemoveIRQ()
 {
-  return (bool)(axpxx_irq[1] & BIT_MASK(6));
+  return (bool)(axpxx_irq[1] & _BV(6));
 }
 bool axpxx_isBattEnterActivateIRQ()
 {
-  return (bool)(axpxx_irq[1] & BIT_MASK(5));
+  return (bool)(axpxx_irq[1] & _BV(5));
 }
 bool axpxx_isBattExitActivateIRQ()
 {
-  return (bool)(axpxx_irq[1] & BIT_MASK(4));
+  return (bool)(axpxx_irq[1] & _BV(4));
 }
 bool axpxx_isChargingIRQ()
 {
-  return (bool)(axpxx_irq[1] & BIT_MASK(3));
+  return (bool)(axpxx_irq[1] & _BV(3));
 }
 bool axpxx_isChargingDoneIRQ()
 {
-  return (bool)(axpxx_irq[1] & BIT_MASK(2));
+  return (bool)(axpxx_irq[1] & _BV(2));
 }
 bool axpxx_isBattTempLowIRQ()
 {
-  return (bool)(axpxx_irq[1] & BIT_MASK(1));
+  return (bool)(axpxx_irq[1] & _BV(1));
 }
 bool axpxx_isBattTempHighIRQ()
 {
-  return (bool)(axpxx_irq[1] & BIT_MASK(0));
+  return (bool)(axpxx_irq[1] & _BV(0));
 }
 
 bool axpxx_isPEKShortPressIRQ()
 {
-  return (bool)(axpxx_irq[2] & BIT_MASK(1));
+  return (bool)(axpxx_irq[2] & _BV(1));
 }
 
 bool axpxx_isPEKLongtPressIRQ()
 {
-  return (bool)(axpxx_irq[2] & BIT_MASK(0));
+  return (bool)(axpxx_irq[2] & _BV(0));
 }
 
 bool axpxx_isTimerTimeoutIRQ()
 {
-  return (bool)(axpxx_irq[4] & BIT_MASK(7));
+  return (bool)(axpxx_irq[4] & _BV(7));
 }
 
 bool axpxx_isVBUSPlug()
@@ -1084,9 +1084,9 @@ int axpxx_setLDO3Mode(uint8_t mode)
     return AXP_FAIL;
   axpxx_readByte(AXP202_LDO3OUT_VOL, 1, &val);
   if (mode) {
-    val |= BIT_MASK(7);
+    val |= _BV(7);
   } else {
-    val &= (~BIT_MASK(7));
+    val &= (~_BV(7));
   }
   axpxx_writeByte(AXP202_LDO3OUT_VOL, 1, &val);
   return AXP_PASS;
@@ -1222,8 +1222,8 @@ int axpxx_getBattPercentage()
   if (!axpxx_isBatteryConnect())
     return 0;
   axpxx_readByte(AXP202_BATT_PERCENTAGE, 1, &val);
-  if (!(val & BIT_MASK(7))) {
-    return val & (~BIT_MASK(7));
+  if (!(val & _BV(7))) {
+    return val & (~_BV(7));
   }
   return 0;
 }
@@ -1233,7 +1233,7 @@ int axpxx_setChgLEDMode(axp_chgled_mode_t mode)
   uint8_t val;
   axpxx_readByte(AXP202_OFF_CTL, 1, &val);
   val &= 0b11001111;
-  val |= BIT_MASK(3);
+  val |= _BV(3);
   switch (mode) {
     case AXP20X_LED_OFF:
       axpxx_writeByte(AXP202_OFF_CTL, 1, &val);
@@ -1623,7 +1623,7 @@ int axpxx__axp202_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
       rslt = axpxx__axp202_gpio_3_select(mode);
       if (rslt < 0)return rslt;
       axpxx_readByte(AXP202_GPIO3_CTL, 1, &val);
-      val = rslt ? (val | BIT_MASK(2)) : (val & (~BIT_MASK(2)));
+      val = rslt ? (val | _BV(2)) : (val & (~_BV(2)));
       axpxx_writeByte(AXP202_GPIO3_CTL, 1, &val);
       return AXP_PASS;
     }
@@ -1658,9 +1658,9 @@ int axpxx_irq_mask(axp_gpio_irq_t irq)
     case AXP_IRQ_NONE:
       return 0;
     case AXP_IRQ_RISING:
-      return BIT_MASK(7);
+      return _BV(7);
     case AXP_IRQ_FALLING:
-      return BIT_MASK(6);
+      return _BV(6);
     case AXP_IRQ_DOUBLE_EDGE:
       return 0b1100000;
     default:
@@ -1800,7 +1800,7 @@ int axpxx__axp202_gpio_read(axp_gpio_t gpio)
       return AXP_NOT_SUPPORT;
   }
   axpxx_readByte(reg, 1, &val);
-  return val & BIT_MASK(offset) ? 1 : 0;
+  return val & _BV(offset) ? 1 : 0;
 }
 
 int axpxx_gpioWrite(axp_gpio_t gpio, uint8_t val)
