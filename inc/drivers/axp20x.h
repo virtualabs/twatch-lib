@@ -735,7 +735,7 @@ int axpxx_clearTimerStatus();
 int axpxx_setStartupTime(uint8_t param);
 
 /**
- * param: axp_loonPress_time_t
+ * param: axp_longPress_time_t
  */
 int axpxx_setlongPressTime(uint8_t param);
 

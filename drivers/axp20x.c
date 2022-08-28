@@ -204,18 +204,18 @@ return _axp_probe();
 bool axpxx_isDCDC1Enable()
 {
   if (axpxx_chip_id == AXP192_CHIP_ID)
-  return IS_OPEN(axpxx_outputReg, AXP192_DCDC1);
+    return IS_OPEN(axpxx_outputReg, AXP192_DCDC1);
   else if (axpxx_chip_id == AXP173_CHIP_ID)
-  return IS_OPEN(axpxx_outputReg, AXP173_DCDC1);
+    return IS_OPEN(axpxx_outputReg, AXP173_DCDC1);
   return false;
 }
 
 bool axpxx_isExtenEnable()
 {
   if (axpxx_chip_id == AXP192_CHIP_ID)
-  return IS_OPEN(axpxx_outputReg, AXP192_EXTEN);
+    return IS_OPEN(axpxx_outputReg, AXP192_EXTEN);
   else if (axpxx_chip_id == AXP202_CHIP_ID)
-  return IS_OPEN(axpxx_outputReg, AXP202_EXTEN);
+    return IS_OPEN(axpxx_outputReg, AXP202_EXTEN);
   else if (axpxx_chip_id == AXP173_CHIP_ID) {
     uint8_t data;
     axpxx_readByte(AXP173_EXTEN_DC2_CTL, 1, &data);
@@ -236,20 +236,20 @@ bool axpxx_isLDO2Enable()
 bool axpxx_isLDO3Enable()
 {
   if (axpxx_chip_id == AXP192_CHIP_ID)
-  return IS_OPEN(axpxx_outputReg, AXP192_LDO3);
+    return IS_OPEN(axpxx_outputReg, AXP192_LDO3);
   else if (axpxx_chip_id == AXP202_CHIP_ID)
-  return IS_OPEN(axpxx_outputReg, AXP202_LDO3);
+    return IS_OPEN(axpxx_outputReg, AXP202_LDO3);
   else if (axpxx_chip_id == AXP173_CHIP_ID)
-  return IS_OPEN(axpxx_outputReg, AXP173_LDO3);
+    return IS_OPEN(axpxx_outputReg, AXP173_LDO3);
   return false;
 }
 
 bool axpxx_isLDO4Enable()
 {
   if (axpxx_chip_id == AXP202_CHIP_ID)
-  return IS_OPEN(axpxx_outputReg, AXP202_LDO4);
+    return IS_OPEN(axpxx_outputReg, AXP202_LDO4);
   if (axpxx_chip_id == AXP173_CHIP_ID)
-  return IS_OPEN(axpxx_outputReg, AXP173_LDO4);
+    return IS_OPEN(axpxx_outputReg, AXP173_LDO4);
   return false;
 }
 
@@ -277,7 +277,7 @@ int axpxx_setPowerOutPut(uint8_t ch, bool en)
   uint8_t data;
   uint8_t val = 0;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
 
   //! Axp173 cannot use the REG12H register to control
   //! DC2 and EXTEN. It is necessary to control REG10H separately.
@@ -319,7 +319,7 @@ bool axpxx_isChargeing()
 {
   uint8_t reg;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_readByte(AXP202_MODE_CHGSTATUS, 1, &reg);
   return IS_OPEN(reg, 6);
 }
@@ -328,7 +328,7 @@ bool axpxx_isBatteryConnect()
 {
   uint8_t reg;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_readByte(AXP202_MODE_CHGSTATUS, 1, &reg);
   return IS_OPEN(reg, 5);
 }
@@ -336,28 +336,28 @@ bool axpxx_isBatteryConnect()
 float axpxx_getAcinVoltage()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   return _getRegistResult(AXP202_ACIN_VOL_H8, AXP202_ACIN_VOL_L4) * AXP202_ACIN_VOLTAGE_STEP;
 }
 
 float axpxx_getAcinCurrent()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   return _getRegistResult(AXP202_ACIN_CUR_H8, AXP202_ACIN_CUR_L4) * AXP202_ACIN_CUR_STEP;
 }
 
 float axpxx_getVbusVoltage()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   return _getRegistResult(AXP202_VBUS_VOL_H8, AXP202_VBUS_VOL_L4) * AXP202_VBUS_VOLTAGE_STEP;
 }
 
 float axpxx_getVbusCurrent()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   return _getRegistResult(AXP202_VBUS_CUR_H8, AXP202_VBUS_CUR_L4) * AXP202_VBUS_CUR_STEP;
 }
 
@@ -371,21 +371,21 @@ float axpxx_getTemp()
 float axpxx_getTSTemp()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   return _getRegistResult(AXP202_TS_IN_H8, AXP202_TS_IN_L4) * AXP202_TS_PIN_OUT_STEP;
 }
 
 float axpxx_getGPIO0Voltage()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   return _getRegistResult(AXP202_GPIO0_VOL_ADC_H8, AXP202_GPIO0_VOL_ADC_L4) * AXP202_GPIO0_STEP;
 }
 
 float axpxx_getGPIO1Voltage()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   return _getRegistResult(AXP202_GPIO1_VOL_ADC_H8, AXP202_GPIO1_VOL_ADC_L4) * AXP202_GPIO1_STEP;
 }
 
@@ -399,7 +399,7 @@ float axpxx_getBattInpower()
   float rslt;
   uint8_t hv, mv, lv;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_readByte(AXP202_BAT_POWERH8, 1, &hv);
   axpxx_readByte(AXP202_BAT_POWERM8, 1, &mv);
   axpxx_readByte(AXP202_BAT_POWERL8, 1, &lv);
@@ -411,35 +411,35 @@ float axpxx_getBattInpower()
 float axpxx_getBattVoltage()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   return _getRegistResult(AXP202_BAT_AVERVOL_H8, AXP202_BAT_AVERVOL_L4) * AXP202_BATT_VOLTAGE_STEP;
 }
 
 float axpxx_getBattChargeCurrent()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   switch (axpxx_chip_id) {
     case AXP202_CHIP_ID:
-    return _getRegistResult(AXP202_BAT_AVERCHGCUR_H8, AXP202_BAT_AVERCHGCUR_L4) * AXP202_BATT_CHARGE_CUR_STEP;
+      return _getRegistResult(AXP202_BAT_AVERCHGCUR_H8, AXP202_BAT_AVERCHGCUR_L4) * AXP202_BATT_CHARGE_CUR_STEP;
     case AXP192_CHIP_ID:
-    return _getRegistH8L5(AXP202_BAT_AVERCHGCUR_H8, AXP202_BAT_AVERCHGCUR_L5) * AXP202_BATT_CHARGE_CUR_STEP;
+      return _getRegistH8L5(AXP202_BAT_AVERCHGCUR_H8, AXP202_BAT_AVERCHGCUR_L5) * AXP202_BATT_CHARGE_CUR_STEP;
     default:
-    return AXP_FAIL;
+      return AXP_FAIL;
   }
 }
 
 float axpxx_getBattDischargeCurrent()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   return _getRegistH8L5(AXP202_BAT_AVERDISCHGCUR_H8, AXP202_BAT_AVERDISCHGCUR_L5) * AXP202_BATT_DISCHARGE_CUR_STEP;
 }
 
 float axpxx_getSysIPSOUTVoltage()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   return _getRegistResult(AXP202_APS_AVERVOL_H8, AXP202_APS_AVERVOL_L4);
 }
 
@@ -453,7 +453,7 @@ uint32_t axpxx_getBattChargeCoulomb()
 {
   uint8_t buffer[4];
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_readByte(0xB0, 4, buffer);
   return (buffer[0] << 24) + (buffer[1] << 16) + (buffer[2] << 8) + buffer[3];
 }
@@ -462,7 +462,7 @@ uint32_t axpxx_getBattDischargeCoulomb()
 {
   uint8_t buffer[4];
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_readByte(0xB4, 4, buffer);
   return (buffer[0] << 24) + (buffer[1] << 16) + (buffer[2] << 8) + buffer[3];
 }
@@ -470,10 +470,10 @@ uint32_t axpxx_getBattDischargeCoulomb()
 float axpxx_getCoulombData()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint32_t charge = axpxx_getBattChargeCoulomb(), discharge = axpxx_getBattDischargeCoulomb();
   uint8_t rate = axpxx_getAdcSamplingRate();
-  float result = 65536.0 * 0.5 * (charge - discharge) / 3600.0 / rate;
+  float result = 65536.0 * 0.5 * ((float)charge - (float)discharge) / 3600.0 / rate;
   return result;
 }
 
@@ -486,7 +486,7 @@ uint8_t axpxx_getCoulombRegister()
 {
   uint8_t buffer;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_readByte(AXP202_COULOMB_CTL, 1, &buffer);
   return buffer;
 }
@@ -495,7 +495,7 @@ uint8_t axpxx_getCoulombRegister()
 int axpxx_setCoulombRegister(uint8_t val)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_writeByte(AXP202_COULOMB_CTL, 1, &val);
   return AXP_PASS;
 }
@@ -505,7 +505,7 @@ int axpxx_EnableCoulombcounter(void)
 {
 
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t val = 0x80;
   axpxx_writeByte(AXP202_COULOMB_CTL, 1, &val);
   return AXP_PASS;
@@ -515,7 +515,7 @@ int axpxx_DisableCoulombcounter(void)
 {
 
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t val = 0x00;
   axpxx_writeByte(AXP202_COULOMB_CTL, 1, &val);
   return AXP_PASS;
@@ -525,7 +525,7 @@ int axpxx_StopCoulombcounter(void)
 {
 
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t val = 0xB8;
   axpxx_writeByte(AXP202_COULOMB_CTL, 1, &val);
   return AXP_PASS;
@@ -536,7 +536,7 @@ int axpxx_ClearCoulombcounter(void)
 {
 
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t val = 0xA0;
   axpxx_writeByte(AXP202_COULOMB_CTL, 1, &val);
   return AXP_PASS;
@@ -552,7 +552,7 @@ uint8_t axpxx_getAdcSamplingRate()
 {
   //axp192 same axp202 aregister address 0x84
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t val;
   axpxx_readByte(AXP202_ADC_SPEED, 1, &val);
   return 25 * (int)pow(2, (val & 0xC0) >> 6);
@@ -562,9 +562,9 @@ int axpxx_setAdcSamplingRate(axp_adc_sampling_rate_t rate)
 {
   //axp192 same axp202 aregister address 0x84
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (rate > AXP_ADC_SAMPLING_RATE_200HZ)
-  return AXP_FAIL;
+    return AXP_FAIL;
   uint8_t val;
   axpxx_readByte(AXP202_ADC_SPEED, 1, &val);
   uint8_t rw = rate;
@@ -578,9 +578,9 @@ int axpxx_setTSfunction(axp_ts_pin_function_t func)
 {
   //axp192 same axp202 aregister address 0x84
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (func > AXP_TS_PIN_FUNCTION_ADC)
-  return AXP_FAIL;
+    return AXP_FAIL;
   uint8_t val;
   axpxx_readByte(AXP202_ADC_SPEED, 1, &val);
   uint8_t rw = func;
@@ -594,9 +594,9 @@ int axpxx_setTScurrent(axp_ts_pin_current_t current)
 {
   //axp192 same axp202 aregister address 0x84
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (current > AXP_TS_PIN_CURRENT_80UA)
-  return AXP_FAIL;
+    return AXP_FAIL;
   uint8_t val;
   axpxx_readByte(AXP202_ADC_SPEED, 1, &val);
   uint8_t rw = current;
@@ -610,9 +610,9 @@ int axpxx_setTSmode(axp_ts_pin_mode_t mode)
 {
   //axp192 same axp202 aregister address 0x84
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (mode > AXP_TS_PIN_MODE_ENABLE)
-  return AXP_FAIL;
+    return AXP_FAIL;
   uint8_t val;
   axpxx_readByte(AXP202_ADC_SPEED, 1, &val);
   uint8_t rw = mode;
@@ -622,22 +622,22 @@ int axpxx_setTSmode(axp_ts_pin_mode_t mode)
 
   // TS pin ADC function enable/disable
   if (mode == AXP_TS_PIN_MODE_DISABLE)
-  axpxx_adc1Enable(AXP202_TS_PIN_ADC1, false);
+    axpxx_adc1Enable(AXP202_TS_PIN_ADC1, false);
   else
-  axpxx_adc1Enable(AXP202_TS_PIN_ADC1, true);
+    axpxx_adc1Enable(AXP202_TS_PIN_ADC1, true);
   return AXP_PASS;
 }
 
 int axpxx_adc1Enable(uint16_t params, bool en)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t val;
   axpxx_readByte(AXP202_ADC_EN1, 1, &val);
   if (en)
-  val |= params;
+    val |= params;
   else
-  val &= ~(params);
+    val &= ~(params);
   axpxx_writeByte(AXP202_ADC_EN1, 1, &val);
   return AXP_PASS;
 }
@@ -645,13 +645,13 @@ int axpxx_adc1Enable(uint16_t params, bool en)
 int axpxx_adc2Enable(uint16_t params, bool en)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t val;
   axpxx_readByte(AXP202_ADC_EN2, 1, &val);
   if (en)
-  val |= params;
+    val |= params;
   else
-  val &= ~(params);
+    val &= ~(params);
   axpxx_writeByte(AXP202_ADC_EN2, 1, &val);
   return AXP_PASS;
 }
@@ -659,7 +659,7 @@ int axpxx_adc2Enable(uint16_t params, bool en)
 int axpxx_enableIRQ(uint64_t params, bool en)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t val, val1;
   if (params & 0xFF) {
     val1 = params & 0xFF;
@@ -720,22 +720,22 @@ int axpxx_enableIRQ(uint64_t params, bool en)
 int axpxx_readIRQ()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   switch (axpxx_chip_id) {
     case AXP192_CHIP_ID:
-    for (int i = 0; i < 4; ++i) {
-      axpxx_readByte(AXP192_INTSTS1 + i, 1, &axpxx_irq[i]);
-    }
-    axpxx_readByte(AXP192_INTSTS5, 1, &axpxx_irq[4]);
-    return AXP_PASS;
+      for (int i = 0; i < 4; ++i) {
+        axpxx_readByte(AXP192_INTSTS1 + i, 1, &axpxx_irq[i]);
+      }
+      axpxx_readByte(AXP192_INTSTS5, 1, &axpxx_irq[4]);
+      return AXP_PASS;
 
     case AXP202_CHIP_ID:
-    for (int i = 0; i < 5; ++i) {
-      axpxx_readByte(AXP202_INTSTS1 + i, 1, &axpxx_irq[i]);
-    }
-    return AXP_PASS;
+      for (int i = 0; i < 5; ++i) {
+        axpxx_readByte(AXP202_INTSTS1 + i, 1, &axpxx_irq[i]);
+      }
+      return AXP_PASS;
     default:
-    return AXP_FAIL;
+      return AXP_FAIL;
   }
 }
 
@@ -744,18 +744,18 @@ void axpxx_clearIRQ()
   uint8_t val = 0xFF;
   switch (axpxx_chip_id) {
     case AXP192_CHIP_ID:
-    for (int i = 0; i < 3; i++) {
-      axpxx_writeByte(AXP192_INTSTS1 + i, 1, &val);
-    }
-    axpxx_writeByte(AXP192_INTSTS5, 1, &val);
-    break;
+      for (int i = 0; i < 3; i++) {
+        axpxx_writeByte(AXP192_INTSTS1 + i, 1, &val);
+      }
+      axpxx_writeByte(AXP192_INTSTS5, 1, &val);
+      break;
     case AXP202_CHIP_ID:
-    for (int i = 0; i < 5; i++) {
-      axpxx_writeByte(AXP202_INTSTS1 + i, 1, &val);
-    }
-    break;
+      for (int i = 0; i < 5; i++) {
+        axpxx_writeByte(AXP202_INTSTS1 + i, 1, &val);
+      }
+      break;
     default:
-    break;
+      break;
   }
   memset(axpxx_irq, 0, sizeof(axpxx_irq));
 }
@@ -846,7 +846,7 @@ bool axpxx_isTimerTimeoutIRQ()
 bool axpxx_isVBUSPlug()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t reg;
   axpxx_readByte(AXP202_STATUS, 1, &reg);
   return IS_OPEN(reg, 5);
@@ -855,7 +855,7 @@ bool axpxx_isVBUSPlug()
 int axpxx_setDCDC2Voltage(uint16_t mv)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (mv < 700) {
     AXP_DEBUG("DCDC2:Below settable voltage:700mV~2275mV");
     mv = 700;
@@ -881,7 +881,7 @@ uint16_t axpxx_getDCDC2Voltage()
 uint16_t axpxx_getDCDC3Voltage()
 {
   if (!axpxx_init)
-  return 0;
+    return 0;
   if (axpxx_chip_id == AXP173_CHIP_ID)return AXP_NOT_SUPPORT;
   uint8_t val = 0;
   axpxx_readByte(AXP202_DC3OUT_VOL, 1, &val);
@@ -910,7 +910,7 @@ int axpxx_setLDO2Voltage(uint16_t mv)
 {
   uint8_t rVal, wVal;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (mv < 1800) {
     AXP_DEBUG("LDO2:Below settable voltage:1800mV~3300mV");
     mv = 1800;
@@ -958,7 +958,7 @@ int axpxx_setLDO3Voltage(uint16_t mv)
 {
   uint8_t rVal;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (axpxx_chip_id == AXP202_CHIP_ID && mv < 700) {
     AXP_DEBUG("LDO3:Below settable voltage:700mV~3500mV");
     mv = 700;
@@ -995,7 +995,7 @@ uint16_t axpxx_getLDO3Voltage()
 {
   uint8_t rVal;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
 
   if (axpxx_chip_id == AXP202_CHIP_ID) {
     axpxx_readByte(AXP202_LDO3OUT_VOL, 1, &rVal);
@@ -1038,20 +1038,20 @@ uint16_t axpxx_getLDO4Voltage()
 {
   const uint16_t ldo4_table[] = {1250, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000, 2500, 2700, 2800, 3000, 3100, 3200, 3300};
   if (!axpxx_init)
-  return 0;
+    return 0;
   uint8_t val = 0;
   switch (axpxx_chip_id) {
     case AXP173_CHIP_ID:
-    axpxx_readByte(AXP173_LDO4_VLOTAGE, 1, &val);
-    return val * 25 + 700;
+      axpxx_readByte(AXP173_LDO4_VLOTAGE, 1, &val);
+      return val * 25 + 700;
     case AXP202_CHIP_ID:
-    axpxx_readByte(AXP202_LDO24OUT_VOL, 1, &val);
-    val &= 0xF;
-    return ldo4_table[val];
-    break;
+      axpxx_readByte(AXP202_LDO24OUT_VOL, 1, &val);
+      val &= 0xF;
+      return ldo4_table[val];
+      break;
     case AXP192_CHIP_ID:
     default:
-    break;
+      break;
   }
   return 0;
 }
@@ -1061,10 +1061,10 @@ uint16_t axpxx_getLDO4Voltage()
 int axpxx_setLDO4Voltage(axp_ldo4_table_t param)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (axpxx_chip_id == AXP202_CHIP_ID) {
     if (param >= AXP202_LDO4_MAX)
-    return AXP_INVALID;
+      return AXP_INVALID;
     uint8_t val;
     axpxx_readByte(AXP202_LDO24OUT_VOL, 1, &val);
     val &= 0xF0;
@@ -1081,7 +1081,7 @@ int axpxx_setLDO3Mode(uint8_t mode)
 {
   uint8_t val;
   if (axpxx_chip_id != AXP202_CHIP_ID)
-  return AXP_FAIL;
+    return AXP_FAIL;
   axpxx_readByte(AXP202_LDO3OUT_VOL, 1, &val);
   if (mode) {
     val |= BIT_MASK(7);
@@ -1096,9 +1096,9 @@ int axpxx_setStartupTime(uint8_t param)
 {
   uint8_t val;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (param > sizeof(axpxx_startupParams) / sizeof(axpxx_startupParams[0]))
-  return AXP_INVALID;
+    return AXP_INVALID;
   axpxx_readByte(AXP202_POK_SET, 1, &val);
   val &= (~0b11000000);
   val |= axpxx_startupParams[param];
@@ -1110,9 +1110,9 @@ int axpxx_setlongPressTime(uint8_t param)
 {
   uint8_t val;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (param > sizeof(axpxx_longPressParams) / sizeof(axpxx_longPressParams[0]))
-  return AXP_INVALID;
+    return AXP_INVALID;
   axpxx_readByte(AXP202_POK_SET, 1, &val);
   val &= (~0b00110000);
   val |= axpxx_longPressParams[param];
@@ -1124,9 +1124,9 @@ int axpxx_setShutdownTime(uint8_t param)
 {
   uint8_t val;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (param > sizeof(axpxx_shutdownParams) / sizeof(axpxx_shutdownParams[0]))
-  return AXP_INVALID;
+    return AXP_INVALID;
   axpxx_readByte(AXP202_POK_SET, 1, &val);
   val &= (~0b00000011);
   val |= axpxx_shutdownParams[param];
@@ -1138,12 +1138,12 @@ int axpxx_setTimeOutShutdown(bool en)
 {
   uint8_t val;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_readByte(AXP202_POK_SET, 1, &val);
   if (en)
-  val |= (1 << 3);
+    val |= (1 << 3);
   else
-  val &= (~(1 << 3));
+    val &= (~(1 << 3));
   axpxx_writeByte(AXP202_POK_SET, 1, &val);
   return AXP_PASS;
 }
@@ -1152,7 +1152,7 @@ int axpxx_shutdown()
 {
   uint8_t val;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_readByte(AXP202_OFF_CTL, 1, &val);
   val |= (1 << 7);
   axpxx_writeByte(AXP202_OFF_CTL, 1, &val);
@@ -1163,7 +1163,7 @@ float axpxx_getSettingChargeCurrent()
 {
   uint8_t val;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_readByte(AXP202_CHARGE1, 1, &val);
   val &= 0b00000111;
   float cur = 300.0 + val * 100.0;
@@ -1175,7 +1175,7 @@ bool axpxx_isChargeingEnable()
 {
   uint8_t val;
   if (!axpxx_init)
-  return false;
+    return false;
   axpxx_readByte(AXP202_CHARGE1, 1, &val);
   if (val & (1 << 7)) {
     AXP_DEBUG("Charging enable is enable\n");
@@ -1191,9 +1191,9 @@ int axpxx_enableChargeing(bool en)
 {
   uint8_t val;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   axpxx_readByte(AXP202_CHARGE1, 1, &val);
-  val |= (1 << 7);
+  val &= (0b11 << 5);
   axpxx_writeByte(AXP202_CHARGE1, 1, &val);
   return AXP_PASS;
 }
@@ -1202,9 +1202,9 @@ int axpxx_setChargingTargetVoltage(axp_chargeing_vol_t param)
 {
   uint8_t val;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (param > sizeof(axpxx_targetVolParams) / sizeof(axpxx_targetVolParams[0]))
-  return AXP_INVALID;
+    return AXP_INVALID;
   axpxx_readByte(AXP202_CHARGE1, 1, &val);
   val &= ~(0b01100000);
   val |= axpxx_targetVolParams[param];
@@ -1215,12 +1215,12 @@ int axpxx_setChargingTargetVoltage(axp_chargeing_vol_t param)
 int axpxx_getBattPercentage()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (axpxx_chip_id != AXP202_CHIP_ID)
-  return AXP_NOT_SUPPORT;
+    return AXP_NOT_SUPPORT;
   uint8_t val;
   if (!axpxx_isBatteryConnect())
-  return 0;
+    return 0;
   axpxx_readByte(AXP202_BATT_PERCENTAGE, 1, &val);
   if (!(val & BIT_MASK(7))) {
     return val & (~BIT_MASK(7));
@@ -1236,22 +1236,22 @@ int axpxx_setChgLEDMode(axp_chgled_mode_t mode)
   val |= BIT_MASK(3);
   switch (mode) {
     case AXP20X_LED_OFF:
-    axpxx_writeByte(AXP202_OFF_CTL, 1, &val);
-    break;
+      axpxx_writeByte(AXP202_OFF_CTL, 1, &val);
+      break;
     case AXP20X_LED_BLINK_1HZ:
-    val |= 0b00010000;
-    axpxx_writeByte(AXP202_OFF_CTL, 1, &val);
-    break;
+      val |= 0b00010000;
+      axpxx_writeByte(AXP202_OFF_CTL, 1, &val);
+      break;
     case AXP20X_LED_BLINK_4HZ:
-    val |= 0b00100000;
-    axpxx_writeByte(AXP202_OFF_CTL, 1, &val);
-    break;
+      val |= 0b00100000;
+      axpxx_writeByte(AXP202_OFF_CTL, 1, &val);
+      break;
     case AXP20X_LED_LOW_LEVEL:
-    val |= 0b00110000;
-    axpxx_writeByte(AXP202_OFF_CTL, 1, &val);
-    break;
+      val |= 0b00110000;
+      axpxx_writeByte(AXP202_OFF_CTL, 1, &val);
+      break;
     default:
-    return AXP_FAIL;
+      return AXP_FAIL;
   }
   return AXP_PASS;
 }
@@ -1280,7 +1280,7 @@ int axpxx_debugCharging()
 int axpxx_debugStatus()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t val, val1, val2;
   axpxx_readByte(AXP202_STATUS, 1, &val);
   axpxx_readByte(AXP202_MODE_CHGSTATUS, 1, &val1);
@@ -1293,7 +1293,7 @@ int axpxx_debugStatus()
 int axpxx_limitingOff()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   uint8_t val;
   axpxx_readByte(AXP202_IPS_SET, 1, &val);
   if (axpxx_chip_id == AXP202_CHIP_ID) {
@@ -1309,9 +1309,9 @@ int axpxx_limitingOff()
 int axpxx_setDCDC1Voltage(uint16_t mv)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (axpxx_chip_id != AXP192_CHIP_ID && axpxx_chip_id != AXP173_CHIP_ID)
-  return AXP_FAIL;
+    return AXP_FAIL;
   if (mv < 700) {
     AXP_DEBUG("DCDC1:Below settable voltage:700mV~3500mV");
     mv = 700;
@@ -1330,7 +1330,7 @@ int axpxx_setDCDC1Voltage(uint16_t mv)
 uint16_t axpxx_getDCDC1Voltage()
 {
   if (axpxx_chip_id != AXP192_CHIP_ID && axpxx_chip_id != AXP173_CHIP_ID)
-  return AXP_FAIL;
+    return AXP_FAIL;
   uint8_t val = 0;
   //! axp192 and axp173 dc1 control register same
   axpxx_readByte(AXP192_DC1_VLOTAGE, 1, &val);
@@ -1345,7 +1345,7 @@ uint16_t axpxx_getDCDC1Voltage()
 int axpxx_setTimer(uint8_t minutes)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (axpxx_chip_id == AXP202_CHIP_ID) {
     if (minutes > 63) {
       return AXP_ARG_INVALID;
@@ -1359,7 +1359,7 @@ int axpxx_setTimer(uint8_t minutes)
 int axpxx_offTimer()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (axpxx_chip_id == AXP202_CHIP_ID) {
     uint8_t minutes = 0x80;
     axpxx_writeByte(AXP202_TIMER_CTL, 1, &minutes);
@@ -1371,7 +1371,7 @@ int axpxx_offTimer()
 int axpxx_clearTimerStatus()
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (axpxx_chip_id == AXP202_CHIP_ID) {
     uint8_t val;
     axpxx_readByte(AXP202_TIMER_CTL, 1, &val);
@@ -1390,21 +1390,21 @@ int axpxx__axp192_gpio_0_select( axp_gpio_mode_t mode)
 {
   switch (mode) {
     case AXP_IO_OUTPUT_LOW_MODE:
-    return 0b101;
+      return 0b101;
     case AXP_IO_INPUT_MODE:
-    return 0b001;
+      return 0b001;
     case AXP_IO_LDO_MODE:
-    return 0b010;
+      return 0b010;
     case AXP_IO_ADC_MODE:
-    return 0b100;
+      return 0b100;
     case AXP_IO_FLOATING_MODE:
-    return 0b111;
+      return 0b111;
     case AXP_IO_OPEN_DRAIN_OUTPUT_MODE:
-    return 0;
+      return 0;
     case AXP_IO_OUTPUT_HIGH_MODE:
     case AXP_IO_PWM_OUTPUT_MODE:
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1413,21 +1413,21 @@ int axpxx__axp192_gpio_1_select( axp_gpio_mode_t mode)
 {
   switch (mode) {
     case AXP_IO_OUTPUT_LOW_MODE:
-    return 0b101;
+      return 0b101;
     case AXP_IO_INPUT_MODE:
-    return 0b001;
+      return 0b001;
     case AXP_IO_ADC_MODE:
-    return 0b100;
+      return 0b100;
     case AXP_IO_FLOATING_MODE:
-    return 0b111;
+      return 0b111;
     case AXP_IO_OPEN_DRAIN_OUTPUT_MODE:
-    return 0;
+      return 0;
     case AXP_IO_PWM_OUTPUT_MODE:
-    return 0b010;
+      return 0b010;
     case AXP_IO_OUTPUT_HIGH_MODE:
     case AXP_IO_LDO_MODE:
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1437,13 +1437,13 @@ int axpxx__axp192_gpio_3_select( axp_gpio_mode_t mode)
 {
   switch (mode) {
     case AXP_IO_EXTERN_CHARGING_CTRL_MODE:
-    return 0;
+      return 0;
     case AXP_IO_OPEN_DRAIN_OUTPUT_MODE:
-    return 1;
+      return 1;
     case AXP_IO_INPUT_MODE:
-    return 2;
+      return 2;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1452,15 +1452,15 @@ int axpxx__axp192_gpio_4_select( axp_gpio_mode_t mode)
 {
   switch (mode) {
     case AXP_IO_EXTERN_CHARGING_CTRL_MODE:
-    return 0;
+      return 0;
     case AXP_IO_OPEN_DRAIN_OUTPUT_MODE:
-    return 1;
+      return 1;
     case AXP_IO_INPUT_MODE:
-    return 2;
+      return 2;
     case AXP_IO_ADC_MODE:
-    return 3;
+      return 3;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1517,7 +1517,7 @@ int axpxx__axp192_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
       return AXP_PASS;
     }
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1526,17 +1526,17 @@ int axpxx__axp202_gpio_0_select( axp_gpio_mode_t mode)
 {
   switch (mode) {
     case AXP_IO_OUTPUT_LOW_MODE:
-    return 0;
+      return 0;
     case AXP_IO_OUTPUT_HIGH_MODE:
-    return 1;
+      return 1;
     case AXP_IO_INPUT_MODE:
-    return 2;
+      return 2;
     case AXP_IO_LDO_MODE:
-    return 3;
+      return 3;
     case AXP_IO_ADC_MODE:
-    return 4;
+      return 4;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1545,15 +1545,15 @@ int axpxx__axp202_gpio_1_select( axp_gpio_mode_t mode)
 {
   switch (mode) {
     case AXP_IO_OUTPUT_LOW_MODE:
-    return 0;
+      return 0;
     case AXP_IO_OUTPUT_HIGH_MODE:
-    return 1;
+      return 1;
     case AXP_IO_INPUT_MODE:
-    return 2;
+      return 2;
     case AXP_IO_ADC_MODE:
-    return 4;
+      return 4;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1562,13 +1562,13 @@ int axpxx__axp202_gpio_2_select( axp_gpio_mode_t mode)
 {
   switch (mode) {
     case AXP_IO_OUTPUT_LOW_MODE:
-    return 0;
+      return 0;
     case AXP_IO_INPUT_MODE:
-    return 2;
+      return 2;
     case AXP_IO_FLOATING_MODE:
-    return 1;
+      return 1;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1578,11 +1578,11 @@ int axpxx__axp202_gpio_3_select(axp_gpio_mode_t mode)
 {
   switch (mode) {
     case AXP_IO_INPUT_MODE:
-    return 1;
+      return 1;
     case AXP_IO_OPEN_DRAIN_OUTPUT_MODE:
-    return 0;
+      return 0;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1628,7 +1628,7 @@ int axpxx__axp202_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
       return AXP_PASS;
     }
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1637,16 +1637,16 @@ int axpxx__axp202_gpio_set(axp_gpio_t gpio, axp_gpio_mode_t mode)
 int axpxx_setGPIOMode(axp_gpio_t gpio, axp_gpio_mode_t mode)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   switch (axpxx_chip_id) {
     case AXP202_CHIP_ID:
-    return axpxx__axp202_gpio_set(gpio, mode);
-    break;
+      return axpxx__axp202_gpio_set(gpio, mode);
+      break;
     case AXP192_CHIP_ID:
-    return axpxx__axp192_gpio_set(gpio, mode);
-    break;
+      return axpxx__axp192_gpio_set(gpio, mode);
+      break;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1656,15 +1656,15 @@ int axpxx_irq_mask(axp_gpio_irq_t irq)
 {
   switch (irq) {
     case AXP_IRQ_NONE:
-    return 0;
+      return 0;
     case AXP_IRQ_RISING:
-    return BIT_MASK(7);
+      return BIT_MASK(7);
     case AXP_IRQ_FALLING:
-    return BIT_MASK(6);
+      return BIT_MASK(6);
     case AXP_IRQ_DOUBLE_EDGE:
-    return 0b1100000;
+      return 0b1100000;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1679,19 +1679,19 @@ int axpxx__axp202_gpio_irq_set(axp_gpio_t gpio, axp_gpio_irq_t irq)
   if (mask < 0)return mask;
   switch (gpio) {
     case AXP_GPIO_0:
-    reg = AXP202_GPIO0_CTL;
-    break;
+      reg = AXP202_GPIO0_CTL;
+      break;
     case AXP_GPIO_1:
-    reg = AXP202_GPIO1_CTL;
-    break;
+      reg = AXP202_GPIO1_CTL;
+      break;
     case AXP_GPIO_2:
-    reg = AXP202_GPIO2_CTL;
-    break;
+      reg = AXP202_GPIO2_CTL;
+      break;
     case AXP_GPIO_3:
-    reg = AXP202_GPIO3_CTL;
-    break;
+      reg = AXP202_GPIO3_CTL;
+      break;
     default:
-    return AXP_NOT_SUPPORT;
+      return AXP_NOT_SUPPORT;
   }
   axpxx_readByte(reg, 1, &val);
   val = mask == 0 ? (val & 0b00111111) : (val | mask);
@@ -1706,12 +1706,12 @@ int axpxx_setGPIOIrq(axp_gpio_t gpio, axp_gpio_irq_t irq)
   return AXP_NOT_INIT;
   switch (axpxx_chip_id) {
     case AXP202_CHIP_ID:
-    return _axp202_gpio_irq_set(gpio, irq);
+      return _axp202_gpio_irq_set(gpio, irq);
     case AXP192_CHIP_ID:
     case AXP173_CHIP_ID:
-    return AXP_NOT_SUPPORT;
+      return AXP_NOT_SUPPORT;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1729,11 +1729,11 @@ int axpxx_setLDO5Voltage(axp_ldo5_table_t vol)
     0b11111111, //3.5V
   };
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   if (axpxx_chip_id != AXP202_CHIP_ID)
-  return AXP_NOT_SUPPORT;
+    return AXP_NOT_SUPPORT;
   if (vol > sizeof(params) / sizeof(params[0]))
-  return AXP_ARG_INVALID;
+    return AXP_ARG_INVALID;
   uint8_t val = 0;
   axpxx_readByte(AXP202_GPIO0_VOL, 1, &val);
   val &= 0b11111000;
@@ -1749,27 +1749,27 @@ int axpxx__axp202_gpio_write(axp_gpio_t gpio, uint8_t val)
   uint8_t wVal = 0;
   switch (gpio) {
     case AXP_GPIO_0:
-    reg = AXP202_GPIO0_CTL;
-    break;
+      reg = AXP202_GPIO0_CTL;
+      break;
     case AXP_GPIO_1:
-    reg = AXP202_GPIO1_CTL;
-    break;
+      reg = AXP202_GPIO1_CTL;
+      break;
     case AXP_GPIO_2:
-    reg = AXP202_GPIO2_CTL;
-    if (val) {
-      return AXP_NOT_SUPPORT;
-    }
-    break;
+      reg = AXP202_GPIO2_CTL;
+      if (val) {
+        return AXP_NOT_SUPPORT;
+      }
+      break;
     case AXP_GPIO_3:
-    if (val) {
-      return AXP_NOT_SUPPORT;
-    }
-    axpxx_readByte(AXP202_GPIO3_CTL, 1, &wVal);
-    wVal &= 0b11111101;
-    axpxx_writeByte(AXP202_GPIO3_CTL, 1, &wVal);
-    return AXP_PASS;
+      if (val) {
+        return AXP_NOT_SUPPORT;
+      }
+      axpxx_readByte(AXP202_GPIO3_CTL, 1, &wVal);
+      wVal &= 0b11111101;
+      axpxx_writeByte(AXP202_GPIO3_CTL, 1, &wVal);
+      return AXP_PASS;
     default:
-    return AXP_NOT_SUPPORT;
+      return AXP_NOT_SUPPORT;
   }
   axpxx_readByte(reg, 1, &wVal);
   wVal = val ? (wVal | 1) : (wVal & 0b11111000);
@@ -1784,20 +1784,20 @@ int axpxx__axp202_gpio_read(axp_gpio_t gpio)
   uint8_t offset;
   switch (gpio) {
     case AXP_GPIO_0:
-    offset = 4;
-    break;
+      offset = 4;
+      break;
     case AXP_GPIO_1:
-    offset = 5;
-    break;
+      offset = 5;
+      break;
     case AXP_GPIO_2:
-    offset = 6;
-    break;
+      offset = 6;
+      break;
     case AXP_GPIO_3:
-    reg = AXP202_GPIO3_CTL;
-    offset = 0;
-    break;
+      reg = AXP202_GPIO3_CTL;
+      offset = 0;
+      break;
     default:
-    return AXP_NOT_SUPPORT;
+      return AXP_NOT_SUPPORT;
   }
   axpxx_readByte(reg, 1, &val);
   return val & BIT_MASK(offset) ? 1 : 0;
@@ -1806,15 +1806,15 @@ int axpxx__axp202_gpio_read(axp_gpio_t gpio)
 int axpxx_gpioWrite(axp_gpio_t gpio, uint8_t val)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   switch (axpxx_chip_id) {
     case AXP202_CHIP_ID:
-    return _axp202_gpio_write(gpio, val);
+      return _axp202_gpio_write(gpio, val);
     case AXP192_CHIP_ID:
     case AXP173_CHIP_ID:
-    return AXP_NOT_SUPPORT;
+      return AXP_NOT_SUPPORT;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1822,15 +1822,15 @@ int axpxx_gpioWrite(axp_gpio_t gpio, uint8_t val)
 int axpxx_gpioRead(axp_gpio_t gpio)
 {
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   switch (axpxx_chip_id) {
     case AXP202_CHIP_ID:
-    return _axp202_gpio_read(gpio);
-    case AXP192_CHIP_ID:
-    case AXP173_CHIP_ID:
-    return AXP_NOT_SUPPORT;
+      return _axp202_gpio_read(gpio);
+      case AXP192_CHIP_ID:
+      case AXP173_CHIP_ID:
+      return AXP_NOT_SUPPORT;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1842,20 +1842,20 @@ int axpxx_getChargeControlCur()
   int cur;
   uint8_t val;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   switch (axpxx_chip_id) {
     case AXP202_CHIP_ID:
-    axpxx_readByte(AXP202_CHARGE1, 1, &val);
-    val &= 0x0F;
-    cur =  val * 100 + 300;
-    if (cur > 1800 || cur < 300)return 0;
-    return cur;
+      axpxx_readByte(AXP202_CHARGE1, 1, &val);
+      val &= 0x0F;
+      cur =  val * 100 + 300;
+      if (cur > 1800 || cur < 300)return 0;
+      return cur;
     case AXP192_CHIP_ID:
     case AXP173_CHIP_ID:
-    axpxx_readByte(AXP202_CHARGE1, 1, &val);
-    return val & 0x0F;
+      axpxx_readByte(AXP202_CHARGE1, 1, &val);
+      return val & 0x0F;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
@@ -1864,26 +1864,26 @@ int axpxx_setChargeControlCur(uint16_t mA)
 {
   uint8_t val;
   if (!axpxx_init)
-  return AXP_NOT_INIT;
+    return AXP_NOT_INIT;
   switch (axpxx_chip_id) {
     case AXP202_CHIP_ID:
-    axpxx_readByte(AXP202_CHARGE1, 1, &val);
-    val &= 0b11110000;
-    mA -= 300;
-    val |= (mA / 100);
-    axpxx_writeByte(AXP202_CHARGE1, 1, &val);
-    return AXP_PASS;
+      axpxx_readByte(AXP202_CHARGE1, 1, &val);
+      val &= 0b11110000;
+      mA -= 300;
+      val |= (mA / 100);
+      axpxx_writeByte(AXP202_CHARGE1, 1, &val);
+      return AXP_PASS;
     case AXP192_CHIP_ID:
     case AXP173_CHIP_ID:
-    axpxx_readByte(AXP202_CHARGE1, 1, &val);
-    val &= 0b11110000;
-    if(mA > AXP1XX_CHARGE_CUR_1320MA)
-    mA = AXP1XX_CHARGE_CUR_1320MA;
-    val |= mA;
-    axpxx_writeByte(AXP202_CHARGE1, 1, &val);
-    return AXP_PASS;
+      axpxx_readByte(AXP202_CHARGE1, 1, &val);
+      val &= 0b11110000;
+      if(mA > AXP1XX_CHARGE_CUR_1320MA)
+      mA = AXP1XX_CHARGE_CUR_1320MA;
+      val |= mA;
+      axpxx_writeByte(AXP202_CHARGE1, 1, &val);
+      return AXP_PASS;
     default:
-    break;
+      break;
   }
   return AXP_NOT_SUPPORT;
 }
