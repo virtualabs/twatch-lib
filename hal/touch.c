@@ -125,6 +125,10 @@ void _process_touch_data(ft6236_touch_t *touch)
       }
       else
       {
+        /* We don't have any first touch yet. */
+        if ((first.x == 0xffff) && (first.y == 0xffff))
+          break;
+
         last.x = touch->touches[0].x;
         last.y = touch->touches[0].y;
 
@@ -232,6 +236,9 @@ esp_err_t twatch_touch_init(void)
 
   /* Initialize our FT6236. */
   ft6x36_init(FT6236_I2C_SLAVE_ADDR, (FT6X36_IRQ_HANDLER)_touch_irq_handler);
+
+  first.x = 0xffff;
+  first.y = 0xffff;
 
   return ESP_OK;
 }
