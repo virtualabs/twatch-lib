@@ -190,23 +190,30 @@ int widget_listbox_event_handler(widget_t *p_widget, widget_event_t event, int x
 
                   /* Notify hooks with specific event. */
                   widget_send_event(p_widget, LB_ITEM_SELECTED, 0, 0, 0);
+
+                  /* Mark event as processed. */
+                  b_processed = true;
                 }
                 p_item = p_item->p_next;
               }
               while (p_item != NULL);
             }
 
-            /* Check if coordinates match this listbox's container. */
-            if (
-              (p_listbox->container.widget.box.x <= (x + p_widget->box.x)) &&
-              ((p_listbox->container.widget.box.x + p_listbox->container.widget.box.width) > (x + p_widget->box.x)) &&
-              (p_listbox->container.widget.box.y <= (y+p_widget->box.y)) &&
-              ((p_listbox->container.widget.box.y + p_listbox->container.widget.box.height) > (y+p_widget->box.y))
-            )
+            /* If no child widget has been pressed, forward to container. */
+            if (!b_processed)
             {
-              /* Deselect previous item if any. */
-              if (p_listbox->p_selected_item != NULL)
-                widget_send_event(p_listbox->p_selected_item, LB_ITEM_DESELECTED, 0, 0, 0);
+              /* Check if coordinates match this listbox's container. */
+              if (
+                (p_listbox->container.widget.box.x <= (x + p_widget->box.x)) &&
+                ((p_listbox->container.widget.box.x + p_listbox->container.widget.box.width) > (x + p_widget->box.x)) &&
+                (p_listbox->container.widget.box.y <= (y+p_widget->box.y)) &&
+                ((p_listbox->container.widget.box.y + p_listbox->container.widget.box.height) > (y+p_widget->box.y))
+              )
+              {
+                /* Deselect previous item if any. */
+                if (p_listbox->p_selected_item != NULL)
+                  widget_send_event(p_listbox->p_selected_item, LB_ITEM_DESELECTED, 0, 0, 0);
+              }
             }
           }
 
