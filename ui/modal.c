@@ -76,9 +76,9 @@ int _modal_drawfunc(tile_t *p_tile)
     tile_draw_line(
       p_tile,
       1,
-      p_tile->height,
+      p_tile->height - 1,
       p_tile->width - 2,
-      p_tile->height,
+      p_tile->height - 1,
       p_modal->border_color
     );
 
