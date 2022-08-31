@@ -76,9 +76,9 @@ int _modal_drawfunc(tile_t *p_tile)
     tile_draw_line(
       p_tile,
       1,
-      p_tile->offset_y + p_tile->height - 1,
+      p_tile->offset_y + p_tile->height,
       p_tile->offset_x + p_tile->width - 2,
-      p_tile->offset_y + p_tile->height - 1,
+      p_tile->offset_y + p_tile->height,
       p_modal->border_color
     );
 
@@ -95,9 +95,9 @@ int _modal_drawfunc(tile_t *p_tile)
     /* Draw right line. */
     tile_draw_line(
       p_tile,
-      p_tile->offset_x + p_tile->width - 1,
+      p_tile->offset_x + p_tile->width,
       1,
-      p_tile->offset_x + p_tile->width - 1,
+      p_tile->offset_x + p_tile->width,
       p_tile->offset_y + p_tile->height  - 2,
       p_modal->border_color
     );
