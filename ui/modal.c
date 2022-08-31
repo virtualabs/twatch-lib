@@ -55,8 +55,8 @@ int _modal_drawfunc(tile_t *p_tile)
       p_tile,
       1,
       1,
-      p_tile->offset_x + p_tile->width-2,
-      p_tile->offset_y + p_tile->height-2,
+      p_tile->width - 2,
+      p_tile->height - 2,
       p_tile->background_color
     );
 
@@ -67,7 +67,7 @@ int _modal_drawfunc(tile_t *p_tile)
       p_tile,
       1,
       0,
-      p_tile->offset_x + p_tile->width - 2,
+      p_tile->width - 2,
       0,
       p_modal->border_color
     );
@@ -76,9 +76,9 @@ int _modal_drawfunc(tile_t *p_tile)
     tile_draw_line(
       p_tile,
       1,
-      p_tile->offset_y + p_tile->height,
-      p_tile->offset_x + p_tile->width - 2,
-      p_tile->offset_y + p_tile->height,
+      p_tile->height,
+      p_tile->width - 2,
+      p_tile->height,
       p_modal->border_color
     );
 
@@ -88,17 +88,17 @@ int _modal_drawfunc(tile_t *p_tile)
       0,
       1,
       0,
-      p_tile->offset_y + p_tile->height  - 2,
+      p_tile->height  - 2,
       p_modal->border_color
     );
 
     /* Draw right line. */
     tile_draw_line(
       p_tile,
-      p_tile->offset_x + p_tile->width,
+      p_tile->width,
       1,
-      p_tile->offset_x + p_tile->width,
-      p_tile->offset_y + p_tile->height  - 2,
+      p_tile->width,
+      p_tile->height  - 2,
       p_modal->border_color
     );
   }
