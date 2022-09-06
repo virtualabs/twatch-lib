@@ -549,7 +549,7 @@ void st7789_draw_fastline(int x0, int y, int x1, uint8_t color)
     _y = y;
 
   /* Fill line of pixels. */
-  memset(&framebuffer[_y*WIDTH+_x0], color, _x1-_x0);
+  memset(&framebuffer[_y*WIDTH+_x0], color, _x1 -_x0 + 1);
 }
 
 
